@@ -1,0 +1,173 @@
+﻿@{
+    ViewData["Title"] = "Duyệt sinh viên";
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+}
+
+<div class="content-body">
+    <div class="detail-container">
+        <div class="info-section">
+
+            <div class="form-header">
+                <!-- Breadcrumb -->
+                <nav class="breadcrumb-simple">
+                    <a asp-area="Giangvien" asp-controller="QuanLyDotDoAn" asp-action="DuyetSV">Duyệt sinh viên</a>
+                    <span>&gt;</span>
+                    <span class="current">Duyệt sinh viên đăng ký</span>
+                </nav>
+            </div>
+
+            <!-- ===== THÔNG TIN ĐỀ TÀI (READONLY) ===== -->
+            <div class="detail-group">
+                <label>Tên đề tài:</label>
+                <textarea class="detail-control" id="dtName" readonly></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="detail-group">
+                    <label>Mục tiêu chính:</label>
+                    <textarea class="detail-control" id="dtGoal" readonly></textarea>
+                </div>
+
+                <div class="detail-group">
+                    <label>Phạm vi và chức năng:</label>
+                    <textarea class="detail-control" id="dtScope" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="detail-group">
+                    <label>Công nghệ sử dụng:</label>
+                    <textarea class="detail-control" id="dtTech" readonly></textarea>
+                </div>
+
+                <div class="detail-group">
+                    <label>Yêu cầu tính mới:</label>
+                    <textarea class="detail-control" id="dtRequirement" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="detail-group">
+                <label>Sản phẩm kết quả dự kiến:</label>
+                <textarea class="detail-control" id="dtResult" readonly></textarea>
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- ===== FILTER (DISABLED) ===== -->
+            <div class="toolbar-row">
+                <div class="toolbar-left">
+                    <span class="filter-label">Ngành:</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="CNPM">CNTT/CNPM</option>
+                        <option value="KHDL">CNTT/KHDL</option>
+                        <option value="TTNT">CNTT/TTNT</option>
+                    </select>
+                </div>
+
+                <div class="toolbar-left">
+                    <span class="filter-label">Khóa:</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="CNPM">K28</option>
+                        <option value="KHDL">K27</option>
+                        <option value="TTNT">K26</option>
+                    </select>
+                </div>
+
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <span class="filter-label">Tìm kiếm:</span>
+
+                        <div class="search-input-wrapper">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text"
+                                   class="toolbar-input search-input"
+                                   placeholder="Nhập từ khóa..."
+                                   style="width: 250px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== BẢNG SINH VIÊN ===== -->
+            <div class="table-card">
+                <table class="main-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>MSSV</th>
+                            <th>Nhóm trưởng</th>
+                            <th>Thành viên</th>
+                            <th>Ngành</th>
+                            <th>Khóa</th>
+                            <th>Thời gian đăng ký</th>
+                            <th>Xem KQ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>2174802010297</td>
+                            <td>Trương Quốc Duy</td>
+                            <td>Ngô Thị Tuyết Như</td>
+                            <td>CNTT/CNPM</td>
+                            <td>K27</td>
+                            <td>00:00:00 01/01/2026</td>
+                            <td><i class="fa-regular fa-file-lines"></i></td>
+                            <td>
+                                <button class="icon-btn approve" type="button">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button class="icon-btn reject" type="button">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/Duyet_DSSV.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/Breadcrum.css" asp-append-version="true" />
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        // ===== DATA GIẢ =====
+        const projectData = {
+            name: "Xây dựng mô hình AI phân đoạn khối u não",
+            goal: "Đạt độ chính xác Dice Score > 90%",
+            scope: "Sử dụng bộ dữ liệu BraTS, xây dựng web demo",
+            tech: "Python, PyTorch, U-Net, Transformer",
+            requirement: "Kết hợp CNN + Transformer",
+            result: "Model .pth, Web demo, báo cáo khoa học"
+        };
+
+        // ===== FILL DATA =====
+        document.getElementById("dtName").value = projectData.name;
+        document.getElementById("dtGoal").value = projectData.goal;
+        document.getElementById("dtScope").value = projectData.scope;
+        document.getElementById("dtTech").value = projectData.tech;
+        document.getElementById("dtRequirement").value = projectData.requirement;
+        document.getElementById("dtResult").value = projectData.result;
+
+        // ===== DUYỆT / TỪ CHỐI =====
+        document.querySelector(".icon-btn.approve").addEventListener("click", () => {
+            if (confirm("Xác nhận DUYỆT sinh viên?")) {
+                alert("Đã duyệt thành công!");
+            }
+        });
+
+        document.querySelector(".icon-btn.reject").addEventListener("click", () => {
+            if (confirm("Xác nhận TỪ CHỐI sinh viên?")) {
+                alert("Đã từ chối!");
+            }
+        });
+
+    });
+</script>

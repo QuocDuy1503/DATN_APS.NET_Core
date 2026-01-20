@@ -1,0 +1,251 @@
+﻿@model DATN_TMS.Areas.BCNKhoa.Models.KetQuaHocTapModel
+
+@{
+    ViewData["Title"] = "Kết quả học tập - " + Model.HoTen;
+}
+
+<style>
+    :root { --primary-red: #D9251C; }
+
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 140px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .page-header-row { 
+        margin-bottom: 10px; 
+    }
+    .page-title { 
+        font-size: 20px; 
+        font-weight: 700; 
+        color: #2c3e50; 
+        margin: 0; 
+        text-transform: uppercase; 
+    }
+
+    /*  Breadcrumb */
+    .breadcrumb-nav { 
+        margin-bottom: 20px; 
+        padding-bottom: 15px; 
+        border-bottom: 2px solid #f5f5f5; 
+    }
+    .breadcrumb { 
+        display: flex; 
+        align-items: center; 
+        list-style: none; 
+        padding: 0; 
+        margin: 0; 
+        font-size: 13px; 
+        background: transparent; 
+    }
+    .breadcrumb-item a { 
+        color: #6c757d; 
+        text-decoration: none; 
+        transition: color 0.2s; 
+    }
+    .breadcrumb-item a:hover { 
+        color: #D71920; 
+        text-decoration: underline; 
+    }
+    .breadcrumb-item.active { 
+        color: #333; 
+        font-weight: 600; 
+        cursor: default; 
+    }
+    .breadcrumb-item + .breadcrumb-item::before { 
+        content: "/"; 
+        padding: 0 8px; 
+        color: #ccc; 
+    }
+
+    /* --- THÔNG TIN SINH VIÊN --- */
+    .student-info-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 6px;
+        padding: 20px;
+        margin-bottom: 20px; 
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .info-column h4 {
+        margin-bottom: 15px;
+        color: var(--primary-red);
+        font-size: 15px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .info-row {
+        display: flex;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .info-label {
+        width: 120px;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .info-value {
+        color: #333;
+        font-weight: 500;
+    }
+
+    /* --- BẢNG ĐIỂM --- */
+    .table-responsive {
+        border-radius: 6px 6px 0 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        flex: 1; 
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    table th {
+        background-color: #f8f9fa;
+        color: #444;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 12px;
+        border-top: 1px solid #eee;
+        padding: 12px;
+        border-bottom: 2px solid #eee;
+    }
+
+    table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+    }
+
+
+    .text-center { text-align: center !important; }
+    .grade-number { font-weight: 700; color: #333; }
+    .grade-letter { font-weight: 600; }
+
+    .grade-A { color: #28a745; }
+    .grade-B { color: #17a2b8; }
+    .grade-C { color: #ffc107; }
+    .grade-D { color: #fd7e14; }
+    .grade-F { color: #dc3545; }
+
+    .result-icon {
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+    }
+    .result-pass { color: #28a745; background-color: #e6f4ea; }
+    .result-fail { color: #dc3545; background-color: #ffe6e6; }
+
+    /* Footer Tổng kết */
+    .summary-footer {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border: 1px solid #eee;
+        border-top: none;
+        display: flex;
+        justify-content: flex-end;
+        gap: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        border-radius: 0 0 6px 6px;
+    }
+    .summary-item span { color: var(--primary-red); font-weight: 700; font-size: 16px; margin-left: 5px; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        
+        <div class="page-header-row">
+            <h2 class="page-title">Kết quả học tập cá nhân</h2>
+        </div>
+
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Danh sách đăng ký</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Kết quả học tập</li>
+            </ol>
+        </nav>
+
+        <div class="student-info-card">
+            <div class="info-column">
+                <h4>Thông tin sinh viên</h4>
+                <div class="info-row"><span class="info-label">Họ và tên:</span><span class="info-value">@Model.HoTen</span></div>
+                <div class="info-row"><span class="info-label">MSSV:</span><span class="info-value">@Model.MSSV</span></div>
+            </div>
+            <div class="info-column">
+                <h4>Tình trạng học tập</h4>
+                <div class="info-row"><span class="info-label">Chuyên ngành:</span><span class="info-value">@Model.ChuyenNganh</span></div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 50px;">STT</th>
+                        <th style="width: 120px;">Mã học phần</th>
+                        <th>Tên học phần</th>
+                        <th class="text-center" style="width: 80px;">Số TC</th>
+                        <th class="text-center" style="width: 80px;">Điểm (10)</th>
+                        <th class="text-center" style="width: 80px;">Điểm chữ</th>
+                        <th class="text-center" style="width: 80px;">Kết quả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.BangDiem != null && Model.BangDiem.Any())
+                    {
+                        foreach (var item in Model.BangDiem)
+                        {
+                            var gradeClass = "grade-" + (item.DiemChu != null && item.DiemChu.Length > 0 ? item.DiemChu[0].ToString() : "");
+
+                            <tr>
+                                <td class="text-center">@item.Stt</td>
+                                <td>@item.MaHocPhan</td>
+                                <td>@item.TenHocPhan</td>
+                                <td class="text-center">@item.SoTc</td>
+                                <td class="text-center grade-number">@item.DiemSo</td>
+                                <td class="text-center grade-letter @gradeClass">@item.DiemChu</td>
+                                <td class="text-center">
+                                    @if (item.KetQua)
+                                    {
+                                        <div class="result-icon result-pass"><i class="fa-solid fa-check"></i></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="result-icon result-fail"><i class="fa-solid fa-xmark"></i></div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center" style="padding: 20px; color:#777;">Chưa có dữ liệu điểm.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary-footer">
+            <div class="summary-item">Tổng số tín chỉ: <span>@Model.TongTinChi</span></div>
+            <div class="summary-item">Điểm trung bình (GPA): <span>@Model.GPA</span></div>
+        </div>
+    </div>
+</div>

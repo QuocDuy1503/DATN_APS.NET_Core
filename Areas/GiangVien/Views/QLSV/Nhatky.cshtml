@@ -1,0 +1,78 @@
+﻿@{
+    ViewData["Title"] = "Đề xuất đề tài";
+    // Layout Lecturer bạn đang dùng
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+
+
+}
+
+<div class="content-body">
+    <div class="content-card">
+        <!-- Breadcrumb -->
+        <nav class="breadcrumb-simple">
+            <a asp-area="Giangvien" asp-controller="QLSV" asp-action="DSSV">Quản lý sinh viên</a>
+            <span>&gt;</span>
+            <span class="current">Nhật ký hướng dẫn</span>
+        </nav>
+
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <span class="filter-label">Tuần:</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="CNPM">Tuần 1</option>
+                        <option value="KHDL">Tuần 2</option>
+                        <option value="TTNT">Tuần 3</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tuần</th>
+                        <th>Ngày</th>
+                        <th>Hình thức họp</th>
+                        <th>Thời gian</th>
+                        <th>Địa điểm </th>
+                        <th>Nội dung</th>
+                        <th>Chữ ký điện tử</th>
+                        <th>Thao tác</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Tuần 1</td>
+                        <td>01/01/2026</td>
+                        <td>Offline</td>
+                        <td>15h30</td>
+                        <td>F__</td>
+                        <td>
+                            <label class="upload-btn">
+                                Nhatkyhuongdan
+                                <input type="file" hidden onchange="handleUpload(this)">
+                            </label>
+                        </td>
+                        <td rowspan="2" class="plan-cell">
+                            <label class="upload-btn">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <input type="file" hidden onchange="handleUpload(this)">
+                            </label>
+                        </td>
+                        <td><i class="fa-solid fa-eye"></i></td>
+                        <td><button>Xác nhận</button></td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="~/css/NK.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/Breadcrum.css" asp-append-version="true" />

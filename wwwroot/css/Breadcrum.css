@@ -1,0 +1,35 @@
+﻿.header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.breadcrumb-simple {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 20px;
+    color: #6b7280; /* xám nhạt */
+    margin-bottom: 4px;
+}
+
+    .breadcrumb-simple a {
+        color: #111827; /* xanh link */
+        font-weight: 600;
+        font-size: 20px;
+        text-decoration: none;
+    }
+
+        .breadcrumb-simple a:hover {
+            text-decoration: underline;
+        }
+
+    .breadcrumb-simple span {
+        color: #9ca3af;
+    }
+
+    .breadcrumb-simple .current {
+        color: #374151;
+        font-weight: 600;
+        font-size: 20px;
+    }

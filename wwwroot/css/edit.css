@@ -1,0 +1,250 @@
+/* --- 1. BREADCRUMB (THANH ĐIỀU HƯỚNG) --- */
+.breadcrumb-nav {
+    margin-bottom: 15px;
+}
+
+.breadcrumb {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+}
+
+.breadcrumb-item a {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+    .breadcrumb-item a:hover {
+        color: #D71920; /* Màu đỏ chủ đạo */
+        text-decoration: underline;
+    }
+
+.breadcrumb-item.active {
+    color: #333;
+    font-weight: 600;
+    cursor: default;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "/";
+    padding: 0 8px;
+    color: #ccc;
+}
+
+/* --- 2. KHUNG CHỨA CHÍNH (CONTAINER) --- */
+.edit-container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 30px 40px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    max-width: 1000px;
+    margin: 0 auto;
+    border: 1px solid #eef0f2;
+}
+
+/* --- 3. HEADER & TITLE --- */
+.page-header-row {
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f5f5f5;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+/* --- 4. SECTION HEADERS --- */
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+.section-title {
+    color: #D71920; /* Primary Red */
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.section-line {
+    flex: 1;
+    height: 1px;
+    background-color: #eee;
+}
+
+/* --- 5. FORM INPUTS --- */
+.info-section {
+    background-color: #fcfcfc;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 40px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 40px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control {
+    border: 1px solid #dde2e5;
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background-color: #fff;
+    width: 100%;
+}
+
+    .form-control:focus, .table-date-input:focus {
+        border-color: #484BE0;
+        box-shadow: 0 0 0 3px rgba(72, 75, 224, 0.1);
+        outline: none;
+    }
+
+/* --- 6. TIMELINE TABLE --- */
+.timeline-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    .timeline-table th {
+        background-color: #f8f9fa;
+        padding: 15px 20px;
+        text-align: left;
+        font-weight: 600;
+        color: #444;
+        font-size: 13px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .timeline-table td {
+        padding: 12px 20px;
+        border-bottom: 1px solid #f5f5f5;
+        vertical-align: middle;
+        background: #fff;
+    }
+
+    .timeline-table tr:hover td {
+        background-color: #fbfbfb;
+    }
+
+    .timeline-table tr:last-child td {
+        border-bottom: none;
+    }
+
+.activity-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.table-date-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 13px;
+    color: #333;
+    transition: all 0.2s;
+}
+
+/* --- 7. SECTION SEPARATOR (MÀU VÀNG) --- */
+tr.section-separator td {
+    background-color: #fffbf0 !important;
+    color: #b7791f;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 12px 20px;
+    border-top: 1px solid #f0e6cc;
+    border-bottom: 1px solid #f0e6cc;
+}
+
+/* --- 8. FOOTER BUTTONS --- */
+.action-footer {
+    text-align: right;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.btn {
+    padding: 10px 25px;
+    font-size: 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background-color: #f1f3f5;
+    color: #495057;
+}
+
+    .btn-secondary:hover {
+        background-color: #e9ecef;
+        color: #212529;
+    }
+
+.btn-save {
+    background-color: #484BE0;
+    color: white;
+    box-shadow: 0 4px 6px rgba(72, 75, 224, 0.2);
+}
+
+    .btn-save:hover {
+        background-color: #3a3dc0;
+        transform: translateY(-1px);
+    }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .edit-container {
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .timeline-table th, .timeline-table td {
+        padding: 10px;
+    }
+}

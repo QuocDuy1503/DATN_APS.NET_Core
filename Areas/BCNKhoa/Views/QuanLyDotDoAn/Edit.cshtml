@@ -1,0 +1,271 @@
+﻿@model DATN_TMS.Models.DotDoAn
+
+@{
+    ViewData["Title"] = "Chỉnh sửa đợt đồ án";
+}
+
+<style>
+    .edit-container {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        width: 100%; 
+        border: 1px solid #eee;
+    }
+    .page-header-row { margin-bottom: 10px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    .breadcrumb-nav { margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #f5f5f5; }
+    .breadcrumb { display: flex; align-items: center; list-style: none; padding: 0; margin: 0; font-size: 13px; background: transparent; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: #D71920; text-decoration: underline; }
+    .breadcrumb-item.active { color: #333; font-weight: 600; cursor: default; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: #ccc; }
+
+    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .section-title { color: #D71920; font-size: 15px; font-weight: 700; text-transform: uppercase; margin: 0; }
+    .section-line { flex: 1; height: 1px; background-color: #eee; }
+
+    .info-section { background-color: #fcfcfc; padding: 25px; border-radius: 8px; border: 1px solid #f0f0f0; margin-bottom: 40px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 40px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 8px; display: block; }
+    .form-control { border: 1px solid #dde2e5; border-radius: 6px; padding: 10px 15px; width: 100%; }
+    .form-control:focus, .table-date-input:focus, .table-int-input:focus { border-color: #484BE0; box-shadow: 0 0 0 3px rgba(72, 75, 224, 0.1); outline: none; }
+
+    .timeline-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+    .timeline-table th { background-color: #f8f9fa; padding: 15px 20px; text-align: left; font-weight: 600; color: #444; font-size: 13px; border-bottom: 1px solid #eee; }
+    .timeline-table td { padding: 12px 20px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; background: #fff; }
+    
+    .table-date-input { width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 5px; font-size: 13px; }
+    
+    .table-int-input { width: 60px; padding: 6px 10px; border: 1px solid #e0e0e0; border-radius: 4px; text-align: center; font-weight: 600; color: #484BE0; margin: 0 5px; }
+    
+    .activity-name { font-weight: 600; color: #333; font-size: 14px; }
+    
+    .config-row td { background-color: #fdfdfd; padding: 10px 20px 20px 40px; border-bottom: 1px solid #eee; }
+    .config-item { display: inline-flex; align-items: center; margin-right: 30px; font-size: 13px; color: #555; background: #fff; padding: 5px 10px; border: 1px dashed #ddd; border-radius: 4px; }
+    .config-label { margin-right: 5px; }
+    
+    tr.section-separator td { background-color: #fffbf0 !important; color: #b7791f; font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 12px 20px; }
+
+    .action-footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 15px; }
+    .btn { padding: 10px 25px; font-size: 14px; border-radius: 6px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: none; text-decoration: none; }
+    .btn-secondary { background-color: #f1f3f5; color: #495057; }
+    .btn-secondary:hover { background-color: #e9ecef; }
+    .btn-save { background-color: #484BE0; color: white; box-shadow: 0 4px 6px rgba(72, 75, 224, 0.2); }
+    .btn-save:hover { background-color: #3a3dc0; transform: translateY(-1px); }
+
+    @@media (max-width: 768px) { 
+        .edit-container { padding: 20px; } 
+        .form-grid { grid-template-columns: 1fr; } 
+        .config-item { display: flex; margin-bottom: 10px; }
+    }
+</style>
+
+<div class="content-body">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="TrangThai" />
+
+        <div class="edit-container">
+            
+            <div class="page-header-row">
+                <h2 class="page-title">Thiết lập thời gian đợt đồ án</h2>
+            </div>
+
+            <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Index">Quản lý đợt đồ án</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa</li>
+                </ol>
+            </nav>
+
+            <div class="section-header">
+                <h4 class="section-title">I. Thông tin chung</h4>
+                <div class="section-line"></div>
+            </div>
+
+            <div class="info-section">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Tên đợt đồ án <span class="text-danger">*</span></label>
+                        <input type="text" asp-for="TenDot" class="form-control" placeholder="Vd: Đồ án Tốt nghiệp K27 - HK1" required>
+                        <span asp-validation-for="TenDot" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>Khóa áp dụng</label>
+                        <select asp-for="IdKhoaHoc" class="form-control" asp-items="ViewBag.ListKhoa">
+                            <option value="">-- Chọn khóa --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày bắt đầu đợt</label>
+                        <input type="date" asp-for="NgayBatDauDot" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày kết thúc đợt</label>
+                        <input type="date" asp-for="NgayKetThucDot" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <h4 class="section-title">II. Cấu hình chi tiết các mốc thời gian</h4>
+                <div class="section-line"></div>
+            </div>
+
+            <table class="timeline-table">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Hoạt động</th>
+                        <th style="width: 30%;">Ngày bắt đầu</th>
+                        <th style="width: 30%;">Ngày kết thúc / Hạn chót</th>
+                        <th style="width: 5%;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><div class="activity-name">Đăng ký nguyện vọng</div></td>
+                        <td><input type="date" asp-for="NgayBatDauDkNguyenVong" class="table-date-input"></td>
+                        <td><input type="date" asp-for="NgayKetThucDkNguyenVong" class="table-date-input"></td>
+                        <td></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><div class="activity-name">Duyệt nguyện vọng</div></td>
+                        <td><input type="date" asp-for="NgayBatDauDkDuyetNguyenVong" class="table-date-input"></td>
+                        <td><input type="date" asp-for="NgayKetThucDkDuyetNguyenVong" class="table-date-input"></td>
+                        <td></td>
+                    </tr>
+                    
+                    <tr>
+                        <td><div class="activity-name">Đề xuất đề tài (GV)</div></td>
+                        <td><input type="date" asp-for="NgayBatDauDeXuatDeTai" class="table-date-input"></td>
+                        <td><input type="date" asp-for="NgayKetThucDeXuatDeTai" class="table-date-input"></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td style="border-bottom:none;"><div class="activity-name">Duyệt đề tài (Hội đồng)</div></td>
+                        <td style="border-bottom:none;"><input type="date" asp-for="NgayBatDauDuyetDeXuatDeTai" class="table-date-input"></td>
+                        <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucDuyetDeXuatDeTai" class="table-date-input"></td>
+                        <td style="border-bottom:none;"></td>
+                    </tr>
+                    <tr class="config-row">
+                        <td colspan="4">
+                            <div class="config-item">
+                                <span class="config-label">Lập Hội đồng sau:</span>
+                                <input type="number" asp-for="NgayLapHoiDongDuyetDxdt" class="table-int-input" min="0">
+                                <span>ngày (tính từ ngày bắt đầu)</span>
+                            </div>
+                            <div class="config-item">
+                                <span class="config-label">Duyệt Đề tài sau:</span>
+                                <input type="number" asp-for="NgayDuyetDxdt" class="table-int-input" min="0">
+                                <span>ngày</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr class="section-separator">
+                        <td colspan="4">Giai đoạn Thực hiện & Báo cáo</td>
+                    </tr>
+                    
+                    <tr>
+                        <td><div class="activity-name">Nộp đề cương chi tiết</div></td>
+                        <td><input type="date" asp-for="NgayBatDauNopDeCuong" class="table-date-input"></td>
+                        <td><input type="date" asp-for="NgayKetThucNopDeCuong" class="table-date-input"></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td style="border-bottom:none;"><div class="activity-name">Báo cáo giữa kì (Hội đồng)</div></td>
+                        <td style="border-bottom:none;"><input type="date" asp-for="NgayBatDauBaoCaoGiuaKi" class="table-date-input"></td>
+                        <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucBaoCaoGiuaKi" class="table-date-input"></td>
+                        <td style="border-bottom:none;"></td>
+                    </tr>
+                    <tr class="config-row">
+                        <td colspan="4">
+                            <div class="config-item">
+                                <span class="config-label">Lập HĐ sau:</span>
+                                <input type="number" asp-for="NgayLapHdBcgk" class="table-int-input" min="0">
+                                <span>ngày</span>
+                            </div>
+                            <div class="config-item">
+                                <span class="config-label">Nộp tài liệu sau:</span>
+                                <input type="number" asp-for="NgayNopTaiLieuBcgk" class="table-int-input" min="0">
+                                <span>ngày</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="border-bottom:none;"><div class="activity-name">Báo cáo cuối kỳ</div></td>
+                        <td style="border-bottom:none;"><input type="date" asp-for="NgayBatDauBaoCaoCuoiKi" class="table-date-input"></td>
+                        <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucBaoCaoCuoiKi" class="table-date-input"></td>
+                        <td style="border-bottom:none;"></td>
+                    </tr>
+                    <tr class="config-row">
+                        <td colspan="4">
+                            <div class="config-item">
+                                <span class="config-label">Lập HĐ sau:</span>
+                                <input type="number" asp-for="NgayLapHdBcck" class="table-int-input" min="0">
+                                <span>ngày</span>
+                            </div>
+                            <div class="config-item">
+                                <span class="config-label">Nộp tài liệu sau:</span>
+                                <input type="number" asp-for="NgayNopTaiLieuBcck" class="table-int-input" min="0">
+                                <span>ngày</span>
+                            </div>
+                            <div class="config-item">
+                                <span class="config-label">Công bố KQ sau:</span>
+                                <input type="number" asp-for="NgayCongBoKqBcck" class="table-int-input" min="0">
+                                <span>ngày</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="action-footer">
+                <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                <button type="submit" class="btn btn-save" id="btnSaveChanges">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu
+                </button>
+            </div>
+        </div>
+    </form>
+    </div> <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        
+            // THÔNG BÁO THÀNH CÔNG
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: '@TempData["SuccessMessage"]',
+                    confirmButtonText: 'Đóng',
+                    confirmButtonColor: '#484BE0'
+                });
+                </text>
+            }
+
+            // HIỆN THÔNG BÁO LỖI 
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Thất bại',
+                    text: '@TempData["ErrorMessage"]',
+                    confirmButtonText: 'Kiểm tra lại',
+                    confirmButtonColor: '#d33'
+                });
+                </text>
+            }
+        });
+    </script>
+</div>

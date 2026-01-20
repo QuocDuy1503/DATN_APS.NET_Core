@@ -1,0 +1,162 @@
+﻿@{
+    ViewData["Title"] = "Đề xuất đề tài";
+    // Layout Lecturer bạn đang dùng
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+
+
+}
+<div class="content-body">
+
+    <div class="detail-container">
+
+        <div class="info-section">
+            <div class="form-header">
+                <nav class="breadcrumb-simple">
+                    <a asp-area="Giangvien" asp-controller="QuanLyDotDoAn" asp-action="DexuatDT">Đề xuất đề tài</a>
+                    <span>&gt;</span>
+                    <span class="current">Chỉnh sửa đề xuất đề tài</span>
+                </nav>
+            </div>
+
+            <div style="display: flex; gap: 20px;">
+                <div class="detail-group" style="width: 150px;">
+                    <label>Mã đề tài:</label>
+                    <input type="text" class="detail-control" id="dtId">
+                </div>
+                <div class="detail-group" style="flex: 1;">
+                    <label>Tên đề tài:</label>
+                    <input type="text" class="detail-control" id="dtName">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 20px;">
+                <div class="detail-group" style="flex: 1;">
+                    <label>Giảng viên hướng dẫn:</label>
+                    <input type="text" class="detail-control" id="dtSupervisor">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="detail-group">
+                    <label>Sinh viên thứ nhất:</label>
+                    <input type="text" class="detail-control" id="dtMember1">
+                </div>
+
+                <div class="detail-group">
+                    <label>Sinh viên thứ 2:</label>
+                    <input type="text" class="detail-control" id="dtMember2">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="detail-group">
+                    <label>Mục tiêu chính:</label>
+                    <textarea class="detail-control" id="dtGoal"></textarea>
+                </div>
+
+                <div class="detail-group">
+                    <label>Phạm vi và chức năng:</label>
+                    <textarea class="detail-control" id="dtScope"></textarea>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="detail-group">
+                    <label>Công nghệ sử dụng:</label>
+                    <textarea class="detail-control equal-control" id="dtTech"></textarea>
+                </div>
+
+                <div class="detail-group">
+                    <label>Yêu cầu tính mới:</label>
+                    <textarea class="detail-control" id="dtRequirement"></textarea>
+                </div>
+            </div>
+
+
+            <div class="detail-group">
+                <label>Sản phẩm kết quả dự kiến:</label>
+                <textarea class="detail-control" id="dtResult"></textarea>
+            </div>
+            <div class="form-actions">
+                <button class="btn-action btn-save" id="btnSave"
+                        style="background-color:#0d6efd;color:white;border:none;">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="~/css/XCT_Dexuat.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/Breadcrum.css" asp-append-version="true" />
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. DỮ LIỆU GIẢ LẬP (MỚI)
+        const projectData = {
+            id: "DT-2025-001",
+            name: "Kiến trúc Học sâu lai cho phân đoạn khối u não trên ảnh MRI đa phương thức với Bộ dữ liệu BraTS",
+            supervisor: "Ngô Thị Tuyết Như",
+            member1: "Trương Quốc Duy (2174802010297)",
+            member2: "Nguyễn Văn A (2174802010123)",
+            goal: "Xây dựng mô hình AI có khả năng phân đoạn khối u não với độ chính xác cao trên 90% Dice Score.",
+            scope: "Phạm vi: Nghiên cứu trên bộ dữ liệu BraTS 2021. Chức năng: Upload ảnh MRI, Phân đoạn tự động, Xuất báo cáo y khoa, Tích hợp API cho bệnh viện.",
+            tech: "Python, PyTorch, U-Net, Transformer, Docker, ReactJS",
+            requirement: "Sử dụng kiến trúc lai giữa CNN và Transformer để tối ưu hóa việc trích xuất đặc trưng toàn cục và cục bộ. Cải thiện tốc độ xử lý so với các model cũ.",
+            result: "Mô hình đã huấn luyện (.pth), Web App Demo, Bài báo khoa học đăng trên tạp chí VLU.",
+            status: "Đang chờ duyệt",
+            comment: ""
+        };
+
+        // 2. FILL DỮ LIỆU VÀO CÁC Ô
+        document.getElementById('dtId').value = projectData.id;
+        document.getElementById('dtName').value = projectData.name;
+        document.getElementById('dtSupervisor').value = projectData.supervisor;
+        document.getElementById('dtMember1').value = projectData.member1;
+        document.getElementById('dtMember2').value = projectData.member2;
+
+        document.getElementById('dtGoal').value = projectData.goal;
+        document.getElementById('dtScope').value = projectData.scope; // Trường mới
+        document.getElementById('dtTech').value = projectData.tech;
+        document.getElementById('dtRequirement').value = projectData.requirement;
+        document.getElementById('dtResult').value = projectData.result;
+
+        updateStatusUI(projectData.status);
+
+        // 3. LOGIC NÚT DUYỆT/TỪ CHỐI (GIỮ NGUYÊN)
+        const btnApprove = document.getElementById('btnApprove');
+        const btnReject = document.getElementById('btnReject');
+        const adminComment = document.getElementById('adminComment');
+        const feedbackError = document.getElementById('feedbackError');
+
+        btnApprove.addEventListener('click', () => {
+            if(confirm("Bạn có chắc chắn muốn DUYỆT đề tài này không?")) {
+                feedbackError.style.display = 'none';
+                updateStatusUI("Đã duyệt");
+                alert("Đã duyệt đề tài thành công!");
+            }
+        });
+
+        btnReject.addEventListener('click', () => {
+            const comment = adminComment.value.trim();
+            if (comment === "") {
+                feedbackError.style.display = 'block';
+                adminComment.focus();
+                adminComment.style.borderColor = "#dc3545";
+            } else {
+                feedbackError.style.display = 'none';
+                adminComment.style.borderColor = "#ddd";
+                if(confirm("Xác nhận TỪ CHỐI đề tài này?")) {
+                    updateStatusUI("Từ chối");
+                    alert("Đã từ chối đề tài!");
+                }
+            }
+        });
+
+        adminComment.addEventListener('input', () => {
+            if(adminComment.value.trim() !== "") {
+                feedbackError.style.display = 'none';
+                adminComment.style.borderColor = "#ddd";
+            }
+        });
+
+
+    });
+</script>

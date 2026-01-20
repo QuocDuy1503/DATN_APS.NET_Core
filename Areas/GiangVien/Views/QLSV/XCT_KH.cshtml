@@ -1,0 +1,154 @@
+﻿@{
+    ViewData["Title"] = "Đề xuất đề tài";
+    // Layout Lecturer bạn đang dùng
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+
+
+}
+
+<div class="content-body">
+
+    <div class="detail-container">
+
+        <div class="info-section">
+
+            <div class="form-header">
+                <nav class="breadcrumb-simple">
+                    <a asp-area="Giangvien" asp-controller="QLSV" asp-action="DSSV">Quản lý sinh viên</a>
+                    <span>&gt;</span>
+                    <a asp-area="Giangvien" asp-controller="QLSV" asp-action="Kehoach">Bảng kế hoạch</a>
+                    <span>&gt;</span>
+                    <span class="current">Chi tiết bảng kế hoạch</span>
+                </nav>
+
+            </div>
+            <div>
+                <div class="detail-group">
+                    <label>Tên công việc:</label>
+                    <input type="text" class="detail-control" id="dtName" readonly>
+                </div>
+            </div>
+            <div class="detail-group">
+                <label>Người thực hiện:</label>
+                <input type="text" class="detail-control" id="dtProposer" readonly>
+            </div>
+            <div class="detail-row">
+                <div class="detail-group">
+                    <label>Thời hạn ước tính:</label>
+                    <input type="text" class="detail-control" id="dtDeade" readonly>
+                </div>
+                <div class="detail-group">
+                    <label>Thời hạn thực tế:</label>
+                    <input type="text" class="detail-control" id="dtDeads" readonly>
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-group">
+                    <label>Ước lương (hours):</label>
+                    <input type="text" class="detail-control" id="dtEst" readonly>
+                </div>
+                <div class="detail-group">
+                    <label>Trạng thái:</label>
+                    <input type="text" class="detail-control" id="dtState" readonly>
+                </div>
+            </div>
+            <div class="detail-group">
+                <label>Mô tả:</label>
+                <textarea class="detail-control" id="dtDescription" readonly></textarea>
+            </div>
+
+            <div class="detail-group">
+                <label>Minh chứng:</label>
+
+                <div class="file-view">
+                    <i class="fa-solid fa-paperclip"></i>
+                    <a id="dtFile"
+                       class="file-link"
+                       href="#"
+                       download>
+                        Không có file
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="~/css/XCT_KH.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/Breadcrum.css" asp-append-version="true" />
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. DỮ LIỆU GIẢ LẬP (MỚI)
+        const projectData = {
+            name: "Kiến trúc Học sâu lai cho phân đoạn khối u não trên ảnh MRI đa phương thức với Bộ dữ liệu BraTS",
+            proposer: "Trương Quốc Duy",
+            state:"Chưa hoàn thành",
+            deade: "01/01/2026",
+            deads: "01/01/2026",
+            est: "2 hours",
+            description: "Sử dụng kiến trúc lai giữa CNN và Transformer để tối ưu hóa việc trích xuất đặc trưng toàn cục và cục bộ. Cải thiện tốc độ xử lý so với các model cũ.",
+            file: "baocao.docx",
+
+        };
+
+        // 2. FILL DỮ LIỆU VÀO CÁC Ô
+        document.getElementById('dtName').value = projectData.name;
+        document.getElementById('dtProposer').value = projectData.proposer;
+        document.getElementById('dtState').value = projectData.state;
+        document.getElementById('dtDeade').value = projectData.deade;
+        document.getElementById('dtDeads').value = projectData.deads;
+        document.getElementById('dtEst').value = projectData.est; // Trường mới
+        document.getElementById('dtDescription').value = projectData.description;
+        const fileLink = document.getElementById('dtFile');
+
+        if (projectData.file) {
+            fileLink.textContent = projectData.file;
+            fileLink.href = 'uploads/' + projectData.file;
+            fileLink.setAttribute('download', projectData.file);
+        } else {
+            fileLink.textContent = 'Không có file minh chứng';
+            fileLink.removeAttribute('href');
+        }
+
+
+        document.getElementById('dtResult').value = projectData.result;
+
+        updateStatusUI(projectData.status);
+
+        // 3. LOGIC NÚT DUYỆT/TỪ CHỐI (GIỮ NGUYÊN)
+        const btnApprove = document.getElementById('btnApprove');
+        const btnReject = document.getElementById('btnReject');
+        const adminComment = document.getElementById('adminComment');
+        const feedbackError = document.getElementById('feedbackError');
+
+        btnApprove.addEventListener('click', () => {
+            if(confirm("Bạn có chắc chắn muốn DUYỆT đề tài này không?")) {
+                feedbackError.style.display = 'none';
+                updateStatusUI("Đã duyệt");
+                alert("Đã duyệt đề tài thành công!");
+            }
+        });
+
+        btnReject.addEventListener('click', () => {
+            const comment = adminComment.value.trim();
+            if (comment === "") {
+                feedbackError.style.display = 'block';
+                adminComment.focus();
+                adminComment.style.borderColor = "#dc3545";
+            } else {
+                feedbackError.style.display = 'none';
+                adminComment.style.borderColor = "#ddd";
+                if(confirm("Xác nhận TỪ CHỐI đề tài này?")) {
+                    updateStatusUI("Từ chối");
+                    alert("Đã từ chối đề tài!");
+                }
+            }
+        });
+
+        adminComment.addEventListener('input', () => {
+            if(adminComment.value.trim() !== "") {
+                feedbackError.style.display = 'none';
+                adminComment.style.borderColor = "#ddd";
+            }
+        });
+    });
+</script>

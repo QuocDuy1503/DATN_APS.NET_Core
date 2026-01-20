@@ -1,0 +1,306 @@
+﻿@model DATN_TMS.Areas.BCNKhoa.Models.ChiTietDeTaiViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết đề tài: " + Model.MaDeTai;
+}
+
+<style>
+    :root { --primary-red: #D9251C; }
+
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 140px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* READCRUMB (ĐỒNG BỘ) */
+    .page-header-row { margin-bottom: 10px; }
+    .page-title { 
+        font-size: 24px; 
+        font-weight: 700; 
+        color: #2c3e50; 
+        margin: 0; 
+        text-transform: uppercase; 
+    }
+
+    .breadcrumb-nav { 
+        margin-bottom: 25px; 
+        padding-bottom: 15px; 
+        border-bottom: 2px solid #f5f5f5; 
+    }
+    .breadcrumb { 
+        display: flex; 
+        align-items: center; 
+        list-style: none; 
+        padding: 0; 
+        margin: 0; 
+        font-size: 13px; 
+        background: transparent; 
+    }
+    .breadcrumb-item a { 
+        color: #6c757d; 
+        text-decoration: none; 
+        transition: color 0.2s; 
+    }
+    .breadcrumb-item a:hover { 
+        color: #D71920; 
+        text-decoration: underline; 
+    }
+    .breadcrumb-item.active { 
+        color: #333; 
+        font-weight: 600; 
+        cursor: default; 
+    }
+    .breadcrumb-item + .breadcrumb-item::before { 
+        content: "/"; 
+        padding: 0 8px; 
+        color: #ccc; 
+    }
+
+    /* BỐ CỤC NỘI DUNG */
+    .detail-container { display: flex; gap: 30px; align-items: flex-start; }
+    
+    .info-section {
+        flex: 7; 
+        background: white;
+        padding: 30px; 
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #eee;
+    }
+
+    .action-section {
+        flex: 3;
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        position: sticky;
+        top: 20px;
+    }
+
+ 
+    .detail-group { margin-bottom: 20px; }
+    .detail-group label { display: block; font-weight: 600; color: #444; margin-bottom: 8px; font-size: 14px; }
+    .detail-control { width: 100%; padding: 10px 15px; border: 1px solid #e0e0e0; border-radius: 4px; background-color: #f9fafb; color: #333; font-size: 14px; resize: none; }
+    .detail-control:focus { outline: none; border-color: #ddd; }
+    textarea.detail-control { height: 100px; line-height: 1.5; }
+    .action-title { font-size: 16px; font-weight: 700; color: var(--primary-red); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+    .current-status { margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; text-align: center; }
+    .status-label { font-size: 13px; color: #666; margin-bottom: 5px; display: block; }
+    .status-value { font-weight: 700; font-size: 16px; }
+    
+    .status-waiting { color: #d97706; }
+    .status-approved { color: #059669; }
+    .status-rejected { color: #dc3545; }
+
+    .feedback-area { margin-bottom: 20px; }
+    .feedback-input { width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; resize: vertical; }
+    .feedback-input:focus { border-color: var(--primary-red); outline: none; }
+    .feedback-required-msg { color: #dc3545; font-size: 12px; margin-top: 5px; display: none; }
+
+    .btn-row { display: flex; gap: 10px; }
+    .btn-action { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-approve { background-color: #059669; color: white; }
+    .btn-approve:hover { background-color: #047857; }
+    .btn-reject { background-color: #dc3545; color: white; }
+    .btn-reject:hover { background-color: #b02a37; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        
+        <div class="page-header-row">
+            <h2 class="page-title">Chi tiết đề tài</h2>
+        </div>
+
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Danh sách đề tài</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.MaDeTai</li>
+            </ol>
+        </nav>
+
+        <div class="detail-container">
+            
+            <div class="info-section">
+                <div style="display: flex; gap: 20px;">
+                    <div class="detail-group" style="width: 150px;">
+                        <label>Mã đề tài:</label>
+                        <input type="text" class="detail-control" value="@Model.MaDeTai" readonly>
+                    </div>
+                    <div class="detail-group" style="flex: 1;">
+                        <label>Tên đề tài:</label>
+                        <input type="text" class="detail-control" value="@Model.TenDeTai" readonly>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 20px;">
+                    <div class="detail-group" style="flex: 1;">
+                        <label>Người đề xuất đề tài:</label>
+                        <input type="text" class="detail-control" value="@Model.NguoiDeXuat" readonly>
+                    </div>
+                    <div class="detail-group" style="flex: 1;">
+                        <label>Giảng viên hướng dẫn:</label>
+                        <input type="text" class="detail-control" value="@Model.GVHD" readonly>
+                    </div>
+                </div>
+
+                <div class="detail-group">
+                    <label>Nhóm thực hiện:</label>
+                    <input type="text" class="detail-control" value="@Model.NhomThucHien" readonly>
+                </div>
+
+                <div class="detail-group">
+                    <label>Mục tiêu chính:</label>
+                    <textarea class="detail-control" readonly>@Model.MucTieu</textarea>
+                </div>
+
+                <div class="detail-group">
+                    <label>Phạm vi và chức năng:</label>
+                    <textarea class="detail-control" readonly style="height: 120px;">@Model.PhamVi</textarea>
+                </div>
+
+                <div class="detail-group">
+                    <label>Công nghệ sử dụng:</label>
+                    <input type="text" class="detail-control" value="@Model.CongNghe" readonly>
+                </div>
+
+                <div class="detail-group">
+                    <label>Yêu cầu tính mới:</label>
+                    <textarea class="detail-control" readonly>@Model.YeuCauTinhMoi</textarea>
+                </div>
+
+                <div class="detail-group">
+                    <label>Sản phẩm kết quả dự kiến:</label>
+                    <textarea class="detail-control" readonly>@Model.KetQuaDuKien</textarea>
+                </div>
+            </div>
+
+            <div class="action-section">
+                <div class="action-title">
+                    <i class="fa-solid fa-gavel"></i> Xét duyệt đề tài
+                </div>
+
+                <div class="current-status">
+                    <span class="status-label">Trạng thái hiện tại:</span>
+                    <div id="statusDisplay" class="status-value 
+                        @(Model.TrangThai == "DA_DUYET" ? "status-approved" : 
+                          Model.TrangThai == "TU_CHOI" ? "status-rejected" : "status-waiting")">
+                        @(Model.TrangThai == "DA_DUYET" ? "Đã duyệt" : 
+                          Model.TrangThai == "TU_CHOI" ? "Đã từ chối" : "Đang chờ duyệt")
+                    </div>
+                </div>
+
+                <div class="feedback-area">
+                    <label style="font-weight: 600; font-size: 13px; margin-bottom: 5px; display:block;">
+                        Nhận xét của BCN Khoa:
+                    </label>
+                    <textarea id="adminComment" class="feedback-input" placeholder="Nhập nhận xét (Bắt buộc nếu từ chối)...">@Model.NhanXet</textarea>
+                    <div id="feedbackError" class="feedback-required-msg">
+                        <i class="fa-solid fa-circle-exclamation"></i> Vui lòng nhập lý do từ chối!
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="btn-action btn-reject" onclick="tuChoiDeTai(@Model.Id)">
+                        <i class="fa-solid fa-xmark"></i> Từ chối
+                    </button>
+                    <button class="btn-action btn-approve" onclick="duyetDeTai(@Model.Id)">
+                        <i class="fa-solid fa-check"></i> Duyệt
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // 1. Hàm Duyệt
+    function duyetDeTai(id) {
+        var comment = document.getElementById('adminComment').value;
+        
+        Swal.fire({
+            title: 'Xác nhận duyệt?',
+            text: "Đề tài này sẽ được chấp nhận cho sinh viên đăng ký!",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#059669',
+            confirmButtonText: 'Đồng ý duyệt',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                callApi(id, '@Url.Action("DuyetDeTai")', comment, "DA_DUYET");
+            }
+        });
+    }
+
+    // 2. Hàm Từ chối
+    function tuChoiDeTai(id) {
+        var comment = document.getElementById('adminComment').value;
+        var errorMsg = document.getElementById('feedbackError');
+
+        // Validate: Bắt buộc nhập lý do
+        if (!comment.trim()) {
+            errorMsg.style.display = 'block';
+            document.getElementById('adminComment').focus();
+            return;
+        }
+        errorMsg.style.display = 'none';
+
+        Swal.fire({
+            title: 'Xác nhận từ chối?',
+            text: "Đề tài này sẽ bị hủy bỏ. Bạn chắc chắn chứ?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'Từ chối ngay',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                callApi(id, '@Url.Action("TuChoiDeTai")', comment, "TU_CHOI");
+            }
+        });
+    }
+
+    // 3. Gọi AJAX
+    function callApi(id, url, comment, newStatus) {
+        let formData = new FormData();
+        formData.append('id', id);
+        formData.append('nhanXet', comment);
+
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('Thành công!', data.message, 'success');
+                
+                // Cập nhật giao diện ngay lập tức
+                const statusDiv = document.getElementById('statusDisplay');
+                if(newStatus === "DA_DUYET") {
+                    statusDiv.className = "status-value status-approved";
+                    statusDiv.innerText = "Đã duyệt";
+                } else {
+                    statusDiv.className = "status-value status-rejected";
+                    statusDiv.innerText = "Đã từ chối";
+                }
+            } else {
+                Swal.fire('Lỗi!', data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến server', 'error');
+        });
+    }
+</script>

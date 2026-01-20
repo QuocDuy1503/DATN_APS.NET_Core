@@ -1,0 +1,358 @@
+:root {
+    --primary-red: #D71920;
+    --sidebar-bg: #002147;
+    --text-color: #333;
+    --border-color: #ddd;
+    --header-height: 70px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body, html { height: 100%; width: 100%; overflow: hidden; background-color: #f4f6f9; }
+.wrapper { display: flex; height: 100vh; width: 100%; }
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+}
+.sidebar-logo {
+    height: 180px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    background: var(--sidebar-bg);
+    padding: 0; 
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-logo img {
+    max-height: 100px;
+    width: 100%;
+    object-fit: contain;
+    padding: 0 15px;
+}
+/* ITEM MENU CHÍNH */
+.menu-item {
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+}
+
+.menu-link {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+.menu-link:hover, .menu-link.active-parent {
+    background-color: rgba(255,255,255,0.1);
+    border-left: 4px solid var(--primary-red);
+}
+
+.menu-link span i {
+    width: 25px;
+    text-align: center;
+    margin-right: 5px;
+}
+
+/* --- SUBMENU --- */
+.submenu {
+    list-style: none;
+    background-color: #00152e;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    border-top: none;
+}
+.submenu.open {
+    max-height: 1000px;
+}
+
+.submenu li a {
+    padding: 12px 20px 12px 55px; 
+    display: block;
+    color: #b0b0b0;
+    text-decoration: none;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+
+.submenu li a:hover, .submenu li a.active-sub {
+    color: white;
+    background-color: rgba(255,255,255,0.05);
+}
+
+/* Mũi tên xoay */
+.chevron { transition: 0.3s; font-size: 10px; opacity: 0.7; }
+.menu-link.active-parent .chevron { transform: rotate(90deg); }
+
+.main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.top-header { height: var(--header-height); background: var(--primary-red); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; color: white; flex-shrink: 0; }
+.uni-name { font-weight: 700; font-size: 18px; text-transform: uppercase; }
+.user-dropdown-container { position: relative; }
+.user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 5px; border-radius: 4px; transition: background 0.2s; }
+.user-profile:hover { background: rgba(255,255,255,0.1); }
+.user-info-text { text-align: right; line-height: 1.2; }
+.user-name { display: block; font-size: 13px; font-weight: 600; }
+.user-role { display: block; font-size: 11px; opacity: 0.9; }
+.user-avatar-icon { font-size: 24px; }
+.dropdown-arrow { font-size: 12px; transition: transform 0.3s; }
+.user-dropdown-container.active .dropdown-arrow { transform: rotate(180deg); }
+.dropdown-menu { position: absolute; top: 100%; right: 0; margin-top: 10px; background: white; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 180px; display: none; z-index: 100; animation: fadeInDown 0.2s ease-out; }
+.user-dropdown-container.active .dropdown-menu { display: block; }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.dropdown-item { display: block; padding: 12px 20px; color: var(--text-color); text-decoration: none; font-size: 14px; transition: background 0.2s; border-bottom: 1px solid #eee; }
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:hover { background: #f8f9fa; color: var(--primary-red); }
+.dropdown-item i { margin-right: 10px; width: 16px; text-align: center; }
+.content-body { padding: 20px 30px; overflow-y: auto; flex: 1; background-color: #f4f6f9; }
+.page-title { font-size: 20px; color: #333; font-weight: 600; margin: 0; }
+.form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #444; }
+.form-control { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background: white; }
+.form-control:read-only { background-color: #f9f9f9; color: #777; }
+.btn { padding: 8px 16px; border-radius: 4px; border: none; font-weight: 500; cursor: pointer; font-size: 13px; }
+.btn-primary { background: #6f42c1; color: white; }
+.btn-secondary { background: white; border: 1px solid #ddd; color: #333; }
+.btn-save { background: #4f46e5; color: white; }
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; align-items: center; justify-content: center; }
+.modal-dialog { background: white; width: 450px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; }
+.modal-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.modal-title { font-weight: 700; font-size: 16px; }
+.btn-close { cursor: pointer; font-size: 20px; color: #999; background: none; border: none; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+
+
+
+/* --- USER DROPDOWN --- */
+.user-dropdown-container {
+    position: relative;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 10px;
+    background: white;
+    width: 200px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-radius: 4px;
+    z-index: 9999; 
+    display: none;
+    list-style: none;
+    padding: 5px 0;
+}
+
+.user-dropdown-container.active .dropdown-menu {
+    display: block;
+}
+
+/* Xoay mũi tên */
+.dropdown-arrow { transition: 0.3s; }
+.user-dropdown-container.active .dropdown-arrow { transform: rotate(180deg); }
+
+.dropdown-item {
+    display: block; padding: 10px 15px;
+    color: #333; text-decoration: none;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+.dropdown-item:hover { background: #f5f5f5; color: #D71920; }
+.logout-item { color: #dc3545; }
+
+.user-dropdown-container.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* MENU XỔ XUỐNG */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 200px;
+    background-color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    list-style: none;
+    padding: 5px 0;
+    margin-top: 10px;
+    display: none;
+    z-index: 1000;
+    border: 1px solid #eee;
+}
+
+.user-dropdown-container.active .dropdown-menu {
+    display: block;
+    animation: fadeInDown 0.2s ease-out;
+}
+
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+.dropdown-item i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+    color: #666;
+}
+
+.dropdown-item:hover {
+    background-color: #f5f5f5;
+    color: #D71920; 
+}
+
+.dropdown-item:hover i {
+    color: #D71920;
+}
+
+.logout-item {
+    color: #dc3545; 
+}
+
+
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 25px; /* Khoảng cách giữa Chuông và User */
+}
+
+/* --- BELL ICON --- */
+.notification-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.bell-icon-wrapper {
+    position: relative;
+    color: white;
+    font-size: 20px;
+    transition: transform 0.2s;
+}
+
+.bell-icon-wrapper:hover {
+    transform: scale(1.1);
+}
+
+/* Badge số lượng (Đốm đỏ/vàng) */
+.notif-badge {
+    position: absolute;
+    top: -8px;
+    right: -6px;
+    background-color: #ffc107; /* Màu vàng nổi bật trên nền đỏ */
+    color: #333;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-red); /* Viền trùng màu header để cắt */
+}
+
+/* --- NOTIFICATION DROPDOWN (Menu xổ xuống) --- */
+.notif-dropdown-menu {
+    position: absolute;
+    top: 150%;
+    right: -80px; /* Căn chỉnh vị trí */
+    width: 320px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    z-index: 1001; /* Cao hơn content */
+    display: none; /* Mặc định ẩn */
+    animation: fadeInDown 0.2s ease-out;
+    border: 1px solid #eee;
+    overflow: hidden;
+}
+
+/* Class active để hiện menu (JS sẽ toggle class này) */
+.notif-dropdown-menu.active {
+    display: block;
+}
+
+/* Animation */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header của dropdown */
+.notif-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+}
+.notif-header span { font-weight: 700; font-size: 14px; color: #333; }
+.notif-header .mark-read { font-size: 11px; color: #007bff; text-decoration: none; }
+
+/* Body - Danh sách tin */
+.notif-body {
+    max-height: 300px;
+    overflow-y: auto;
+    background: #fff;
+}
+
+.notif-item {
+    padding: 12px 15px;
+    display: flex;
+    align-items: start;
+    gap: 12px;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.notif-item:hover { background-color: #f9f9f9; }
+.notif-item.unread { background-color: #f0f7ff; } /* Màu nền tin chưa đọc */
+
+.notif-icon {
+    width: 35px; height: 35px;
+    background: #eee; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #666; font-size: 14px; flex-shrink: 0;
+}
+.notif-content .n-title { font-size: 13px; color: #333; margin: 0 0 4px 0; line-height: 1.4; }
+.notif-content .n-time { font-size: 11px; color: #999; margin: 0; }
+
+/* Footer */
+.notif-footer {
+    padding: 10px; text-align: center; background: #fcfcfc; border-top: 1px solid #eee;
+}
+.notif-footer a { font-size: 12px; color: #666; text-decoration: none; font-weight: 600; }
+.notif-footer a:hover { color: var(--primary-red); }
+
+/* Scrollbar đẹp cho list thông báo */
+.notif-body::-webkit-scrollbar { width: 6px; }
+.notif-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+

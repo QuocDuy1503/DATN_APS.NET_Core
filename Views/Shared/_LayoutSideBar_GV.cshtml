@@ -1,0 +1,53 @@
+﻿
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <img src="~/images/82cb2669b39c7ae0fe1d18507ed7c609168a2ad3.png" alt="Logo VLU">
+    </div>
+    <ul class="menu">
+
+        <li class="menu-item">
+            <div class="menu-link active-parent">
+                <span><i class="fa-solid fa-layer-group"></i> Đợt đồ án</span>
+                <i class="fa-solid fa-chevron-right chevron"></i>
+            </div>
+            <ul class="submenu open">
+                <li>
+                    <a asp-area="Giangvien"
+                       asp-controller="QuanLyDotDoAn"
+                       asp-action="DeXuatDT">
+                        Đề xuất đề tài
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="Giangvien"
+                       asp-controller="QuanLyDotDoAn"
+                       asp-action="DuyetSV">
+                        Duyệt sinh viên
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="menu-item">
+            <a asp-area="Giangvien"
+               asp-controller="QLSV"
+               asp-action="DSSV"
+               class="menu-link">
+                <span>
+                    <i class="fa-solid fa-chart-pie"></i> Quản lý sinh viên
+                </span>
+            </a>
+        </li>
+
+        <li class="menu-item">
+            <a asp-area="Giangvien"
+               asp-controller="DGKQHT"
+               asp-action="DS_DGKQHT"
+               class="menu-link">
+                <span><i class="fa-solid fa-clipboard-check"></i> Đánh giá kết quả đề tài</span>
+            </a>
+        </li>
+
+       
+    </ul>
+</aside>

@@ -1,0 +1,183 @@
+﻿@{
+    ViewData["Title"] = "Đề xuất đề tài";
+    // Layout Lecturer bạn đang dùng
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+
+
+}
+<div class="content-body">
+    <div class="content-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 class="page-title">Đánh giá kết quả đề tài</h2>
+        </div>
+
+
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <span class="filter-label">Năm học</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">2023-2024</option>
+                        <option value="K27">2024-2025</option>
+                        <option value="K28">2025-2026</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">Học kì</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">101</option>
+                        <option value="K27">102</option>
+                        <option value="K28">103</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">Khóa</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">Khóa 26</option>
+                        <option value="K27">Khóa 27</option>
+                        <option value="K28">Khóa 28</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <span class="filter-label">Tìm kiếm:</span>
+
+                    <div class="search-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text"
+                               class="toolbar-input search-input"
+                               placeholder="Nhập từ khóa..."
+                               style="width: 250px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tabMembers" class="tab-content active">
+            <div class="table-responsive">
+                <table id="topicTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;"></th>
+                            <th>Mã đề tài</th>
+                            <th>Tên đề tài</th>
+                            <th>Ngành</th>
+                            <th>Số lượng sinh viên</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="parent-row">
+                            <td><button class="toggle-btn" onclick="toggleRow(this)"><i class="fa-solid fa-plus"></i></button></td>
+                            <td>DT01</td>
+                            <td class="ellipsis-30">
+                                Kiến trúc Học sâu lai cho phân đoạn khối u não trên ảnh MRI đa phương thức với Bộ dữ liệu BraTS
+                            </td>
+                            <td>CNTT/CNPM</td>
+                            <td>2</td>
+                        </tr>
+                        <tr class="detail-row" style="display:none;">
+                            <td colspan="7">
+                                <table class="student-table">
+                                    <thead>
+                                        <tr>
+                                            <th>MSSV</th>
+                                            <th>Họ và tên sinh viên</th>
+                                            <th>Khóa</th>
+                                            <th>Ngành</th>
+                                            <th>Trạng thái</th>
+                                            <th>Chấm điểm</th>
+                                            <th>Nhận xét</th>
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>2174802010297</td>
+                                            <td>Trương Quốc Duy</td>
+                                            <td>K27</td>
+                                            <td class="plan-cell">
+                                                CNTT/CNPM
+                                            </td>
+                                            <td>Chưa đánh giá</td>
+                                            <td><i class="fa-solid fa-pen"></i></td>
+                                            <td><a href="#"><i class="fa-regular fa-comment-dots"></i></a></td>
+                                        </tr>
+                                        <tr>
+                                            <td>2174802010311</td>
+                                            <td>Nguyễn Văn A</td>
+                                            <td>K27</td>
+                                            <td class="plan-cell">
+                                                CNTT/CNPM
+                                            </td>
+                                            <td>Chưa đánh giá</td>
+                                            <td><i class="fa-solid fa-pen"></i></td>
+                                            <td><a href="#"><i class="fa-regular fa-comment-dots"></i></a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="~/css/DSSV.css" asp-append-version="true" />
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+      // 1) Toggle mở/đóng dòng chi tiết (plus/minus)
+      window.toggleRow = function (btn) {
+        const parentRow = btn.closest("tr");
+        const detailRow = parentRow?.nextElementSibling;
+        if (!detailRow || !detailRow.classList.contains("detail-row")) return;
+
+        const icon = btn.querySelector("i");
+        const isHidden = detailRow.style.display === "none" || detailRow.style.display === "";
+
+        detailRow.style.display = isHidden ? "table-row" : "none";
+        parentRow.style.backgroundColor = isHidden ? "#f9f9f9" : "white";
+
+        if (icon) {
+          icon.classList.toggle("fa-plus", !isHidden);
+          icon.classList.toggle("fa-minus", isHidden);
+        }
+      };
+
+      // 2) (Tùy chọn) Click ra ngoài thì đóng suggestion box nếu trang có dùng
+      const suggestionBox = document.getElementById("suggestionBox");
+      const searchContainer = document.getElementById("searchContainer");
+      const topicSuggestionBox = document.getElementById("topicSuggestionBox");
+      const topicSearch = document.getElementById("topicSearch");
+
+      document.addEventListener("click", (e) => {
+        if (suggestionBox && searchContainer && !searchContainer.contains(e.target)) {
+          suggestionBox.style.display = "none";
+        }
+        if (topicSuggestionBox && topicSearch) {
+          const wrapper = topicSearch.closest(".member-search-container") || topicSearch.parentElement;
+          if (wrapper && !wrapper.contains(e.target)) topicSuggestionBox.style.display = "none";
+        }
+      });
+      document.querySelectorAll(".ellipsis-30").forEach(td => {
+        const maxLength = 30;
+        const text = td.innerText.trim();
+
+        if (text.length > maxLength) {
+            td.innerText = text.substring(0, maxLength) + "...";
+            td.title = text; // hover xem full
+        }
+    });
+    });
+</script>

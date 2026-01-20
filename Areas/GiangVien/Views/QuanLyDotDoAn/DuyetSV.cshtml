@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "Duyệt sinh viên";
+    // Layout Lecturer bạn đang dùng
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+
+}
+
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title" style="margin-bottom: 20px;">Duyệt sinh viên</h2>
+
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <span class="filter-label">Năm học</span>
+                    <select class="toolbar-input" style="width: 150px;" id="filterNamHoc">
+                        <option value="">-- Tất cả --</option>
+                        <option value="2023-2024">2023-2024</option>
+                        <option value="2024-2025">2024-2025</option>
+                        <option value="2025-2026">2025-2026</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <span class="filter-label">Học kì</span>
+                    <select class="toolbar-input" style="width: 150px;" id="filterHocKy">
+                        <option value="">-- Tất cả --</option>
+                        <option value="101">101</option>
+                        <option value="102">102</option>
+                        <option value="103">103</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <span class="filter-label">Khóa</span>
+                    <select class="toolbar-input" style="width: 150px;" id="filterKhoa">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">Khóa 26</option>
+                        <option value="K27">Khóa 27</option>
+                        <option value="K28">Khóa 28</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <span class="filter-label">Tìm kiếm:</span>
+                    <input type="text" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 250px;" id="txtSearch">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã đề tài</th>
+                        <th>Tên đề tài</th>
+                        <th>Ngành</th>
+                        <th>Số lượng</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @* Demo tĩnh. Sau này bạn foreach Model *@
+                    <tr class="parent-row" data-id="1">
+                        <td>DT01</td>
+                        <td class="ellipsis-30">
+                            Kiến trúc Học sâu lai cho phân đoạn khối u não trên ảnh MRI đa phương thức với Bộ dữ liệu BraTS
+                        </td>
+                        <td>CNTT/CNPM</td>
+                        <td>2</td>
+                        <td>
+                            @* Đổi từ button onclick -> link MVC *@
+                            <a asp-area="Giangvien"
+                               asp-controller="QuanLyDotDoAn"
+                               asp-action="Duyet_DSSV"
+                               asp-route-id="1">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="~/css/Breadcrum.css" asp-append-version="true" />
+<script>
+    document.querySelectorAll(".ellipsis-30").forEach(td => {
+        const maxLength = 30;
+        const text = td.innerText.trim();
+
+        if (text.length > maxLength) {
+            td.innerText = text.substring(0, maxLength) + "...";
+            td.title = text; // hover xem full
+        }
+    });
+</script>
+

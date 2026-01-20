@@ -1,0 +1,257 @@
+﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý hội đồng duyệt đề tài";
+}
+
+<style>
+    /* CSS Khung */
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+    }
+
+    /* CSS Toolbar */
+    .toolbar-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 20px;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    .filter-wrapper { display: flex; gap: 15px; flex-wrap: wrap; }
+    .toolbar-right { display: flex; align-items: center; gap: 10px; }
+
+    /* Input & Label */
+    .toolbar-input {
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        outline: none;
+        height: 38px;
+        font-size: 14px;
+    }
+    .toolbar-input:focus { border-color: #484BE0; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1); }
+    .filter-label { font-weight: 500; margin-bottom: 5px; display: block; color: #333; font-size: 13px; }
+
+    /* Tiêu đề */
+    .page-header-row { margin-bottom: 10px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    /* Bảng & Badge */
+    .table-responsive { width: 100%; margin-bottom: 20px; flex: 1; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; }
+    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
+    
+    .status-badge { padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap; display: inline-block; }
+    .status-running { background-color: #e8f8f5; color: #27ae60; border: 1px solid #27ae60; }
+    .status-waiting { background-color: #fef9e7; color: #f39c12; border: 1px solid #f39c12; }
+
+    /* Nút bấm */
+    .btn { padding: 8px 16px; border-radius: 4px; font-weight: 500; cursor: pointer; border: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
+    .btn-primary { background-color: #484BE0; color: white; height: 38px; }
+    .btn-primary:hover { background-color: #3a3dc0; }
+    
+    .action-btn { border: none; background: none; cursor: pointer; padding: 0 5px; font-size: 16px; transition: color 0.2s; }
+    .btn-edit-icon:hover { color: #0d6efd; }
+    .btn-approve-icon { color: #27ae60; }
+    .btn-approve-icon:hover { color: #1e8449; }
+
+    /* Phân trang */
+    .pagination-container { display: flex; justify-content: center; padding-top: 15px; border-top: 1px solid #eee; }
+    .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; margin: 0; }
+    .pagination li a, .pagination li span { padding: 8px 16px; border: 1px solid #dee2e6; border-radius: 4px; color: #333; text-decoration: none; background-color: #fff; transition: all 0.2s; }
+    .pagination li a:hover { background-color: #e9ecef; border-color: #dee2e6; }
+    .pagination li.active span { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+    .pagination li.disabled span, .pagination li.disabled a { color: #6c757d; pointer-events: none; background-color: #fff; border-color: #dee2e6; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Quản lý hội đồng duyệt đề tài</h2>
+        </div>
+
+        <div class="toolbar-row">
+            <form method="get" asp-action="Index" id="filterForm" class="filter-wrapper">
+                <div class="filter-item">
+                    <span class="filter-label">Đợt đồ án</span>
+                    <select name="dotId" id="dotSelect" class="toolbar-input" asp-items="ViewBag.ListDot" onchange="performSearch()">
+                        <option value="">-- Tất cả đợt --</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <span class="filter-label">Năm học</span>
+                    <select name="namHoc" id="namSelect" class="toolbar-input" asp-items="ViewBag.ListNamHoc" onchange="performSearch()">
+                        <option value="">-- Tất cả năm --</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="toolbar-right">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="filter-label" style="margin-bottom:0;">Tìm kiếm:</span>
+                    <input type="text" id="searchInput" name="searchString" 
+                           value="@ViewBag.CurrentFilter" 
+                           class="toolbar-input" 
+                           placeholder="Nhập tên hội đồng..." 
+                           style="width: 250px;">
+                </div>
+                
+                <a href="#" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Thêm hội đồng
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Mã HĐ</th>
+                        <th>Tên hội đồng</th>
+                        <th>Bộ môn</th>
+                        <th>Người tạo</th>
+                        <th>Ngày bắt đầu</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td style="">@item.MaHoiDong</td>
+                                <td>@item.TenHoiDong</td>
+                                <td>@item.TenBoMon</td>
+                                <td>@item.NguoiTao</td>
+                                <td>@(item.NgayBaoCao.HasValue ? item.NgayBaoCao.Value.ToString("dd/MM/yyyy") : "---")</td>
+                                <td class="text-center">
+                                    @if (item.TrangThai)
+                                    {
+                                        <span class="status-badge status-running">Đã duyệt</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-waiting">Chờ duyệt</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <button class="action-btn btn-edit-icon" title="Chỉnh sửa">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </button>
+                                    
+                                    @if (!item.TrangThai)
+                                    {
+                                        <button class="action-btn btn-approve-icon" title="Duyệt hội đồng" onclick="approveCouncil(@item.Id)">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="7" class="text-center text-muted p-4">Không tìm thấy hội đồng nào.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-container">
+             @Html.PagedListPager(Model, page => Url.Action("Index", new { page, dotId = ViewBag.CurrentDotId, namHoc = ViewBag.CurrentNamHoc, searchString = ViewBag.CurrentFilter }),
+            new PagedListRenderOptions {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                LinkToPreviousPageFormat = "«",
+                LinkToNextPageFormat = "»",
+                EllipsesFormat = "...",
+                MaximumPageNumbersToDisplay = 5
+            })
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // 1. Tìm kiếm Real-time
+    const searchInput = document.getElementById('searchInput');
+    const tableContainer = document.querySelector('.table-responsive');
+    const paginationContainer = document.querySelector('.pagination-container');
+    let timeout = null;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                performSearch();
+            }, 500); 
+        });
+    }
+
+    function performSearch() {
+        const keyword = document.getElementById('searchInput').value;
+        const dotId = document.getElementById('dotSelect').value;
+        const namHoc = document.getElementById('namSelect').value;
+
+        const url = `@Url.Action("Index")?searchString=${encodeURIComponent(keyword)}&dotId=${dotId}&namHoc=${namHoc}`;
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const newTable = doc.querySelector('.table-responsive').innerHTML;
+                if (tableContainer) tableContainer.innerHTML = newTable;
+
+                const newPagination = doc.querySelector('.pagination-container').innerHTML;
+                if (paginationContainer) paginationContainer.innerHTML = newPagination;
+            })
+            .catch(err => console.error('Lỗi tìm kiếm:', err));
+    }
+
+    // 2. Hàm Duyệt Hội Đồng
+    function approveCouncil(id) {
+        Swal.fire({
+            title: 'Duyệt hội đồng này?',
+            text: "Hội đồng sẽ được kích hoạt để bắt đầu làm việc!",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#27ae60',
+            confirmButtonText: 'Đồng ý',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Gọi API duyệt (Bạn cần implement Action DuyetHoiDong trong Controller)
+                let formData = new FormData();
+                formData.append('id', id);
+                
+                fetch('@Url.Action("DuyetHoiDong")', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        Swal.fire('Thành công', data.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Lỗi', data.message, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>

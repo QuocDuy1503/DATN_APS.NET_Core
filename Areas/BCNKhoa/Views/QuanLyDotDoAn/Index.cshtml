@@ -1,0 +1,310 @@
+﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model X.PagedList.IPagedList<DATN_TMS.Models.DotDoAn>
+
+@{
+    ViewData["Title"] = "Quản lý đợt đồ án";
+}
+
+<style>
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+    }
+
+    .table-responsive {
+        width: 100%;
+        margin-bottom: 20px;
+        flex: 1;
+    }
+
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        padding-top: 15px;
+        border-top: 1px solid #eee; 
+    }
+    
+    .pagination {
+        display: flex;
+        padding-left: 0;
+        list-style: none;
+        gap: 5px;
+        margin-bottom: 0;
+    }
+
+    .pagination li a, .pagination li span {
+        padding: 8px 16px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        color: #333;
+        text-decoration: none;
+        background-color: #fff;
+        transition: all 0.2s;
+    }
+
+    .pagination li a:hover {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+
+    .pagination li.active span {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+    
+    .pagination li.disabled span, .pagination li.disabled a {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+    .page-title { 
+    font-size: 20px; 
+    font-weight: 700; 
+    color: #2c3e50; 
+    margin: 0; 
+    text-transform: uppercase; 
+    }
+    .page-header-row { 
+        margin-bottom: 10px; 
+    }
+    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; }
+    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Quản lý đợt đồ án</h2>
+        </div>
+        <form method="get" asp-action="Index">
+            <div class="toolbar-row">
+                <div class="toolbar-left">
+                    <div class="filter-item">
+                        <span class="filter-label">Học kì</span>
+                        <select class="toolbar-input" style="width: 150px;">
+                            <option value="">-- Tất cả --</option>
+                            <option value="K26">101</option>
+                            <option value="K27">102</option>
+                            <option value="K28">103</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <span class="filter-label">Năm học</span>
+                        <select class="toolbar-input" style="width: 150px;">
+                            <option value="">-- Tất cả --</option>
+                            <option value="K26">2023-2024</option>
+                            <option value="K27">2024-2025</option>
+                            <option value="K28">2025-2026</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-item">
+                        <span class="filter-label">Khóa</span>
+                        <select name="khoaId" id="khoaSelect" class="toolbar-input" style="width: 150px;"
+                                asp-items="ViewBag.ListKhoa" 
+                                onchange="this.form.submit()">
+                            <option value="">-- Tất cả --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="toolbar-right">
+                    <div style="display:flex; align-items:center; gap:5px;">
+                    <span class="filter-label">Tìm kiếm:</span>
+                    <input type="text" id="searchInput" name="searchString" 
+                           value="@ViewBag.CurrentFilter" 
+                           class="toolbar-input" 
+                           placeholder="Nhập tên đợt..." 
+                           style="width: 250px;">
+                </div>
+                    
+                    <button type="button" class="btn btn-primary" id="btnOpenModal">
+                        <i class="fa-solid fa-plus"></i> Thêm đợt đồ án
+                    </button>
+                </div>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên đợt</th>
+                        <th>Khóa</th>
+                        <th>Ngày bắt đầu</th>
+                        <th>Ngày kết thúc</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.TenDot</td>
+                            <td>
+                                <div>@item.IdKhoaHocNavigation?.TenKhoa</div>
+                            </td>
+                            <td>
+                                <div>@(item.NgayBatDauDot.HasValue ? item.NgayBatDauDot.Value.ToString("dd/MM/yyyy") : "---")</div>
+                            </td>
+                            <td>
+                                <div>@(item.NgayKetThucDot.HasValue ? item.NgayKetThucDot.Value.ToString("dd/MM/yyyy") : "---")</div>
+                            </td>
+                            <td>
+                                @if (item.TrangThai == true) 
+                                {
+                                    <span class="status-badge status-running">Đang diễn ra</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge" style="background-color: #95a5a6; color: white;">Đã đóng</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Sửa">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </a>
+                                <button type="button" class="action-btn btn-delete-icon btn-delete-confirm" data-id="@item.Id" title="Xóa" style="border:none; background:none; cursor:pointer;">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        
+        <partial name="_CreateModal" />
+
+        <div class="pagination-container">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page = page, khoaId = ViewBag.CurrentKhoaId, searchString = ViewBag.CurrentFilter }),
+            new PagedListRenderOptions {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                LinkToPreviousPageFormat = "«",
+                LinkToNextPageFormat = "»",
+                EllipsesFormat = "...",
+                MaximumPageNumbersToDisplay = 5
+            })
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var successMsg = '@Html.Raw(TempData["SuccessMessage"])';
+        var errorMsg = '@Html.Raw(TempData["ErrorMessage"])';
+
+        if (successMsg && successMsg.length > 0) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: successMsg,
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#484BE0',
+                timer: 3000 
+            });
+        }
+
+        if (errorMsg && errorMsg.length > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Có lỗi xảy ra',
+                text: errorMsg,
+                confirmButtonText: 'Kiểm tra lại',
+                confirmButtonColor: '#d33'
+            });
+        }
+
+
+
+        // TÌM KIẾM REAL-TIME
+        const searchInput = document.getElementById('searchInput');
+        const khoaSelect = document.getElementById('khoaSelect');
+        const tableContainer = document.querySelector('.table-responsive'); // Vùng chứa bảng
+        let timeout = null; // Biến để lưu độ trễ
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function () {
+                clearTimeout(timeout);
+                timeout = setTimeout(function () {
+                    performSearch();
+                }, 500); 
+            });
+        }
+
+        function performSearch() {
+            // Lấy giá trị từ ô tìm kiếm và dropdown khóa
+            const keyword = searchInput.value;
+            const khoaId = khoaSelect ? khoaSelect.value : "";
+
+            // Tạo URL request (Sử dụng URL hiện tại và thay đổi tham số)
+            const url = `@Url.Action("Index")?searchString=${encodeURIComponent(keyword)}&khoaId=${khoaId}`;
+
+            // Gọi AJAX (Fetch API)
+            fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    // Server trả về toàn bộ trang HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Lấy bảng mới từ HTML trả về
+                    const newTableContent = doc.querySelector('.table-responsive').innerHTML;
+                    
+                    // Thay thế bảng cũ bằng bảng mới
+                    if (tableContainer) {
+                        tableContainer.innerHTML = newTableContent;
+                        rebindDeleteEvents(); 
+                    }
+                })
+                .catch(err => console.error('Lỗi tìm kiếm:', err));
+        }
+        window.rebindDeleteEvents = function() {
+            const deleteBtns = document.querySelectorAll('.btn-delete-confirm');
+            
+            deleteBtns.forEach(btn => {
+                btn.removeEventListener('click', handleDeleteClick);
+                btn.addEventListener('click', handleDeleteClick);
+            });
+        };
+
+        function handleDeleteClick() {
+            const id = this.getAttribute('data-id');
+
+            // Hộp thoại xác nhận mới
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                text: "Bạn có chắc chắn muốn xóa đợt này không? Hành động này không thể hoàn tác!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33', 
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Vâng, xóa nó!',
+                cancelButtonText: 'Hủy bỏ'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('deleteId').value = id;
+                    document.getElementById('deleteForm').submit();
+                }
+            });
+           }
+        rebindDeleteEvents();
+    });
+</script>
+    <form id="deleteForm" asp-action="Delete" method="post" style="display:none;">
+        <input type="hidden" name="id" id="deleteId" />
+    </form>
+</div>

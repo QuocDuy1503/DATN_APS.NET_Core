@@ -1,0 +1,181 @@
+﻿@{
+    ViewData["Title"] = "Đề xuất đề tài";
+    // Layout Lecturer bạn đang dùng
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+
+
+}
+
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title" style="margin-bottom: 20px;">Đề xuất đề tài</h2>
+
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <span class="filter-label">Năm học</span>
+                    <select class="toolbar-input" style="width: 150px;" id="filterNamHoc">
+                        <option value="">-- Tất cả --</option>
+                        <option value="2023-2024">2023-2024</option>
+                        <option value="2024-2025">2024-2025</option>
+                        <option value="2025-2026">2025-2026</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <span class="filter-label">Học kì</span>
+                    <select class="toolbar-input" style="width: 150px;" id="filterHocKy">
+                        <option value="">-- Tất cả --</option>
+                        <option value="101">101</option>
+                        <option value="102">102</option>
+                        <option value="103">103</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <span class="filter-label">Khóa</span>
+                    <select class="toolbar-input" style="width: 150px;" id="filterKhoa">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">Khóa 26</option>
+                        <option value="K27">Khóa 27</option>
+                        <option value="K28">Khóa 28</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <span class="filter-label">Tìm kiếm:</span>
+                    <input type="text" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 250px;" id="txtSearch">
+                </div>
+
+                <button type="button" class="btn btn-primary" id="btnOpenModal">
+                    <i class="fa-solid fa-plus"></i> Đề xuất đề tài
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã đề tài</th>
+                        <th>Tên đề tài</th>
+                        <th>Ngành</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @* Demo tĩnh. Sau này bạn foreach Model *@
+                    <tr>
+                        <td>DT01</td>
+                        <td class="ellipsis-30">
+                            Kiến trúc Học sâu lai cho phân đoạn khối u não trên ảnh MRI đa phương thức với Bộ dữ liệu BraTS
+                        </td>
+                        <td>CNTT/CNPM</td>
+                        <td><span class="status-badge status-running">Chờ duyệt</span></td>
+                        <td>
+                            <a asp-area="Giangvien"
+                               asp-controller="QuanLyDotDoAn"
+                               asp-action="XCT_Dexuat"
+                               asp-route-id="1">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* MODAL *@
+<div class="modal-overlay" id="addModal" style="display:none;">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">Đề xuất đề tài</div>
+            <button type="button" class="btn-close close-modal" aria-label="Close">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            @* Nếu muốn submit thật -> bọc form asp-action="Create" *@
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Mã đề tài:</label>
+                <input type="text" name="MaDeTai" class="form-control" placeholder="Nhập mã đề tài">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Tên đề tài:</label>
+                <input type="text" name="TenDeTai" class="form-control" placeholder="Nhập tên đề tài">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Ngành:</label>
+                <select name="Nganh" class="form-control">
+                    <option value="CNTT/CNPM">CNTT/CNPM</option>
+                    <option value="CNTT/KHDL">CNTT/KHDL</option>
+                    <option value="CNTT/TTNT">CNTT/TTNT</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Sinh viên thứ nhất:</label>
+                    <input type="text" name="SinhVien1" class="form-control" placeholder="Nhập tên SV 1">
+                </div>
+
+                <div class="form-group">
+                    <label>Sinh viên thứ 2:</label>
+                    <input type="text" name="SinhVien2" class="form-control" placeholder="Nhập tên SV 2">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Mục tiêu chính:</label>
+                    <textarea name="MucTieu" class="form-control textarea-lg" placeholder="Nhập mục tiêu chính"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Phạm vi và chức năng:</label>
+                    <textarea name="PhamVi" class="form-control textarea-lg" placeholder="Nhập phạm vi và chức năng"></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Công nghệ sử dụng:</label>
+                    <textarea name="CongNghe" class="form-control textarea-md" placeholder="Nhập công nghệ sử dụng"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Yêu cầu tính mới:</label>
+                    <textarea name="TinhMoi" class="form-control textarea-md" placeholder="Nhập yêu cầu tính mới"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label>Sản phẩm kết quả dự kiến:</label>
+                <input type="text" name="SanPham" class="form-control" placeholder="Nhập sản phẩm kết quả dự kiến">
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary close-modal">Hủy</button>
+            <button type="button" class="btn btn-save" id="btnSaveModal">Lưu</button>
+        </div>
+    </div>
+    <link rel="stylesheet" href="~/css/DX_GV.css" asp-append-version="true" />
+</div>
+<script>
+    document.querySelectorAll(".ellipsis-30").forEach(td => {
+        const maxLength = 30;
+        const text = td.innerText.trim();
+
+        if (text.length > maxLength) {
+            td.innerText = text.substring(0, maxLength) + "...";
+            td.title = text; // hover xem full
+        }
+    });
+</script>

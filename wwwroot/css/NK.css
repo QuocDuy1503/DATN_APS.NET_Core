@@ -1,0 +1,177 @@
+﻿
+/* ===============================
+   NHẬT KÝ HƯỚNG DẪN – SINH VIÊN
+=============================== */
+
+/* ===============================
+   TOOLBAR – FILTER + SEARCH (GIỐNG ẢNH)
+=============================== */
+
+
+/* LEFT: FILTER */
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+}
+
+.toolbar-input {
+    height: 36px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    background: #ffffff;
+}
+
+/* RIGHT: SEARCH */
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input {
+    height: 36px;
+    width: 250px;
+    padding: 6px 12px 6px 34px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+/* Responsive table */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Upload button */
+.upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    color: #212122;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+
+/* Deadline */
+.deadline-text {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #b45309;
+}
+
+/* Submit button */
+.btn-submit {
+    padding: 8px 16px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .btn-submit:hover {
+        background: #1d4ed8;
+        box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+    }
+
+/* Submit time */
+.submit-time {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.muted-text {
+    color: #6b7280;
+}
+
+/* Table align */
+.main-table td:nth-child(1),
+.main-table td:nth-child(4),
+.main-table td:nth-child(5) {
+    text-align: center;
+    white-space: nowrap;
+}
+
+.table-responsive button {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .table-responsive button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37,99,235,0.35);
+    }
+
+.form-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.btn-back-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #f3f4f6;
+    color: #555;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+    .btn-back-circle:hover {
+        background-color: #e5e7eb;
+        color: var(--primary-red);
+        transform: translateX(-2px);
+    }
+

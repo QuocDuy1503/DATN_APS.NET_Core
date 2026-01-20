@@ -1,0 +1,102 @@
+﻿.tab-header {
+    display: flex;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: 0.3s;
+}
+
+    .tab-btn:hover {
+        color: var(--primary-red);
+    }
+
+    .tab-btn.active {
+        color: var(--primary-red);
+        border-bottom-color: var(--primary-red);
+    }
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s;
+}
+
+    .tab-content.active {
+        display: block;
+    }
+
+.toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+    .toggle-btn:hover {
+        background: #eee;
+    }
+
+.detail-row {
+    background-color: #f9f9f9;
+}
+
+.student-table {
+    width: 95%;
+    margin: 10px auto;
+    border: 1px solid #ddd;
+    background: white;
+}
+
+    .student-table th {
+        background: #f1f1f1;
+        font-size: 12px;
+    }
+
+    .student-table td {
+        font-size: 12px;
+        padding: 8px 15px;
+    }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input {
+    padding-left: 32px; /* chừa chỗ cho icon */
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 13px;
+}
+
+.search-input:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 1px rgba(215, 25, 32, 0.15);
+}

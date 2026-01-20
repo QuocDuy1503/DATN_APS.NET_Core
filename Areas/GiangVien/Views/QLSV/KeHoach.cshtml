@@ -1,0 +1,97 @@
+﻿@{
+    ViewData["Title"] = "Đề xuất đề tài";
+    // Layout Lecturer bạn đang dùng
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+
+
+}
+<div class="content-body">
+    <div class="content-card">
+        <div class="form-header">
+            <div class="header-title">
+                <!-- Breadcrumb -->
+                <nav class="breadcrumb-simple">
+                    <a asp-area="Giangvien" asp-controller="QLSV" asp-action="DSSV">Quản lý sinh viên</a>
+                    <span>&gt;</span>
+                    <span class="current">Bảng kế hoạch</span>
+                </nav>
+            </div>
+        </div>
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <span class="filter-label">Học kì:</span>
+                <select class="toolbar-input" style="width: 150px;">
+                    <option value="">-- Tất cả --</option>
+                    <option value="CNPM">HK251</option>
+                    <option value="KHDL">HK252</option>
+                    <option value="TTNT">HL253</option>
+                </select>
+            </div>
+            <div class="toolbar-left">
+                <span class="filter-label">Tuần:</span>
+                <select id="weekSelect" class="toolbar-input" style="width: 150px;">
+                    <option value="">-- Tất cả --</option>
+                    <option value="CNPM">Tuần 1</option>
+                    <option value="KHDL">Tuần 2</option>
+                    <option value="TTNT">Tuần 3</option>
+
+                </select>
+
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên công việc</th>
+                        <th>Người thực hiện</th>
+                        <th>Thời gian ước tính</th>
+                        <th>Thời gian thực tế</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Hoàn thành đề cương</td>
+                        <td>Trương Quốc Duy</td>
+                        <td>01/01/2026</td>
+                        <td>01/01/2026</td>
+                        <td>
+                            <select class="status-select" style="width:150px;" data-status="wait">
+                                <option value="todo">Chưa thực hiện</option>
+                                <option value="doing">Đang thực hiện</option>
+                                <option value="wait">Chờ giảng viên duyệt</option>
+                                <option value="done" selected>Đã duyệt</option>
+                            </select>
+                        </td>
+
+                        <td class="action-more">
+                            <a asp-area="Giangvien"
+                               asp-controller="QLSV"
+                               asp-action="XCT_KH"
+                               asp-route-id="1">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/KH.css" asp-append-version="true"/>
+<link rel="stylesheet" href="~/css/Breadcrum.css" asp-append-version="true" />
+<script src="~/js/KH.js" asp-append-version="true"></script>
+<script>
+        document.querySelectorAll(".status-select").forEach(select => {
+        if (select.dataset.status === "done") {
+            select.disabled = true;
+        }
+    });
+
+</script>
+

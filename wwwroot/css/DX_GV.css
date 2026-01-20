@@ -1,0 +1,72 @@
+﻿.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+.modal-dialog {
+    width: 1100px;
+    max-width: 95vw;
+}
+
+.modal-body {
+    padding: 20px 24px;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+/* textarea lớn */
+.textarea-lg {
+    min-height: 50px;
+    resize: vertical;
+}
+
+/* textarea vừa */
+.textarea-md {
+    min-height: 50px;
+    resize: vertical;
+}
+
+.modal-dialog textarea {
+    resize: none !important;
+}
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input {
+    padding-left: 32px; /* chừa chỗ cho icon */
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 13px;
+}
+
+.search-input:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 1px rgba(215, 25, 32, 0.15);
+}
+

@@ -1,0 +1,92 @@
+﻿@using Microsoft.AspNetCore.Http
+<header class="top-header">
+                <div class="uni-name">TRƯỜNG ĐẠI HỌC VĂN LANG</div>
+
+                <div class="header-right-group">
+        
+                <div class="notification-container" id="notifDropdownBtn">
+                    <div class="bell-icon-wrapper">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notif-badge">3</span> </div>
+                    
+                    <div class="notif-dropdown-menu" id="notifDropdown">
+                        <div class="notif-header">
+                            <span>Thông báo</span>
+                            <a href="#" class="mark-read">Đánh dấu đã đọc</a>
+                        </div>
+                        <div class="notif-body">
+                            <div class="notif-item unread">
+                                <div class="notif-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+                                <div class="notif-content">
+                                    <p class="n-title">Nhắc nhở mở đợt đăng ký</p>
+                                    <p class="n-time">Vừa xong</p>
+                                </div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-icon"><i class="fa-solid fa-check-circle"></i></div>
+                                <div class="notif-content">
+                                    <p class="n-title">Hội đồng KTPM 01 đã được duyệt</p>
+                                    <p class="n-time">1 giờ trước</p>
+                                </div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-icon"><i class="fa-solid fa-file-lines"></i></div>
+                                <div class="notif-content">
+                                    <p class="n-title">Sinh viên nộp báo cáo tiến độ</p>
+                                    <p class="n-time">Yesterday</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="notif-footer">
+                            <a href="#">Xem tất cả</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="user-dropdown-container" id="userDropdown">
+                    <div class="user-profile">
+                        <div class="user-info-text">
+                            <span class="user-name">
+                                @{
+                                    string fullName = Context.Session.GetString("FullName") ?? "User";
+                                    string firstName = fullName.Trim();
+                                    if (firstName.Contains(" "))
+                                    {
+                                        firstName = firstName.Substring(firstName.LastIndexOf(" ") + 1);
+                                    }
+        
+                                        string userCode = Context.Session.GetString("UserCode") ?? "";
+                                    }
+    
+                                   @firstName@(!string.IsNullOrEmpty(userCode) ? "." + userCode : "")
+                            </span>
+                            <span class="user-role">
+                                @{
+                                    var roleCode = Context.Session.GetString("Role");
+                                    var roleName = "Khách";
+                                    if(roleCode == "BCN_KHOA") roleName = "BCN Khoa";
+                                    else if(roleCode == "BO_MON") roleName = "Bo Mon";
+                                    else if(roleCode == "GV") roleName = "Giảng viên";
+                                    else if(roleCode == "SV") roleName = "Sinh viên";
+                                }
+                                @roleName
+                            </span>
+                        </div>
+                        <i class="fa-regular fa-circle-user user-avatar-icon"></i>
+                        <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                    </div>
+
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#" class="dropdown-item">
+                                <i class="fa-regular fa-id-badge"></i> Hồ sơ cá nhân
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-area="" asp-controller="Account" asp-action="Logout" class="dropdown-item logout-item">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </header>
