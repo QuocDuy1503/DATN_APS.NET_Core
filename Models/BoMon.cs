@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DATN_TMS.Models;
 
@@ -28,4 +29,9 @@ public partial class BoMon
     public virtual ICollection<HoiDongBaoCao> HoiDongBaoCaos { get; set; } = new List<HoiDongBaoCao>();
 
     public virtual ICollection<Nganh> Nganhs { get; set; } = new List<Nganh>();
+    [ForeignKey("IdNguoiTao")]
+    public virtual NguoiDung? IdNguoiTaoNavigation { get; set; }
+
+    [ForeignKey("IdNguoiSua")]
+    public virtual NguoiDung? IdNguoiSuaNavigation { get; set; }
 }

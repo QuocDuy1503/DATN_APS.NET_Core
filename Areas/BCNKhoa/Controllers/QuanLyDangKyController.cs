@@ -58,7 +58,9 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
             if (!string.IsNullOrEmpty(chuyenNganhId))
             {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                 query = query.Where(dk => dk.IdSinhVienNavigation.IdChuyenNganhNavigation.TenChuyenNganh.Contains(chuyenNganhId));
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             }
 
             var modelQuery = query.Select(dk => new QuanLyDangky

@@ -1,0 +1,151 @@
+﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongBaoCaoViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý hội đồng báo cáo";
+}
+
+<style>
+    /* CSS giữ nguyên từ trang cũ */
+    .content-card { background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); display: flex; flex-direction: column; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin-bottom: 20px; text-transform: uppercase; }
+    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .toolbar-left { display: flex; gap: 15px; }
+    .filter-item label { font-weight: 500; display: block; color: #333; font-size: 13px; margin-bottom: 5px; }
+    .filter-item select { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; outline: none; height: 38px; font-size: 14px; min-width: 150px; }
+    .toolbar-input { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; outline: none; height: 38px; font-size: 14px; }
+    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; color: white; display: inline-flex; align-items: center; gap: 5px; }
+    .btn-primary { background-color: #484BE0; }
+    
+    /* Status Badge */
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .status-midterm { background-color: #e3f2fd; color: #0d6efd; border: 1px solid #9ec5fe; }
+    .status-final { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+
+    .table-responsive { width: 100%; flex: 1; margin-bottom: 20px;} /* Thêm flex: 1 để đẩy pagination xuống */
+    table { width: 100%; border-collapse: collapse; }
+    th { background-color: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; font-size: 13px; }
+    td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; }
+
+    /* --- CSS PHÂN TRANG ĐỒNG BỘ VỚI INDEX --- */
+    .pagination-container { display: flex; justify-content: center; padding-top: 15px; border-top: 1px solid #eee; }
+    .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; margin: 0; }
+    .page-item { }
+    .page-link { padding: 8px 16px; border: 1px solid #dee2e6; border-radius: 4px; color: #333; text-decoration: none; background-color: #fff; transition: all 0.2s; display: block; }
+    .page-link:hover { background-color: #e9ecef; border-color: #dee2e6; }
+    .page-item.active .page-link { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+    .page-item.disabled .page-link { color: #6c757d; pointer-events: none; background-color: #fff; border-color: #dee2e6; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title">Hội đồng báo cáo</h2>
+        
+        <div class="toolbar-row">
+            <form method="get" class="toolbar-left" id="filterForm">
+                <div class="filter-item">
+                    <label>Đợt đồ án</label>
+                    <select name="dotId" asp-items="ViewBag.ListDot" onchange="this.form.submit()">
+                        <option value="">-- Chọn đợt --</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                     <label>Năm học</label>
+                    <select name="namHoc" asp-items="ViewBag.ListNamHoc" onchange="this.form.submit()">
+                        <option value="">-- Chọn năm học --</option>
+                    </select>
+                 </div>
+            </form>
+
+            <div class="toolbar-right">
+                <form method="get" style="display:flex; align-items:center; gap:5px;">
+                    <span style="font-weight:500; font-size:13px;">Tìm kiếm:</span>
+                    <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="toolbar-input" placeholder="Nhập tên hội đồng..." style="width: 250px;">
+                </form>
+                <button class="btn btn-primary" onclick="document.getElementById('addCouncilModal').style.display='flex'">
+                    <i class="fa-solid fa-plus"></i> Thêm hội đồng
+                 </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                         <th>Mã HĐ</th>
+                        <th>Tên hội đồng</th>
+                        <th>Bộ môn</th>
+                        <th>Loại hội đồng</th>
+                        <th>Người tạo</th>
+                        <th>Ngày báo cáo</th>
+                        <th>Địa điểm</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                     {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                 <td>@item.MaHoiDong</td>
+                                <td>@item.TenHoiDong</td>
+                                <td>@item.TenBoMon</td>
+                                 <td>
+                                    @if(item.LoaiHoiDong == "Giữa kì") {
+                                        <span class="status-badge status-midterm">Giữa kì</span>
+                                    } else {
+                                        <span class="status-badge status-final">Cuối kì</span>
+                                     }
+                                </td>
+                                <td>@item.NguoiTao</td>
+                                <td>
+                                    @(item.NgayBaoCao.HasValue ? item.NgayBaoCao.Value.ToString("dd/MM/yyyy") : "--") <br/>
+                                    <small style="color:#666">@(item.ThoiGianDuKien.HasValue ? item.ThoiGianDuKien.Value.ToString("HH:mm") : "")</small>
+                                </td>
+                                 <td>@item.DiaDiem</td>
+                                <td>
+                                    @if(item.TrangThai) { <i style="color:#28a745;">Đã duyệt</i> } 
+                                     else { <i style="color:#ffc107;">Chờ duyệt</i> }
+                                </td>
+                                <td>
+                                     <a asp-area="BCNKhoa" asp-controller="QuanLyHoiDongBaoCao" asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon">
+                                        <i class="fa-regular fa-pen-to-square" style="color:#0d6efd;"></i>
+                                     </a>
+                                </td>
+                            </tr>
+                        }
+                     }
+                    else
+                    {
+                        <tr><td colspan="9" class="text-center p-4">Không có dữ liệu.</td></tr>
+                     }
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination-container">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { 
+                page, 
+                dotId = ViewBag.CurrentDotId, 
+                namHoc = ViewBag.CurrentNamHoc, 
+                searchString = ViewBag.CurrentFilter 
+            }), 
+            new PagedListRenderOptions {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                LinkToPreviousPageFormat = "«",
+                LinkToNextPageFormat = "»",
+                EllipsesFormat = "...",
+                MaximumPageNumbersToDisplay = 5
+            })
+        </div>
+    </div>
+</div>
+
+<partial name="_CreateModal" />

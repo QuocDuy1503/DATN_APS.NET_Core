@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DATN_TMS.Models;
 
@@ -28,4 +29,10 @@ public partial class Nganh
     public virtual ICollection<ChuyenNganh> ChuyenNganhs { get; set; } = new List<ChuyenNganh>();
 
     public virtual BoMon? IdBoMonNavigation { get; set; }
+    [ForeignKey("IdNguoiTao")]
+    public virtual NguoiDung? IdNguoiTaoNavigation { get; set; }
+
+    // Chỉ định rõ: Biến này liên kết với cột 'IdNguoiSua'
+    [ForeignKey("IdNguoiSua")]
+    public virtual NguoiDung? IdNguoiSuaNavigation { get; set; }
 }

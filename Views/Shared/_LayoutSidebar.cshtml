@@ -42,9 +42,13 @@
                         <span><i class="fa-solid fa-list"></i> Danh mục</span>
                         <i class="fa-solid fa-chevron-right chevron"></i>
                     </div>
-                    <ul class="submenu">
-                        <li><a href="QL_Nganh.html">Ngành</a></li>
-                        <li><a href="QL_BoMon.html" class="active-sub">Bộ môn</a></li> 
+                    <ul class="submenu">                
+                        <li>
+                            <a asp-area="BCNKhoa" asp-controller="QuanLyNganh" asp-action="Index">Ngành</a>
+                        </li>
+                        <li>
+                            <a asp-area="BCNKhoa" asp-controller="QuanLyBoMon" asp-action="Index">Bộ môn</a>
+                        </li>
                         <li><a href="QL_ChuyenNganh.html">Chuyên ngành</a></li>
                         <li><a href="QL_HocKi.html">Học kì</a></li>
                         <li><a href="QL_Khoa.html">Khóa</a></li>

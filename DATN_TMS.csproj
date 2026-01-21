@@ -18,6 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Areas\BCNKhoa\Models\BoMonViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\NganhViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\QuanLyHoiDongBaoCaoEditViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\QuanLyHoiDongBaoCaoViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\QuanLyHoiDongEditViewModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\QuanLyHoiDongViewModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\KetQuaHocTapModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\QuanLyDangky.cs" />

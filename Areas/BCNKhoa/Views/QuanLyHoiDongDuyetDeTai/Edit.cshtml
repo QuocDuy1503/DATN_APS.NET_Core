@@ -1,0 +1,262 @@
+﻿@model DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongEditViewModel
+
+@{
+    ViewData["Title"] = "Chi tiết hội đồng";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .content-card { background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); }
+    .page-header-wrapper { border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0 0 5px 0; text-transform: uppercase; }
+    .breadcrumb-area { font-size: 13px; color: #666; }
+    .breadcrumb-area a { text-decoration: none; color: #484BE0; }
+    .breadcrumb-area span { margin: 0 5px; color: #ccc; }
+    .form-control { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; outline: none; margin-top: 5px; }
+    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; color: white; }
+    .btn-primary { background-color: #484BE0; }
+    .btn-save { background-color: #484BE0; padding: 10px 25px; font-size: 16px; }
+    .btn-save:hover { background-color: #3a3dc0; }
+    
+    /* Thanh thêm thành viên */
+    .add-member-bar { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; background: #f9f9f9; padding: 15px; border-radius: 6px; }
+    .member-search-container { position: relative; flex: 1; min-width: 250px; }
+    .selected-user-display { display: none; flex: 1; align-items: center; gap: 10px; background: #eef2ff; padding: 8px 12px; border-radius: 4px; border: 1px solid #484BE0; color: #484BE0; font-weight: 500; height: 38px; margin-top: 5px; }
+    .suggestion-box { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; z-index: 10; display: none; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .suggestion-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+    .suggestion-item:hover { background-color: #f1f1f1; }
+    .btn-remove-selection { cursor: pointer; color: #d9534f; margin-left: auto; }
+    .table-responsive { width: 100%; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8f9fa; padding: 10px; text-align: left; border-bottom: 2px solid #eee; font-size: 13px; }
+    td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="page-header-wrapper">
+            <h2 class="page-title">CHI TIẾT HỘI ĐỒNG: @Model.MaHoiDong</h2>
+            <div class="breadcrumb-area">
+                <a asp-action="Index">Danh sách hội đồng</a>
+                <span>/</span>
+                <span style="color: #333; font-weight: 500;">@Model.MaHoiDong</span>
+            </div>
+        </div>
+
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="MaHoiDong" />
+
+            <div class="form-section">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:15px;">
+                    <div class="form-group">
+                        <label>Tên hội đồng:</label>
+                        <input type="text" asp-for="TenHoiDong" class="form-control" placeholder="Nhập tên hội đồng" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Bộ môn:</label>
+                        <select asp-for="IdBoMon" class="form-control" asp-items="ViewBag.ListBoMon"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày bắt đầu:</label>
+                        <input type="date" asp-for="NgayBatDau" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày kết thúc:</label>
+                        <input type="date" asp-for="NgayKetThuc" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+            <h4 style="margin-bottom:15px; color:#c0392b; font-weight:700;">Danh sách thành viên</h4>
+
+            <div class="add-member-bar">
+                <div class="member-search-container" id="searchContainer">
+                    <input type="text" id="inputSearch" class="form-control" placeholder="Nhập tên, email hoặc mã giảng viên..." autocomplete="off">
+                    <div class="suggestion-box" id="suggestionBox"></div>
+                </div>
+
+                <div class="selected-user-display" id="selectedDisplay">
+                    <span id="selectedNameText"></span>
+                    <input type="hidden" id="selectedId">
+                    <i class="fa-solid fa-xmark btn-remove-selection" id="btnClearSelection" title="Bỏ chọn"></i>
+                </div>
+
+                <select class="form-control" id="selectRole" style="width: 150px;">
+                    <option value="UY_VIEN">Ủy viên</option>
+                    <option value="THU_KY">Thư ký</option>
+                    <option value="CHU_TICH">Chủ tịch</option>
+                </select>
+
+                <button class="btn btn-primary" id="btnAddMember" type="button">
+                    <i class="fa-solid fa-plus"></i> Thêm
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table" id="memberTable">
+                    <thead>
+                        <tr>
+                            <th>Mã GV</th>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>Vai trò</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tv in Model.ThanhViens)
+                        {
+                            <tr id="row-@tv.">
+                                <td>@tv.MaGV</td>
+                                <td>@tv.TenGiangVien</td>
+                                <td>@tv.Email</td>
+                                <td><span class="badge" style="background:#eee; color:#333; padding:4px 8px; border-radius:4px;">@tv.VaiTro</span></td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-danger" onclick="removeMember(@Model.Id, @tv.)" style="background:#e74c3c; padding: 4px 8px;">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top:30px; display: flex; justify-content: flex-end; border-top: 1px solid #eee; padding-top: 20px;">
+                <button type="submit" class="btn btn-save">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 1. HIỂN THỊ THÔNG BÁO THÀNH CÔNG KHI LƯU (Từ Controller gửi về)
+    document.addEventListener("DOMContentLoaded", function() {
+        @if (TempData["Success"] != null)
+        {
+            <text>
+            Swal.fire({
+                icon: 'success',
+                title: 'Thành công!',
+                text: '@Html.Raw(TempData["Success"])',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            </text>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <text>Swal.fire({ icon: 'error', title: 'Lỗi!', text: '@Html.Raw(TempData["Error"])' });</text>
+        }
+    });
+
+    // 2. TÌM KIẾM GIẢNG VIÊN
+    const inputSearch = document.getElementById('inputSearch');
+    const suggestionBox = document.getElementById('suggestionBox');
+    const selectedDisplay = document.getElementById('selectedDisplay');
+    const searchContainer = document.getElementById('searchContainer');
+    const selectedNameText = document.getElementById('selectedNameText');
+    const selectedId = document.getElementById('selectedId');
+    let timeout = null;
+
+    inputSearch.addEventListener('input', function() {
+        clearTimeout(timeout);
+        const query = this.value;
+        if(query.length < 2) { suggestionBox.style.display = 'none'; return; }
+
+        timeout = setTimeout(() => {
+            fetch(`@Url.Action("SearchGiangVien")?term=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    suggestionBox.innerHTML = '';
+                    if(data.length > 0) {
+                        suggestionBox.style.display = 'block';
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerHTML = `<strong>${item.hoTen}</strong> <br> <small>${item.email}</small>`;
+                            div.onclick = () => selectTeacher(item);
+                            suggestionBox.appendChild(div);
+                        });
+                    } else { suggestionBox.style.display = 'none'; }
+                });
+        }, 300);
+    });
+
+    function selectTeacher(item) {
+        selectedId.value = item.id;
+        selectedNameText.innerText = `${item.hoTen} (${item.maGv})`;
+        searchContainer.style.display = 'none';
+        selectedDisplay.style.display = 'flex';
+        suggestionBox.style.display = 'none';
+        
+        // Lưu tạm data
+        selectedDisplay.dataset.id = item.id;
+        selectedDisplay.dataset.name = item.hoTen;
+        selectedDisplay.dataset.email = item.email;
+        selectedDisplay.dataset.magv = item.maGv;
+    }
+
+    document.getElementById('btnClearSelection').onclick = function() {
+        searchContainer.style.display = 'block';
+        selectedDisplay.style.display = 'none';
+        inputSearch.value = '';
+        selectedId.value = '';
+    };
+
+    // 3. THÊM THÀNH VIÊN (ĐÃ SỬA LỖI GỬI ID)
+    document.getElementById('btnAddMember').onclick = function() {
+        const idGV = selectedId.value;
+        const role = document.getElementById('selectRole').value;
+        const councilId = @Model.Id; // Lấy ID hội đồng từ Model
+
+        if(!idGV) { Swal.fire('Chú ý', 'Vui lòng chọn giảng viên trước!', 'warning'); return; }
+
+        // --- FIX LỖI Ở ĐÂY: Thêm ?councilId=${councilId} vào URL ---
+        fetch(`@Url.Action("AddMember")?councilId=${councilId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ IdGiangVien: parseInt(idGV), VaiTro: role })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                // Thêm vào bảng (UI)
+                const table = document.getElementById('memberTable').getElementsByTagName('tbody')[0];
+                const newRow = table.insertRow();
+                newRow.id = `row-${idGV}`;
+                newRow.innerHTML = `
+                    <td>${selectedDisplay.dataset.magv || '...'}</td>
+                    <td>${selectedDisplay.dataset.name}</td>
+                    <td>${selectedDisplay.dataset.email}</td>
+                    <td><span class="badge" style="background:#eee; color:#333; padding:4px 8px; border-radius:4px;">${role}</span></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeMember(${councilId}, ${idGV})" style="background:#e74c3c; padding: 4px 8px;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                document.getElementById('btnClearSelection').click(); // Reset form
+                Swal.fire({ icon: 'success', title: 'Đã thêm!', timer: 1500, showConfirmButton: false });
+            } else {
+                Swal.fire('Không thể thêm', data.message, 'error');
+            }
+        })
+        .catch(err => Swal.fire('Lỗi', 'Lỗi kết nối Server', 'error'));
+    };
+
+    // 4. XÓA THÀNH VIÊN
+    function removeMember(councilId, teacherId) {
+        Swal.fire({
+            title: 'Xóa thành viên?',
+            text: "Bạn có chắc chắn muốn xóa thành viên này?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Xóa ngay',

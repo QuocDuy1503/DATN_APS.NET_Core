@@ -1,0 +1,53 @@
+﻿<div class="modal-overlay" id="addCouncilModal" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Thêm hội đồng báo cáo mới</div>
+            <button type="button" class="btn-close close-modal" onclick="document.getElementById('addCouncilModal').style.display='none'">&times;</button>
+        </div>
+        
+        <form asp-action="Create" method="post">
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Tên hội đồng <span class="text-danger">*</span>:</label>
+                    <input type="text" name="TenHoiDong" class="form-control" placeholder="Ví dụ: Hội đồng KTPM 02" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Loại hội đồng:</label>
+                    <select name="LoaiHoiDong" class="form-control">
+                        <option value="Giữa kì">Báo cáo giữa kì</option>
+                        <option value="Cuối kì">Báo cáo cuối kì (Bảo vệ)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Bộ môn đề xuất:</label>
+                    <select name="IdBoMon" class="form-control" asp-items="ViewBag.ListBoMon">
+                        <option value="">-- Chọn bộ môn --</option>
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Ngày:</label>
+                        <input type="date" name="NgayBaoCao" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Giờ bắt đầu:</label>
+                        <input type="time" name="GioBatDau" class="form-control">
+                    </div>
+                </div>
+
+                 <div class="form-group" style="margin-top:15px;">
+                    <label>Địa điểm:</label>
+                    <input type="text" name="DiaDiem" class="form-control" placeholder="Ví dụ: F.02.02">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-modal" onclick="document.getElementById('addCouncilModal').style.display='none'">Hủy</button>
+                <button type="submit" class="btn btn-save" style="background-color: #484BE0; color: white;">Lưu & Phân công</button>
+            </div>
+        </form>
+    </div>
+</div>
