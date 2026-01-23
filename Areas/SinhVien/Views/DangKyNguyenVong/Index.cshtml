@@ -1,0 +1,475 @@
+@model DATN_TMS.Areas.SinhVien.Models.DangKyNguyenVongViewModel
+@{
+    ViewData["Title"] = "Đăng ký nguyện vọng";
+    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+}
+
+<style>
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 20px 0;
+        text-transform: uppercase;
+    }
+
+    .alert-info-box {
+        background: #d1ecf1;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #0c5460;
+        font-size: 13px;
+    }
+
+    .alert-warning-box {
+        background: #fff3cd;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #856404;
+        font-size: 13px;
+    }
+
+    .section {
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        margin-bottom: 15px;
+    }
+
+    .hint {
+        color: #dc3545;
+        font-size: 13px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .field-full {
+        grid-column: 1 / -1;
+    }
+
+    .field label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+    }
+
+    .field label span {
+        color: #dc3545;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        height: 36px;
+        box-sizing: border-box;
+    }
+
+    .field textarea {
+        height: auto;
+        resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+        outline: none;
+        border-color: #484BE0;
+        box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1);
+    }
+
+    .readonly-field {
+        background-color: #f8f9fa !important;
+        color: #666;
+        cursor: not-allowed;
+    }
+
+    .help {
+        font-size: 12px;
+        color: #666;
+        margin-top: 4px;
+    }
+
+    .text-danger {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    .actions {
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #484BE0;
+        color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background: #3538b2;
+    }
+
+    .btn-primary:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .btn-loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal-overlay.show {
+        display: flex;
+    }
+
+    .modal-box {
+        background: #fff;
+        border-radius: 8px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+    }
+
+    .modal-icon {
+        font-size: 50px;
+        margin-bottom: 15px;
+    }
+
+    .modal-success .modal-icon { color: #28a745; }
+    .modal-warning .modal-icon { color: #ffc107; }
+    .modal-error .modal-icon { color: #dc3545; }
+
+    .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+
+    .modal-message {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    @@media (max-width: 768px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title">Đăng ký nguyện vọng</h2>
+
+        @if (Model.IdDot.HasValue)
+        {
+            <div class="alert-info-box">
+                <i class="fas fa-info-circle"></i> Đợt đăng ký: <strong>@Model.TenDot</strong>
+            </div>
+        }
+        else
+        {
+            <div class="alert-warning-box">
+                <i class="fas fa-exclamation-triangle"></i> Hiện tại chưa có đợt đăng ký nguyện vọng nào đang mở.
+            </div>
+        }
+
+        <form id="dkNvForm" class="form" method="post" asp-area="SinhVien" asp-controller="DangKyNguyenVong" asp-action="Index" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="IdDot" />
+            <input type="hidden" asp-for="IdSinhVien" />
+
+            <section class="section">
+                <div class="section-title">
+                    <span class="hint">(*) bắt buộc</span>
+                </div>
+
+                <div class="grid">
+                    <!-- MSSV -->
+                    <div class="field">
+                        <label>Mã số SV <span>*</span></label>
+                        @if (Model.Mssv != null)
+                        {
+                            <input asp-for="Mssv" type="text" class="readonly-field" readonly />
+                        }
+                        else
+                        {
+                            <input asp-for="Mssv" type="text" placeholder="VD: 21IT1234" required />
+                        }
+                        <span asp-validation-for="Mssv" class="text-danger"></span>
+                    </div>
+
+                    <!-- Họ tên -->
+                    <div class="field">
+                        <label>Họ và tên <span>*</span></label>
+                        @if (Model.HoTen != null)
+                        {
+                            <input asp-for="HoTen" type="text" class="readonly-field" readonly />
+                        }
+                        else
+                        {
+                            <input asp-for="HoTen" type="text" placeholder="Nguyễn Văn A" required />
+                        }
+                        <span asp-validation-for="HoTen" class="text-danger"></span>
+                    </div>
+
+                    <!-- Chuyên ngành -->
+                    <div class="field">
+                        <label>Chuyên ngành <span>*</span></label>
+                        <select asp-for="IdChuyenNganh" required>
+                            <option value="" disabled>-- Chọn chuyên ngành --</option>
+                            @if (Model.DanhSachChuyenNganh != null)
+                            {
+                                foreach (var cn in Model.DanhSachChuyenNganh)
+                                {
+                                    if (Model.IdChuyenNganh == cn.Id)
+                                    {
+                                        <option value="@cn.Id" selected>@cn.TenChuyenNganh</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@cn.Id">@cn.TenChuyenNganh</option>
+                                    }
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="IdChuyenNganh" class="text-danger"></span>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field">
+                        <label>Email <span>*</span></label>
+                        @if (Model.Email != null)
+                        {
+                            <input asp-for="Email" type="email" class="readonly-field" readonly />
+                        }
+                        else
+                        {
+                            <input asp-for="Email" type="email" placeholder="ten@email.com" required />
+                        }
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <!-- SĐT -->
+                    <div class="field">
+                        <label>Số điện thoại <span>*</span></label>
+                        <input asp-for="Sdt" type="tel" placeholder="0xxxxxxxxx" required />
+                        <span asp-validation-for="Sdt" class="text-danger"></span>
+                    </div>
+
+                    <!-- Số tín chỉ -->
+                    <div class="field">
+                        <label>Số tín chỉ tích lũy <span>*</span></label>
+                        <input asp-for="SoTinChiTichLuy" type="number" min="0" step="1" placeholder="VD: 95" required />
+                        <span asp-validation-for="SoTinChiTichLuy" class="text-danger"></span>
+                    </div>
+
+                    <!-- GPA -->
+                    <div class="field">
+                        <label>Điểm tích lũy (GPA)</label>
+                        <input asp-for="Gpa" type="number" min="0" max="4" step="0.01" placeholder="VD: 3.12" />
+                        <small class="help">Thang điểm 4.00</small>
+                        <span asp-validation-for="Gpa" class="text-danger"></span>
+                    </div>
+
+                    <!-- Môn còn nợ -->
+                    <div class="field field-full">
+                        <label>Môn còn nợ</label>
+                        <textarea asp-for="MonConNo" rows="3" placeholder="VD: Toán rời rạc, Cơ sở dữ liệu... (nếu không có, ghi: Không)"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary" id="btnSubmit" @(Model.IdDot.HasValue ? "" : "disabled")>
+                        <span class="btn-text">Gửi đăng ký</span>
+                        <span class="btn-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
+                        </span>
+                    </button>
+                </div>
+            </section>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL THÀNH CÔNG -->
+<div id="successModal" class="modal-overlay">
+    <div class="modal-box modal-success">
+        <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
+        <h3 class="modal-title">Đăng ký thành công!</h3>
+        <p class="modal-message" id="successMessage"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('successModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CẢNH BÁO -->
+<div id="warningModal" class="modal-overlay">
+    <div class="modal-box modal-warning">
+        <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <h3 class="modal-title">Không thể đăng ký</h3>
+        <p class="modal-message" id="warningMessage"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary" onclick="closeModal('warningModal')">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL LỖI -->
+<div id="errorModal" class="modal-overlay">
+    <div class="modal-box modal-error">
+        <div class="modal-icon"><i class="fas fa-times-circle"></i></div>
+        <h3 class="modal-title">Có lỗi xảy ra</h3>
+        <p class="modal-message" id="errorMessage"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary" onclick="closeModal('errorModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('dkNvForm');
+    var btnSubmit = document.getElementById('btnSubmit');
+    var btnText = btnSubmit.querySelector('.btn-text');
+    var btnLoading = btnSubmit.querySelector('.btn-loading');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-flex';
+        btnSubmit.disabled = true;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            resetButton();
+            
+            if (data.success) {
+                document.getElementById('successMessage').textContent = data.message;
+                showModal('successModal');
+            } else if (data.message.indexOf('giai đoạn') > -1 || data.message.indexOf('hết hạn') > -1 || data.message.indexOf('Chưa đến') > -1) {
+                document.getElementById('warningMessage').textContent = data.message;
+                showModal('warningModal');
+            } else {
+                document.getElementById('errorMessage').textContent = data.message;
+                showModal('errorModal');
+            }
+        })
+        .catch(function() {
+            resetButton();
+            document.getElementById('errorMessage').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+            showModal('errorModal');
+        });
+    });
+
+    function resetButton() {
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+        btnSubmit.disabled = false;
+    }
+});
+
+function showModal(id) {
+    document.getElementById(id).classList.add('show');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('show');
+        }
+    });
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(function(m) {
+            m.classList.remove('show');
+        });
+    }
+});
+</script>

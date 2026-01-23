@@ -1,0 +1,636 @@
+@model DATN_TMS.Areas.SinhVien.Models.DeXuatDeTaiViewModel
+@{
+    ViewData["Title"] = "Đề xuất đề tài";
+    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+}
+
+<style>
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .page-header-row {
+        margin-bottom: 20px;
+    }
+
+    .alert-info-box {
+        background: #d1ecf1;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #0c5460;
+        font-size: 13px;
+    }
+
+    .alert-warning-box {
+        background: #fff3cd;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #856404;
+        font-size: 13px;
+    }
+
+    .toolbar-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 4px;
+    }
+
+    .toolbar-left, .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .toolbar-input {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        height: 36px;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid #eee;
+        flex: 1;
+        margin-bottom: 20px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+    }
+
+    th {
+        background: #f8f9fa;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 12px 15px;
+        text-align: left;
+        color: #555;
+        border-bottom: 2px solid #eee;
+    }
+
+    td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .ellipsis-cell {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-running { background-color: #e6f4ea; color: #1e7e34; }
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    .status-rejected { background-color: #f8d7da; color: #721c24; }
+
+    .action-btn {
+        border: none;
+        background: none;
+        cursor: pointer;
+        padding: 5px;
+        font-size: 16px;
+    }
+
+    .btn-edit-icon { color: #007bff; }
+    .btn-edit-icon:hover { color: #0056b3; }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-primary { background: #484BE0; color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #3538b2; }
+    .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+    .btn-secondary:hover { background: #e5e7eb; }
+
+    .text-center {
+        text-align: center;
+        color: #6b7280;
+        padding: 40px !important;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-dialog {
+        background: #fff;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 90vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+    }
+
+    .modal-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2c3e50;
+        text-transform: uppercase;
+    }
+
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        color: #666;
+        line-height: 1;
+    }
+    .btn-close:hover { color: #333; }
+
+    .modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        background: #f8f9fa;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .form-group { margin-bottom: 15px; }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        height: 36px;
+        box-sizing: border-box;
+    }
+
+    textarea.form-control { height: auto; resize: vertical; }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #484BE0;
+        box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1);
+    }
+
+    .required { color: #dc3545; }
+    .readonly-field { background-color: #f8f9fa !important; color: #666; }
+
+    /* Modal thông báo */
+    .modal-box {
+        background: #fff;
+        border-radius: 8px;
+        padding: 30px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+    }
+
+    .modal-icon { font-size: 50px; margin-bottom: 15px; }
+    .modal-success .modal-icon { color: #28a745; }
+    .modal-warning .modal-icon { color: #ffc107; }
+    .modal-error .modal-icon { color: #dc3545; }
+
+    .modal-box .modal-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+        text-transform: none;
+    }
+
+    .modal-message {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .detail-row {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #eee;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { font-weight: 600; color: #333; font-size: 13px; margin-bottom: 4px; }
+    .detail-value { color: #666; font-size: 13px; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Đề xuất đề tài</h2>
+        </div>
+
+        @if (Model.IdDot.HasValue)
+        {
+            <div class="alert-info-box">
+                <i class="fas fa-info-circle"></i> Đợt đề xuất: <strong>@Model.TenDot</strong>
+            </div>
+        }
+        else
+        {
+            <div class="alert-warning-box">
+                <i class="fas fa-exclamation-triangle"></i> Hiện tại chưa có đợt đề xuất đề tài nào đang mở.
+            </div>
+        }
+
+        <div class="toolbar-row">
+            <div class="toolbar-left"></div>
+            <div class="toolbar-right">
+                <span class="filter-label">Tìm kiếm:</span>
+                <input type="text" id="txtSearch" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 250px;">
+                <button type="button" class="btn btn-primary" id="btnOpenModal" @(Model.IdDot.HasValue ? "" : "disabled")>
+                    <i class="fa-solid fa-plus"></i> Đề xuất đề tài
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã đề tài</th>
+                        <th>Tên đề tài</th>
+                        <th>Chuyên ngành</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DanhSachDeTai != null && Model.DanhSachDeTai.Any())
+                    {
+                        foreach (var dt in Model.DanhSachDeTai)
+                        {
+                            <tr>
+                                <td>@dt.MaDeTai</td>
+                                <td class="ellipsis-cell" title="@dt.TenDeTai">@dt.TenDeTai</td>
+                                <td>@dt.TenChuyenNganh</td>
+                                <td>
+                                    @if (dt.TrangThai == "Chờ duyệt")
+                                    {
+                                        <span class="status-badge status-pending">Chờ duyệt</span>
+                                    }
+                                    else if (dt.TrangThai == "Đã duyệt")
+                                    {
+                                        <span class="status-badge status-running">Đã duyệt</span>
+                                    }
+                                    else if (dt.TrangThai == "Từ chối")
+                                    {
+                                        <span class="status-badge status-rejected">Từ chối</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge" style="background-color: #95a5a6; color: white;">@dt.TrangThai</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a href="javascript:void(0);" class="action-btn btn-edit-icon" onclick="chinhSua(@dt.Id)" title="Chỉnh sửa">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">Chưa có đề tài nào</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ĐỀ XUẤT ĐỀ TÀI -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title" id="formModalTitle">Đề xuất đề tài</div>
+            <button type="button" class="btn-close close-modal">&times;</button>
+        </div>
+
+        <form id="formDeXuat" method="post" asp-area="SinhVien" asp-controller="DeXuatDeTai" asp-action="Create">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="IdDot" />
+            <input type="hidden" asp-for="IdNguoiDeXuat" />
+            <input type="hidden" id="editId" name="Id" />
+
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mã đề tài <span class="required">*</span></label>
+                        <input asp-for="MaDeTai" type="text" class="form-control" placeholder="Nhập mã đề tài" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Chuyên ngành <span class="required">*</span></label>
+                        <select asp-for="IdChuyenNganh" class="form-control" required>
+                            <option value="">-- Chọn chuyên ngành --</option>
+                            @if (Model.DanhSachChuyenNganh != null)
+                            {
+                                foreach (var cn in Model.DanhSachChuyenNganh)
+                                {
+                                    <option value="@cn.Id">@cn.TenChuyenNganh</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tên đề tài <span class="required">*</span></label>
+                    <input asp-for="TenDeTai" type="text" class="form-control" placeholder="Nhập tên đề tài" required />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>MSSV thực hiện 1</label>
+                        <input asp-for="MssvSinhVien1" type="text" class="form-control readonly-field" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label>MSSV thực hiện 2 (nếu có)</label>
+                        <input asp-for="MssvSinhVien2" type="text" class="form-control" placeholder="Nhập MSSV sinh viên 2" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Mục tiêu chính <span class="required">*</span></label>
+                        <textarea asp-for="MucTieuChinh" class="form-control" rows="3" placeholder="Nhập mục tiêu chính" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Phạm vi và chức năng</label>
+                        <textarea asp-for="PhamViChucNang" class="form-control" rows="3" placeholder="Nhập phạm vi và chức năng"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Công nghệ sử dụng</label>
+                        <textarea asp-for="CongNgheSuDung" class="form-control" rows="2" placeholder="Nhập công nghệ sử dụng"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Yêu cầu tính mới</label>
+                        <textarea asp-for="YeuCauTinhMoi" class="form-control" rows="2" placeholder="Nhập yêu cầu tính mới"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Sản phẩm kết quả dự kiến</label>
+                    <input asp-for="SanPhamKetQuaDuKien" type="text" class="form-control" placeholder="Nhập sản phẩm kết quả dự kiến" />
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-modal">Hủy</button>
+                <button type="submit" class="btn btn-primary" id="btnSave">
+                    <span class="btn-text">Lưu</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL THÔNG BÁO -->
+<div id="successModal" class="modal-overlay">
+    <div class="modal-box modal-success">
+        <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
+        <h3 class="modal-title">Thành công!</h3>
+        <p class="modal-message" id="successMessage"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary" onclick="closeModalAndReload()">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<div id="warningModal" class="modal-overlay">
+    <div class="modal-box modal-warning">
+        <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <h3 class="modal-title">Không thể đề xuất</h3>
+        <p class="modal-message" id="warningMessage"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary" onclick="closeModal('warningModal')">Đã hiểu</button>
+        </div>
+    </div>
+</div>
+
+<div id="errorModal" class="modal-overlay">
+    <div class="modal-box modal-error">
+        <div class="modal-icon"><i class="fas fa-times-circle"></i></div>
+        <h3 class="modal-title">Có lỗi xảy ra</h3>
+        <p class="modal-message" id="errorMessage"></p>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-primary" onclick="closeModal('errorModal')">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var isEditMode = false;
+
+document.getElementById('btnOpenModal').addEventListener('click', function() {
+    if (!this.disabled) {
+        isEditMode = false;
+        document.getElementById('formModalTitle').textContent = 'Đề xuất đề tài';
+        document.getElementById('formDeXuat').reset();
+        document.getElementById('editId').value = '';
+        document.getElementById('MssvSinhVien1').value = '@Model.MssvSinhVien1';
+        showModal('addModal');
+    }
+});
+
+function chinhSua(id) {
+    fetch('/SinhVien/DeXuatDeTai/ChiTiet/' + id)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                isEditMode = true;
+                var dt = data.data;
+                document.getElementById('formModalTitle').textContent = 'Chỉnh sửa đề tài';
+                document.getElementById('editId').value = dt.id;
+                document.getElementById('MaDeTai').value = dt.maDeTai || '';
+                document.getElementById('TenDeTai').value = dt.tenDeTai || '';
+                document.getElementById('IdChuyenNganh').value = dt.idChuyenNganh || '';
+                document.getElementById('MucTieuChinh').value = dt.mucTieuChinh || '';
+                document.getElementById('PhamViChucNang').value = dt.phamViChucNang || '';
+                document.getElementById('CongNgheSuDung').value = dt.congNgheSuDung || '';
+                document.getElementById('YeuCauTinhMoi').value = dt.yeuCauTinhMoi || '';
+                document.getElementById('SanPhamKetQuaDuKien').value = dt.sanPhamKetQuaDuKien || '';
+                showModal('addModal');
+            }
+        });
+}
+
+document.querySelectorAll('.close-modal').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var modal = this.closest('.modal-overlay');
+        if (modal) modal.classList.remove('show');
+    });
+});
+
+document.querySelectorAll('.modal-overlay').forEach(function(modal) {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
+});
+
+document.getElementById('formDeXuat').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var btnSave = document.getElementById('btnSave');
+    var btnText = btnSave.querySelector('.btn-text');
+    var btnLoading = btnSave.querySelector('.btn-loading');
+
+    btnText.style.display = 'none';
+    btnLoading.style.display = 'inline-flex';
+    btnSave.disabled = true;
+
+    var actionUrl = isEditMode ? '/SinhVien/DeXuatDeTai/Update' : this.action;
+
+    fetch(actionUrl, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+        btnSave.disabled = false;
+        closeModal('addModal');
+
+        if (data.success) {
+            document.getElementById('successMessage').textContent = data.message;
+            showModal('successModal');
+        } else if (data.message.indexOf('giai đoạn') > -1 || data.message.indexOf('hết hạn') > -1 || data.message.indexOf('Chưa đến') > -1) {
+            document.getElementById('warningMessage').textContent = data.message;
+            showModal('warningModal');
+        } else {
+            document.getElementById('errorMessage').textContent = data.message;
+            showModal('errorModal');
+        }
+    })
+    .catch(function() {
+        btnText.style.display = 'inline';
+        btnLoading.style.display = 'none';
+        btnSave.disabled = false;
+        document.getElementById('errorMessage').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+        showModal('errorModal');
+    });
+});
+
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function closeModalAndReload() { closeModal('successModal'); location.reload(); }
+
+document.getElementById('txtSearch').addEventListener('input', function() {
+    var keyword = this.value.toLowerCase();
+    document.querySelectorAll('tbody tr').forEach(function(row) {
+        row.style.display = row.textContent.toLowerCase().indexOf(keyword) > -1 ? '' : 'none';
+    });
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.show').forEach(function(m) { m.classList.remove('show'); });
+    }
+});
+</script>
