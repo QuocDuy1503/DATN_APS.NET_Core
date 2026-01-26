@@ -1,0 +1,91 @@
+﻿<div class="modal-overlay" id="editModal">
+    <div class="modal-dialog" style="width: 500px;">
+        <div class="modal-header">
+            <div class="modal-title">Chỉnh sửa học kì</div>
+            <button class="btn-close-custom close-edit-modal">&times;</button>
+        </div>
+        
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" id="editId">
+            
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tên học kì (Mã): <span style="color:red">*</span></label>
+                    <input type="text" name="MaHocKi" id="editMaHocKi" class="form-control" required>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Năm bắt đầu:</label>
+                        <input type="number" name="NamBatDau" id="editNamBatDau" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Năm kết thúc:</label>
+                        <input type="number" name="NamKetThuc" id="editNamKetThuc" class="form-control">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Tuần bắt đầu:</label>
+                        <input type="number" name="TuanBatDau" id="editTuanBatDau" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Ngày bắt đầu:</label>
+                        <input type="date" name="NgayBatDau" id="editNgayBatDau" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Trạng thái:</label>
+                    <select name="TrangThai" id="editTrangThai" class="form-control">
+                        <option value="true">Đang diễn ra</option>
+                        <option value="false">Đã kết thúc</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="border-top: none; padding-top: 0;">
+                <button type="button" class="btn btn-secondary close-edit-modal" style="min-width: 80px;">Hủy</button>
+                <button type="submit" class="btn btn-purple" style="min-width: 80px; justify-content: center;">Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var editModal = document.getElementById('editModal');
+        var btnCloses = document.querySelectorAll('.close-edit-modal');
+        btnCloses.forEach(btn => btn.addEventListener('click', () => editModal.classList.remove('show')));
+        window.addEventListener('click', (e) => { if (e.target == editModal) editModal.classList.remove('show'); });
+    });
+
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`@Url.Action("ChiTiet")?id=${id}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const data = result.data;
+                document.getElementById('editId').value = data.id;
+                document.getElementById('editMaHocKi').value = data.maHocKi || '';
+                document.getElementById('editNamBatDau').value = data.namBatDau || '';
+                document.getElementById('editNamKetThuc').value = data.namKetThuc || '';
+                document.getElementById('editTuanBatDau').value = data.tuanBatDau || '';
+                document.getElementById('editNgayBatDau').value = data.ngayBatDau || ''; // Date input cần format yyyy-MM-dd nếu chưa chuẩn
+                
+                // Xử lý select box boolean
+                const statusSelect = document.getElementById('editTrangThai');
+                statusSelect.value = data.trangThai ? "true" : "false";
+
+                document.getElementById('editModal').classList.add('show');
+            } else {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: result.message });
+            }
+        } catch (error) {
+            Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể tải dữ liệu.' });
+        }
+    }
+</script>

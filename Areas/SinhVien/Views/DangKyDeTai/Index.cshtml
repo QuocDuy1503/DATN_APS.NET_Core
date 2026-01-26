@@ -1,0 +1,209 @@
+﻿@model IEnumerable<DATN_TMS.Areas.SinhVien.Models.DangKyDeTaiViewModel>
+
+@{
+    ViewData["Title"] = "Đăng ký đề tài";
+    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+}
+
+<style>
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .page-header-row { margin-bottom: 20px; }
+
+    .alert-info-box {
+        background: #d1ecf1;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #0c5460;
+        font-size: 13px;
+    }
+
+    .alert-warning-box {
+        background: #fff3cd;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #856404;
+        font-size: 13px;
+    }
+
+    .toolbar-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        margin-bottom: 20px;
+        background: #fff;
+        padding: 15px;
+        border-radius: 4px;
+    }
+
+    .toolbar-right { display: flex; justify-content: flex-end; width: 100%; }
+    .toolbar-label-top { font-weight: 700; font-size: 13px; color: #333; align-self: flex-start; }
+    .search-box { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; width: 100%; }
+
+    .filter-label {
+        font-weight: 600;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .toolbar-input {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        height: 36px;
+    }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid #eee;
+        flex: 1;
+        margin-bottom: 20px;
+    }
+
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th {
+        background: #f8f9fa;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 12px 15px;
+        text-align: left;
+        color: #555;
+        border-bottom: 2px solid #eee;
+    }
+    td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .ellipsis-cell {
+        max-width: 300px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+    }
+    .badge-gray { background-color: #95a5a6; }
+    .badge-blue { background-color: #3498db; }
+    .badge-red { background-color: #e74c3c; }
+    .badge-orange { background-color: #e67e22; }
+    .badge-green { background-color: #2ecc71; }
+    .badge-dark { background-color: #7f8c8d; }
+
+    .action-cell { display: flex; gap: 10px; align-items: center; }
+    .action-btn { border: none; background: none; cursor: pointer; padding: 5px; font-size: 16px; color: #007bff; }
+    .action-btn:hover { color: #0056b3; }
+
+    .text-center-empty { text-align: center; color: #6b7280; padding: 40px !important; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Đăng ký đề tài</h2>
+        </div>
+
+        @if (!string.IsNullOrEmpty(ViewBag.Message))
+        {
+            <div class="alert-warning-box">
+                <i class="fas fa-exclamation-triangle"></i> @ViewBag.Message
+            </div>
+        }
+
+        <div class="toolbar-row">
+            <span class="toolbar-label-top">Tìm kiếm</span>
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <input type="text" id="txtSearch" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 250px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã đề tài</th>
+                        <th>Tên đề tài</th>
+                        <th>Chuyên ngành</th>
+                        <th>GVHD</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.MaDeTai</td>
+                                <td class="ellipsis-cell" title="@item.TenDeTai">@item.TenDeTai</td>
+                                <td>@item.Nganh</td>
+                                <td>@item.GVHD</td>
+                                <td><span class="status-badge @item.StatusCss">@item.TrangThai</span></td>
+                                <td class="action-cell">
+                                    <a asp-area="SinhVien"
+                                       asp-controller="QL_DotDoAn"
+                                       asp-action="XCT_DT"
+                                       asp-route-id="@item.IdDeTai"
+                                       title="Xem chi tiết"
+                                       class="action-btn">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center-empty">Không có đề tài nào trong đợt hiện tại</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('txtSearch').addEventListener('input', function () {
+    var keyword = this.value.toLowerCase();
+    document.querySelectorAll('tbody tr').forEach(function (row) {
+        row.style.display = row.textContent.toLowerCase().indexOf(keyword) > -1 ? '' : 'none';
+    });
+});
+</script>
+

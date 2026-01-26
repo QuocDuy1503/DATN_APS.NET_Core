@@ -1,4 +1,4 @@
-﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList.Mvc.Core;
 @using X.PagedList;
 @model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.NganhViewModel>
 
@@ -7,7 +7,6 @@
 }
 
 <style>
-    /* --- CSS Layout & Card --- */
     .content-card {
         background-color: #fff;
         border-radius: 8px;
@@ -18,80 +17,18 @@
         min-height: calc(100vh - 140px);
     }
     .table-responsive { width: 100%; margin-bottom: 20px; flex: 1; }
-    
     .page-header-row { margin-bottom: 10px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
-    /* --- CSS Toolbar (Đồng bộ với file mẫu) --- */
-    .toolbar-row {
-        display: flex;
-        justify-content: space-between; /* Đẩy nội dung ra 2 bên */
-        align-items: flex-end;
-        margin-bottom: 20px;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-    
-    .toolbar-left { display: flex; gap: 10px; }
-    
-    /* Toolbar bên phải chứa: Tìm kiếm + Nút Thêm */
-    .toolbar-right { display: flex; align-items: center; gap: 10px; }
-
-    .filter-label { font-weight: 500; margin-bottom: 0; display: block; color: #333; margin-right: 5px; }
-    
-    .toolbar-input {
-        padding: 8px 12px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        outline: none;
-    }
-    .toolbar-input:focus { border-color: #484BE0; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1); }
-
-
-    .btn-primary {
-        background-color: #484BE0;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-weight: 600;
-        border: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: background-color 0.2s;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    .btn-primary:hover { background-color: #3b3dbf; color: white; }
-
-    .action-btn {
-        border: none;
-        background: none;
-        cursor: pointer;
-        padding: 5px;
-        font-size: 18px; 
-        transition: transform 0.2s;
-    }
-    .action-btn:hover { transform: scale(1.1); }
-    
-    /* Icon Sửa màu xanh */
-    .btn-edit-icon { color: #0d6efd; } 
-    /* Icon Xóa màu đỏ (Dấu X) */
-    .btn-delete-icon { color: #dc3545; }
-
-
-    /* --- CSS Table --- */
-    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; white-space: nowrap; }
-    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
-
-    /* --- CSS Pagination --- */
     .pagination-container { display: flex; justify-content: center; padding-top: 15px; border-top: 1px solid #eee; }
     .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; margin-bottom: 0; }
     .pagination li a, .pagination li span { padding: 8px 16px; border: 1px solid #dee2e6; border-radius: 4px; color: #333; text-decoration: none; background-color: #fff; transition: all 0.2s; }
     .pagination li a:hover { background-color: #e9ecef; border-color: #dee2e6; }
     .pagination li.active span { background-color: #0d6efd; color: white; border-color: #0d6efd; }
     .pagination li.disabled span { color: #6c757d; pointer-events: none; }
+
+    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; white-space: nowrap; }
+    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
 </style>
 
 <div class="content-body">
@@ -101,20 +38,19 @@
         </div>
 
         <div class="toolbar-row">
-            <div class="toolbar-left">
-            </div>
+            <div class="toolbar-left"></div>
 
             <div class="toolbar-right">
-                <div style="display:flex; align-items:center;">
+                <div style="display:flex; align-items:center; gap:5px;">
                     <span class="filter-label">Tìm kiếm:</span>
                     <input type="text" id="searchInput" name="searchString" 
                            value="@ViewBag.CurrentFilter" 
                            class="toolbar-input" 
-                           placeholder="Nhập tên ngành..." 
-                           style="width: 250px;">
+                           placeholder="Nhập mã ngành hoặc tên ngành..." 
+                           style="width: 280px;">
                 </div>
                 
-                <button type="button" class="btn btn-primary">
+                <button type="button" class="btn btn-primary" id="btnOpenModal">
                     <i class="fa-solid fa-plus"></i> Thêm ngành mới
                 </button>
             </div>
@@ -149,11 +85,16 @@
                                 <td>@(item.NgaySua.HasValue ? item.NgaySua.Value.ToString("dd/MM/yyyy") : "-")</td>
 
                                 <td class="text-center">
-                                    <button class="action-btn btn-edit-icon" title="Sửa" onclick="editItem(@item.Id)">
+                                    <button class="action-btn btn-edit-icon btn-edit" 
+                                            data-id="@item.Id" 
+                                            title="Sửa">
                                         <i class="fa-regular fa-pen-to-square"></i>
                                     </button>
                                     
-                                    <button class="action-btn btn-delete-icon" title="Xóa" onclick="deleteItem(@item.Id)">
+                                    <button class="action-btn btn-delete-icon btn-delete-confirm" 
+                                            data-id="@item.Id" 
+                                            data-name="@item.TenNganh" 
+                                            title="Xóa">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
                                 </td>
@@ -167,6 +108,12 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Partial: Modal Thêm mới -->
+        <partial name="_CreateModal" />
+
+        <!-- Partial: Modal Sửa -->
+        <partial name="_EditModal" />
 
         <div class="pagination-container">
              @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = ViewBag.CurrentFilter }),
@@ -182,19 +129,98 @@
             })
         </div>
     </div>
+
+    <!-- Form ẩn cho Delete -->
+    <form id="deleteForm" asp-action="Delete" method="post" style="display:none;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="deleteId" />
+    </form>
 </div>
 
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-    // --- Xử lý Tìm kiếm Real-time (Giữ nguyên logic) ---
+document.addEventListener("DOMContentLoaded", function () {
+    // --- TempData Messages ---
+    var successMsg = '@Html.Raw(TempData["SuccessMessage"])';
+    var errorMsg = '@Html.Raw(TempData["ErrorMessage"])';
+
+    if (successMsg && successMsg.length > 0) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Thành công!',
+            text: successMsg,
+            confirmButtonText: 'Đóng',
+            confirmButtonColor: '#484BE0',
+            timer: 3000
+        });
+    }
+
+    if (errorMsg && errorMsg.length > 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Có lỗi xảy ra',
+            text: errorMsg,
+            confirmButtonText: 'Kiểm tra lại',
+            confirmButtonColor: '#d33'
+        });
+    }
+
+    // --- Delete Confirm ---
+    function handleDeleteClick() {
+        const id = this.getAttribute('data-id');
+        const name = this.getAttribute('data-name');
+
+        Swal.fire({
+            title: 'Xác nhận xóa?',
+            html: `Bạn có chắc chắn muốn xóa ngành <strong>"${name}"</strong>?<br>Hành động này không thể hoàn tác!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Vâng, xóa nó!',
+            cancelButtonText: 'Hủy bỏ'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('deleteId').value = id;
+                document.getElementById('deleteForm').submit();
+            }
+        });
+    }
+
+    // --- Bind delete events ---
+    window.rebindDeleteEvents = function() {
+        const deleteBtns = document.querySelectorAll('.btn-delete-confirm');
+        deleteBtns.forEach(btn => {
+            btn.removeEventListener('click', handleDeleteClick);
+            btn.addEventListener('click', handleDeleteClick);
+        });
+    };
+    rebindDeleteEvents();
+
+    // --- Bind edit events ---
+    window.rebindEditEvents = function() {
+        const editBtns = document.querySelectorAll('.btn-edit');
+        editBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                openEditModal(id);
+            });
+        });
+    };
+    rebindEditEvents();
+
+    // --- Search Real-time ---
     const searchInput = document.getElementById('searchInput');
     const tableContainer = document.querySelector('.table-responsive');
     const paginationContainer = document.querySelector('.pagination-container');
     let timeout = null;
 
     if (searchInput) {
-        searchInput.addEventListener('input', function () {
+        searchInput.addEventListener('input', function() {
             clearTimeout(timeout);
-            timeout = setTimeout(function () { performSearch(); }, 500); 
+            timeout = setTimeout(performSearch, 500);
         });
     }
 
@@ -209,15 +235,10 @@
                 const doc = parser.parseFromString(html, 'text/html');
                 if (tableContainer) tableContainer.innerHTML = doc.querySelector('.table-responsive').innerHTML;
                 if (paginationContainer) paginationContainer.innerHTML = doc.querySelector('.pagination-container').innerHTML;
+                rebindDeleteEvents();
+                rebindEditEvents();
             })
             .catch(err => console.error('Lỗi tìm kiếm:', err));
     }
-
-    // --- Các hàm Placeholder cho nút Sửa/Xóa ---
-    function editItem(id) {
-        console.log('Sửa item ID:', id);
-    }
-    function deleteItem(id) {
-         console.log('Xóa item ID:', id);
-    }
+});
 </script>

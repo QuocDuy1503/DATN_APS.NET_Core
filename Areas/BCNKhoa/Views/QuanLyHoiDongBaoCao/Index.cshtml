@@ -1,72 +1,117 @@
-﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList.Mvc.Core;
 @using X.PagedList;
 @model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongBaoCaoViewModel>
 
 @{
-    ViewData["Title"] = "Quản lý hội đồng báo cáo";
+    ViewData["Title"] = "Quản lý Hội đồng báo cáo";
 }
 
 <style>
-    /* CSS giữ nguyên từ trang cũ */
-    .content-card { background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); display: flex; flex-direction: column; }
-    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin-bottom: 20px; text-transform: uppercase; }
-    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-    .toolbar-left { display: flex; gap: 15px; }
-    .filter-item label { font-weight: 500; display: block; color: #333; font-size: 13px; margin-bottom: 5px; }
-    .filter-item select { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; outline: none; height: 38px; font-size: 14px; min-width: 150px; }
-    .toolbar-input { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; outline: none; height: 38px; font-size: 14px; }
-    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; color: white; display: inline-flex; align-items: center; gap: 5px; }
-    .btn-primary { background-color: #484BE0; }
-    
-    /* Status Badge */
-    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
-    .status-midterm { background-color: #e3f2fd; color: #0d6efd; border: 1px solid #9ec5fe; }
-    .status-final { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+    }
+    .page-header-row { margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
-    .table-responsive { width: 100%; flex: 1; margin-bottom: 20px;} /* Thêm flex: 1 để đẩy pagination xuống */
+    /* Toolbar */
+    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+    .toolbar-left { display: flex; gap: 20px; align-items: flex-end; }
+    .toolbar-right { display: flex; gap: 10px; align-items: flex-end; }
+    .filter-item { display: flex; flex-direction: column; }
+    .filter-label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; }
+    .toolbar-select, .toolbar-input {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        min-width: 150px;
+    }
+    .toolbar-select:focus, .toolbar-input:focus { outline: none; border-color: #484BE0; }
+    .btn-primary { background-color: #484BE0; color: white; border: none; padding: 9px 16px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+    .btn-primary:hover { background-color: #3a3dc0; }
+
+    /* Table */
+    .table-responsive { width: 100%; margin-bottom: 20px; flex: 1; }
     table { width: 100%; border-collapse: collapse; }
-    th { background-color: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; font-size: 13px; }
-    td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; }
-    .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; }
+    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; white-space: nowrap; }
+    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
+    tr:hover { background-color: #f9f9f9; }
 
-    /* --- CSS PHÂN TRANG ĐỒNG BỘ VỚI INDEX --- */
+    .status-badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; display: inline-block; }
+    .status-midterm { background-color: #e3f2fd; color: #1976d2; }
+    .status-final { background-color: #fff3cd; color: #856404; }
+    .status-approved { background-color: #d4edda; color: #155724; }
+    .status-pending { background-color: #fff3cd; color: #856404; }
+
+    .action-btn { background: none; border: none; cursor: pointer; padding: 5px 8px; font-size: 14px; }
+    .btn-edit-icon { color: #484BE0; }
+    .btn-edit-icon:hover { color: #3a3dc0; }
+    .btn-delete-icon { color: #dc3545; }
+    .btn-delete-icon:hover { color: #c82333; }
+
+    /* Pagination */
     .pagination-container { display: flex; justify-content: center; padding-top: 15px; border-top: 1px solid #eee; }
-    .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; margin: 0; }
-    .page-item { }
-    .page-link { padding: 8px 16px; border: 1px solid #dee2e6; border-radius: 4px; color: #333; text-decoration: none; background-color: #fff; transition: all 0.2s; display: block; }
-    .page-link:hover { background-color: #e9ecef; border-color: #dee2e6; }
-    .page-item.active .page-link { background-color: #0d6efd; color: white; border-color: #0d6efd; }
-    .page-item.disabled .page-link { color: #6c757d; pointer-events: none; background-color: #fff; border-color: #dee2e6; }
+    .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; margin-bottom: 0; }
+    .pagination li a, .pagination li span { padding: 8px 16px; border: 1px solid #dee2e6; border-radius: 4px; color: #333; text-decoration: none; background-color: #fff; transition: all 0.2s; }
+    .pagination li a:hover { background-color: #e9ecef; border-color: #dee2e6; }
+    .pagination li.active span { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+    .pagination li.disabled span { color: #6c757d; pointer-events: none; }
 </style>
 
 <div class="content-body">
     <div class="content-card">
-        <h2 class="page-title">Hội đồng báo cáo</h2>
-        
+        <div class="page-header-row">
+            <h2 class="page-title">Quản lý Hội đồng báo cáo</h2>
+        </div>
+
         <div class="toolbar-row">
             <form method="get" class="toolbar-left" id="filterForm">
                 <div class="filter-item">
-                    <label>Đợt đồ án</label>
-                    <select name="dotId" asp-items="ViewBag.ListDot" onchange="this.form.submit()">
-                        <option value="">-- Chọn đợt --</option>
+                    <label class="filter-label">Đợt đồ án:</label>
+                    <select name="dotId" class="toolbar-select" onchange="this.form.submit()">
+                        <option value="">-- Tất cả --</option>
+                        @if (ViewBag.ListDot != null)
+                        {
+                            foreach (SelectListItem item in ViewBag.ListDot)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == ViewBag.CurrentDotId?.ToString())">@item.Text</option>
+                            }
+                        }
                     </select>
                 </div>
                 <div class="filter-item">
-                     <label>Năm học</label>
-                    <select name="namHoc" asp-items="ViewBag.ListNamHoc" onchange="this.form.submit()">
-                        <option value="">-- Chọn năm học --</option>
+                    <label class="filter-label">Năm học:</label>
+                    <select name="namHoc" class="toolbar-select" onchange="this.form.submit()">
+                        <option value="">-- Tất cả --</option>
+                        @if (ViewBag.ListNamHoc != null)
+                        {
+                            foreach (SelectListItem item in ViewBag.ListNamHoc)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == ViewBag.CurrentNamHoc?.ToString())">@item.Text</option>
+                            }
+                        }
                     </select>
-                 </div>
+                </div>
             </form>
 
             <div class="toolbar-right">
-                <form method="get" style="display:flex; align-items:center; gap:5px;">
-                    <span style="font-weight:500; font-size:13px;">Tìm kiếm:</span>
-                    <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="toolbar-input" placeholder="Nhập tên hội đồng..." style="width: 250px;">
-                </form>
-                <button class="btn btn-primary" onclick="document.getElementById('addCouncilModal').style.display='flex'">
+                <div class="filter-item">
+                    <label class="filter-label">Tìm kiếm:</label>
+                    <input type="text" id="searchInput" class="toolbar-input" 
+                           value="@ViewBag.CurrentFilter" 
+                           placeholder="Nhập mã hoặc tên hội đồng..." 
+                           style="width: 280px;">
+                </div>
+                
+                <button type="button" class="btn btn-primary" id="btnOpenModal" style="margin-bottom: 0; height: 38px;">
                     <i class="fa-solid fa-plus"></i> Thêm hội đồng
-                 </button>
+                </button>
             </div>
         </div>
 
@@ -74,78 +119,153 @@
             <table>
                 <thead>
                     <tr>
-                         <th>Mã HĐ</th>
+                        <th style="width: 100px;">Mã HĐ</th>
                         <th>Tên hội đồng</th>
                         <th>Bộ môn</th>
-                        <th>Loại hội đồng</th>
+                        <th style="width: 100px;">Loại</th>
                         <th>Người tạo</th>
-                        <th>Ngày báo cáo</th>
+                        <th style="width: 130px;">Ngày báo cáo</th>
                         <th>Địa điểm</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
+                        <th style="width: 100px;">Trạng thái</th>
+                        <th class="text-center" style="width: 100px;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model != null && Model.Any())
-                     {
+                    {
                         foreach (var item in Model)
                         {
+                            var isGiuaKy = item.LoaiHoiDong?.ToLower().Contains("giữa") == true || 
+                                          item.LoaiHoiDong?.ToUpper() == "GIUA_KY";
                             <tr>
-                                 <td>@item.MaHoiDong</td>
+                                <td>@item.MaHoiDong</td>
                                 <td>@item.TenHoiDong</td>
                                 <td>@item.TenBoMon</td>
-                                 <td>
-                                    @if(item.LoaiHoiDong == "Giữa kì") {
+                                <td>
+                                    @if (isGiuaKy)
+                                    {
                                         <span class="status-badge status-midterm">Giữa kì</span>
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         <span class="status-badge status-final">Cuối kì</span>
-                                     }
+                                    }
                                 </td>
                                 <td>@item.NguoiTao</td>
                                 <td>
-                                    @(item.NgayBaoCao.HasValue ? item.NgayBaoCao.Value.ToString("dd/MM/yyyy") : "--") <br/>
-                                    <small style="color:#666">@(item.ThoiGianDuKien.HasValue ? item.ThoiGianDuKien.Value.ToString("HH:mm") : "")</small>
+                                    @if (item.NgayBaoCao.HasValue)
+                                    {
+                                        <span>@item.NgayBaoCao.Value.ToString("dd/MM/yyyy")</span>
+                                        @if (item.ThoiGianDuKien.HasValue)
+                                        {
+                                            <br /><small style="color:#666;">@item.ThoiGianDuKien.Value.ToString("HH:mm")</small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
                                 </td>
-                                 <td>@item.DiaDiem</td>
+                                <td>@(string.IsNullOrEmpty(item.DiaDiem) ? "-" : item.DiaDiem)</td>
                                 <td>
-                                    @if(item.TrangThai) { <i style="color:#28a745;">Đã duyệt</i> } 
-                                     else { <i style="color:#ffc107;">Chờ duyệt</i> }
+                                    @if (item.TrangThai)
+                                    {
+                                        <span class="status-badge status-approved">Đã duyệt</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-pending">Chờ duyệt</span>
+                                    }
                                 </td>
-                                <td>
-                                     <a asp-area="BCNKhoa" asp-controller="QuanLyHoiDongBaoCao" asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon">
-                                        <i class="fa-regular fa-pen-to-square" style="color:#0d6efd;"></i>
-                                     </a>
+                                <td class="text-center">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Chi tiết">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                    @if (!item.TrangThai)
+                                    {
+                                        <button class="action-btn btn-delete-icon btn-delete-confirm" data-id="@item.Id" data-name="@item.TenHoiDong" title="Xóa">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    }
                                 </td>
                             </tr>
                         }
-                     }
+                    }
                     else
                     {
-                        <tr><td colspan="9" class="text-center p-4">Không có dữ liệu.</td></tr>
-                     }
+                        <tr><td colspan="9" class="text-center" style="padding: 30px; color: #999;">Không tìm thấy dữ liệu hội đồng nào.</td></tr>
+                    }
                 </tbody>
             </table>
         </div>
-        
+
+        <partial name="_CreateModal" />
+
         <div class="pagination-container">
-            @Html.PagedListPager(Model, page => Url.Action("Index", new { 
-                page, 
-                dotId = ViewBag.CurrentDotId, 
-                namHoc = ViewBag.CurrentNamHoc, 
-                searchString = ViewBag.CurrentFilter 
-            }), 
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page, dotId = ViewBag.CurrentDotId, namHoc = ViewBag.CurrentNamHoc, searchString = ViewBag.CurrentFilter }),
             new PagedListRenderOptions {
                 LiElementClasses = new string[] { "page-item" },
                 PageClasses = new string[] { "page-link" },
                 DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
                 DisplayLinkToNextPage = PagedListDisplayMode.Always,
                 LinkToPreviousPageFormat = "«",
-                LinkToNextPageFormat = "»",
-                EllipsesFormat = "...",
-                MaximumPageNumbersToDisplay = 5
+                LinkToNextPageFormat = "»"
             })
         </div>
     </div>
+
+    <form id="deleteForm" asp-action="Delete" method="post" style="display:none;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="deleteId" />
+    </form>
 </div>
 
-<partial name="_CreateModal" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var successMsg = '@Html.Raw(TempData["SuccessMessage"])';
+    var errorMsg = '@Html.Raw(TempData["ErrorMessage"])';
+
+    if (successMsg && successMsg.length > 0) {
+        Swal.fire({ icon: 'success', title: 'Thành công!', text: successMsg, timer: 3000, confirmButtonColor: '#484BE0' });
+    }
+    if (errorMsg && errorMsg.length > 0) {
+        Swal.fire({ icon: 'error', title: 'Có lỗi xảy ra', text: errorMsg, confirmButtonColor: '#d33' });
+    }
+
+    // Delete confirm
+    document.querySelectorAll('.btn-delete-confirm').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                html: `Bạn có chắc muốn xóa hội đồng <strong>"${name}"</strong>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonText: 'Hủy',
+                confirmButtonText: 'Xóa'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    document.getElementById('deleteId').value = id;
+                    document.getElementById('deleteForm').submit();
+                }
+            });
+        });
+    });
+
+    // Search realtime
+    const searchInput = document.getElementById('searchInput');
+    let timeout = null;
+    searchInput?.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('searchString', this.value);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        }, 800);
+    });
+});
+</script>

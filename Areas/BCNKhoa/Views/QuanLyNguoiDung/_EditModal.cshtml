@@ -1,0 +1,241 @@
+<style>
+    #editModal .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 9999; }
+    #editModal .modal-overlay.show { display: flex; }
+    #editModal .modal-dialog { background-color: white; width: 100%; max-width: 650px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto; }
+    #editModal .modal-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 10; }
+    #editModal .modal-title { font-weight: 700; font-size: 18px; color: #333; }
+    #editModal .btn-close-modal { background: transparent; border: 1px solid #ddd; border-radius: 4px; color: #999; font-size: 20px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    #editModal .btn-close-modal:hover { background-color: #f5f5f5; color: #333; }
+    #editModal .modal-body { padding: 20px; }
+    #editModal .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: white; }
+
+    #editModal .form-group { margin-bottom: 15px; }
+    #editModal .form-group label { font-weight: 600; font-size: 13px; margin-bottom: 5px; display: block; color: #555; }
+    #editModal .form-group label .required { color: #dc3545; }
+    #editModal .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+    #editModal .form-control:focus { border-color: #484BE0; outline: none; }
+    #editModal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    #editModal .section-title { font-size: 14px; font-weight: 700; color: #484BE0; margin: 20px 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #484BE0; }
+
+    #editModal .type-badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+    #editModal .type-badge-sv { background: #d1ecf1; color: #0c5460; }
+    #editModal .type-badge-gv { background: #d4edda; color: #155724; }
+    #editModal .type-badge i { font-size: 18px; }
+
+    #editModal .conditional-section { display: none; }
+    #editModal .conditional-section.show { display: block; }
+
+    #editModal .btn-secondary { background-color: #fff; color: #333; border: 1px solid #ddd; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    #editModal .btn-secondary:hover { background-color: #f9f9f9; }
+    #editModal .btn-save { background-color: #484BE0; color: white; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+    #editModal .btn-save:hover { background-color: #3a3dc7; }
+</style>
+
+<div id="editModal">
+    <div class="modal-overlay" id="editModalOverlay">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title">Chỉnh sửa người dùng</div>
+                <button type="button" class="btn-close-modal close-edit-modal">&times;</button>
+            </div>
+            
+            <form asp-action="Edit" method="post" id="editForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="editId">
+                <input type="hidden" name="LoaiNguoiDung" id="editLoaiNguoiDung">
+                
+                <div class="modal-body">
+                    <!-- Loại người dùng (chỉ hiển thị, không đổi được) -->
+                    <div class="form-group">
+                        <label>Loại người dùng</label>
+                        <div id="editTypeBadge"></div>
+                    </div>
+
+                    <div class="section-title">Thông tin cơ bản</div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Họ và tên <span class="required">*</span></label>
+                            <input type="text" name="HoTen" id="editHoTen" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="editEmail" class="form-control" readonly style="background:#f5f5f5;">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <input type="tel" name="Sdt" id="editSdt" class="form-control" placeholder="0901234567">
+                        </div>
+                        <div class="form-group">
+                            <label>Trạng thái</label>
+                            <select name="TrangThai" id="editTrangThai" class="form-control">
+                                <option value="1">Hoạt động</option>
+                                <option value="0">Tạm khóa</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin Sinh viên -->
+                    <div id="editSectionSinhVien" class="conditional-section">
+                        <div class="section-title">Thông tin Sinh viên</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>MSSV <span class="required">*</span></label>
+                                <input type="text" name="Mssv" id="editMssv" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Khóa học</label>
+                                <select name="IdKhoaHoc" id="editIdKhoaHoc" class="form-control">
+                                    <option value="">-- Chọn khóa --</option>
+                                    @if (ViewBag.ListKhoaHoc != null)
+                                    {
+                                        foreach (SelectListItem item in ViewBag.ListKhoaHoc)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Chuyên ngành</label>
+                                <select name="IdChuyenNganh" id="editIdChuyenNganh" class="form-control">
+                                    <option value="">-- Chọn chuyên ngành --</option>
+                                    @if (ViewBag.ListChuyenNganh != null)
+                                    {
+                                        foreach (SelectListItem item in ViewBag.ListChuyenNganh)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin Giảng viên -->
+                    <div id="editSectionGiangVien" class="conditional-section">
+                        <div class="section-title">Thông tin Giảng viên</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Mã giảng viên <span class="required">*</span></label>
+                                <input type="text" name="MaGv" id="editMaGv" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Học vị</label>
+                                <select name="HocVi" id="editHocVi" class="form-control">
+                                    <option value="">-- Chọn học vị --</option>
+                                    <option value="Cử nhân">Cử nhân</option>
+                                    <option value="Thạc sĩ">Thạc sĩ</option>
+                                    <option value="Tiến sĩ">Tiến sĩ</option>
+                                    <option value="Phó Giáo sư">Phó Giáo sư</option>
+                                    <option value="Giáo sư">Giáo sư</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Bộ môn</label>
+                                <select name="IdBoMon" id="editIdBoMon" class="form-control">
+                                    <option value="">-- Chọn bộ môn --</option>
+                                    @if (ViewBag.ListBoMon != null)
+                                    {
+                                        foreach (SelectListItem item in ViewBag.ListBoMon)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Vai trò</label>
+                                <select name="SelectedVaiTroId" id="editVaiTro" class="form-control">
+                                    <option value="">-- Chưa phân quyền --</option>
+                                    @if (ViewBag.ListVaiTro != null)
+                                    {
+                                        foreach (var vt in ViewBag.ListVaiTro as List<DATN_TMS.Models.VaiTro>)
+                                        {
+                                            if (vt.MaVaiTro != "SINH_VIEN" && vt.MaVaiTro != "CHUA_PHAN_QUYEN")
+                                            {
+                                                <option value="@vt.Id">@vt.TenVaiTro</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary close-edit-modal">Hủy</button>
+                    <button type="submit" class="btn-save">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Đóng modal
+document.querySelectorAll('.close-edit-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('editModalOverlay').classList.remove('show');
+    });
+});
+
+window.addEventListener('click', e => {
+    if (e.target === document.getElementById('editModalOverlay')) {
+        document.getElementById('editModalOverlay').classList.remove('show');
+    }
+});
+
+// Hàm mở modal edit và fill dữ liệu
+function openEditModal(user) {
+    const modal = document.getElementById('editModalOverlay');
+    
+    // Fill dữ liệu cơ bản
+    document.getElementById('editId').value = user.id;
+    document.getElementById('editHoTen').value = user.hoTen || '';
+    document.getElementById('editEmail').value = user.email || '';
+    document.getElementById('editSdt').value = user.sdt || '';
+    document.getElementById('editTrangThai').value = user.trangThai;
+    
+    // Hiển thị loại người dùng
+    const typeBadge = document.getElementById('editTypeBadge');
+    const sectionSV = document.getElementById('editSectionSinhVien');
+    const sectionGV = document.getElementById('editSectionGiangVien');
+    
+    if (user.isSinhVien) {
+        document.getElementById('editLoaiNguoiDung').value = 'SINH_VIEN';
+        typeBadge.innerHTML = '<div class="type-badge type-badge-sv"><i class="fa-solid fa-graduation-cap"></i> Sinh viên</div>';
+        sectionSV.classList.add('show');
+        sectionGV.classList.remove('show');
+        
+        // Fill thông tin sinh viên
+        document.getElementById('editMssv').value = user.mssv || '';
+        if (user.idKhoaHoc) document.getElementById('editIdKhoaHoc').value = user.idKhoaHoc;
+        if (user.idChuyenNganh) document.getElementById('editIdChuyenNganh').value = user.idChuyenNganh;
+    } else {
+        document.getElementById('editLoaiNguoiDung').value = 'GIANG_VIEN';
+        typeBadge.innerHTML = '<div class="type-badge type-badge-gv"><i class="fa-solid fa-chalkboard-user"></i> Giảng viên</div>';
+        sectionSV.classList.remove('show');
+        sectionGV.classList.add('show');
+        
+        // Fill thông tin giảng viên
+        document.getElementById('editMaGv').value = user.maGv || '';
+        if (user.hocVi) document.getElementById('editHocVi').value = user.hocVi;
+        if (user.idBoMon) document.getElementById('editIdBoMon').value = user.idBoMon;
+        if (user.selectedVaiTroId) document.getElementById('editVaiTro').value = user.selectedVaiTroId;
+    }
+    
+    modal.classList.add('show');
+}
+</script>

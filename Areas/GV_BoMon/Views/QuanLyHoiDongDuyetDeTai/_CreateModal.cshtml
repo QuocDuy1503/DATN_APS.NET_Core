@@ -1,0 +1,45 @@
+﻿<div class="modal-overlay" id="addCouncilModal" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Thêm hội đồng mới</div>
+            <button type="button" class="btn-close close-modal" onclick="closeModal()">&times;</button>
+        </div>
+        
+        <form asp-action="Create" method="post">
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Mã hội đồng <span class="text-danger">*</span>:</label>
+                    <input type="text" name="MaHoiDong" class="form-control" placeholder="Ví dụ: HDBV004" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Tên hội đồng <span class="text-danger">*</span>:</label>
+                    <input type="text" name="TenHoiDong" class="form-control" placeholder="Nhập tên hội đồng" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label>Bộ môn:</label>
+                    <select name="IdBoMon" class="form-control" asp-items="ViewBag.ListBoMon">
+                        <option value="">-- Chọn bộ môn --</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Ngày bắt đầu:</label>
+                        <input type="date" name="NgayBatDau" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Ngày kết thúc:</label>
+                        <input type="date" name="NgayKetThuc" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-modal" onclick="closeModal()">Hủy</button>
+                <button type="submit" class="btn btn-save" style="background-color: #484BE0; color: white;">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>

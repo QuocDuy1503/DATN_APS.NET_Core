@@ -1,0 +1,219 @@
+﻿@model DATN_TMS.Areas.BCNKhoa.Models.CTDTViewModel
+
+<style>
+    .content-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+
+    .page-header-row { margin-bottom: 15px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-item select.form-control { background: #ffffff !important; border: 1px solid #ced4da !important; height: 38px !important; padding: 6px 12px !important; font-size: 13px !important; color: #333 !important; border-radius: 4px; min-width: 150px; }
+    .filter-label { font-weight: 600; font-size: 13px; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-input, .form-control { background: #fff; font-size: 13px; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; height: 36px; }
+    .toolbar-input:focus, .form-control:focus { border-color: #484BE0; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1); outline: none; }
+
+    .search-box { display:flex; flex-direction: column; gap:6px; align-items: flex-start; }
+    .search-input { padding-left: 12px; font-size: 13px; text-align: left; }
+
+    .btn-green { background-color: #198754; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; height: 38px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+    .btn-green:hover { background-color: #157347; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); display: none; justify-content: center; align-items: center; z-index: 9999; }
+    .modal-overlay.show { display: flex; }
+    .modal-dialog { background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="page-header-row" style="margin-bottom: 15px;">
+            <h2 class="page-title">Quản lý Chương trình đào tạo</h2>
+        </div>
+
+        <div class="toolbar-row">
+            <form method="get" id="filterForm" class="filter-wrapper">
+                <div class="filter-item">
+                    <span class="filter-label">Khóa:</span>
+                    <select class="form-control" style="width: 150px;" name="khoaId" onchange="this.form.submit()">
+                        <option value="">--Tất cả--</option>
+                        @if (Model.KhoaOptions != null)
+                        {
+                            foreach (var opt in Model.KhoaOptions)
+                            {
+                                <option value="@opt.Value" selected="@(opt.Value == (Model.KhoaHocId?.ToString() ?? ""))">@opt.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </form>
+
+            <div class="toolbar-right" style="display:flex; align-items:flex-end; gap:10px;">
+                <div class="search-box">
+                    <span class="filter-label">Tìm kiếm:</span>
+                    <div class="search-input-wrapper">
+                        <input type="text" name="searchString" id="searchInput" class="toolbar-input search-input" placeholder="Nhập từ khóa..." style="width: 240px;" value="@Model.SearchString" />
+                    </div>
+                </div>
+                <button class="btn btn-green" id="btnOpenImport" type="button" style="margin-bottom:2px;">
+                    <i class="fa-solid fa-file-excel"></i> Import Excel
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="tableCTDT">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">STT</th>
+                        <th>Mã chương trình</th>
+                        <th>Tên chương trình</th>
+                        <th>Khóa</th>
+                        <th>Tổng tín chỉ</th>
+                        <th>Trạng thái</th>
+                        <th style="text-align: center;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ChuongTrinhs.Any())
+                    {
+                        var stt = 1;
+                        foreach (var item in Model.ChuongTrinhs)
+                        {
+                            <tr>
+                                <td>@stt</td>
+                                <td>@item.MaCtdt</td>
+                                <td>@item.TenCtdt</td>
+                                <td>@item.Khoa</td>
+                                <td>@item.TongTinChi</td>
+                                <td>
+                                    <span class="badge @((item.TrangThai ? "badge-gv" : "badge-none"))">@(item.TrangThai ? "Đang áp dụng" : "Ngưng")</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <a class="action-btn" title="Chi tiết" asp-action="Details" asp-route-id="@item.Id">
+                                        <i class="fa-solid fa-eye" style="color: #17a2b8;"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="7" style="text-align:center; padding:20px; color:#888;">Không có dữ liệu.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@Html.Partial("Import")
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const importModal = document.getElementById('importModal');
+
+    document.getElementById('btnOpenImport')?.addEventListener('click', () => {
+        importModal?.classList.add('show');
+    });
+
+    document.querySelectorAll('#importModal .close-modal')?.forEach(btn => {
+        btn.addEventListener('click', () => importModal?.classList.remove('show'));
+    });
+
+    importModal?.addEventListener('click', e => {
+        if (e.target === importModal) importModal.classList.remove('show');
+    });
+
+    // Handle import submit
+    document.getElementById('btnProcessImport')?.addEventListener('click', function () {
+        const fileInput = document.getElementById('fileInput');
+        const khoaInput = document.getElementById('importKhoa');
+        const tenInput = document.getElementById('importTen');
+        const maInput = document.getElementById('importMa');
+
+        if (!fileInput?.files?.length) {
+            Swal.fire({ icon: 'warning', title: 'Thiếu file', text: 'Vui lòng chọn file Excel trước khi import.' });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        if (khoaInput?.value) formData.append('khoaHocId', khoaInput.value);
+        if (tenInput?.value) formData.append('tenCtdt', tenInput.value);
+        if (maInput?.value) formData.append('maCtdt', maInput.value);
+
+        const tokenInput = document.querySelector('#importModal input[name="__RequestVerificationToken"]');
+        if (tokenInput) {
+            formData.append('__RequestVerificationToken', tokenInput.value);
+        }
+
+        fetch('@Url.Action("Import")', {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 2000, showConfirmButton: false })
+                    .then(() => window.location.reload());
+            } else {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+            }
+        })
+        .catch(() => Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể import. Vui lòng thử lại.' }));
+    });
+
+    // Upload UI helpers
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileNameLabel = document.getElementById('fileName');
+
+    function updateFileInfo(file) {
+        if (!fileInfo || !fileNameLabel) return;
+        fileInfo.style.display = 'block';
+        fileNameLabel.textContent = file.name;
+    }
+
+    dropZone?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) updateFileInfo(file);
+    });
+    dropZone?.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+    dropZone?.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+    dropZone?.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragging');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            updateFileInfo(e.dataTransfer.files[0]);
+        }
+    });
+
+    // Search debounce like QuanLyDangKy
+    const searchInput = document.getElementById('searchInput');
+    const khoaSelect = document.querySelector('select[name="khoaId"]');
+    let searchTimeout;
+    searchInput?.addEventListener('input', function () {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('searchString', this.value);
+            if (khoaSelect?.value) url.searchParams.set('khoaId', khoaSelect.value); else url.searchParams.delete('khoaId');
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        }, 600);
+    });
+</script>

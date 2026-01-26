@@ -1,0 +1,248 @@
+<style>
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 9999; }
+    .modal-overlay.show { display: flex; }
+    .modal-dialog { background-color: white; width: 100%; max-width: 650px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; background: white; z-index: 10; }
+    .modal-title { font-weight: 700; font-size: 18px; color: #333; }
+    .btn-close-modal { background: transparent; border: 1px solid #ddd; border-radius: 4px; color: #999; font-size: 20px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .btn-close-modal:hover { background-color: #f5f5f5; color: #333; }
+    .modal-body { padding: 20px; }
+    .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; position: sticky; bottom: 0; background: white; }
+
+    .form-group { margin-bottom: 15px; }
+    .form-group label { font-weight: 600; font-size: 13px; margin-bottom: 5px; display: block; color: #555; }
+    .form-group label .required { color: #dc3545; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+    .form-control:focus { border-color: #484BE0; outline: none; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    .section-title { font-size: 14px; font-weight: 700; color: #484BE0; margin: 20px 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #484BE0; }
+
+    .type-selector { display: flex; gap: 15px; margin-bottom: 15px; }
+    .type-option { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.2s; }
+    .type-option:hover { border-color: #484BE0; background: #f8f9ff; }
+    .type-option.active { border-color: #484BE0; background: #eef2ff; }
+    .type-option i { font-size: 24px; color: #484BE0; margin-bottom: 8px; display: block; }
+    .type-option span { font-weight: 600; font-size: 14px; }
+
+    .conditional-section { display: none; }
+    .conditional-section.show { display: block; }
+
+    .btn-secondary { background-color: #fff; color: #333; border: 1px solid #ddd; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .btn-secondary:hover { background-color: #f9f9f9; }
+    .btn-save { background-color: #484BE0; color: white; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+    .btn-save:hover { background-color: #3a3dc7; }
+
+    .info-note { background: #e8f4fd; padding: 10px 12px; border-radius: 6px; font-size: 12px; color: #1976d2; margin-top: 10px; border-left: 3px solid #1976d2; }
+</style>
+
+<div class="modal-overlay" id="addModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Thêm người dùng mới</div>
+            <button type="button" class="btn-close-modal close-modal">&times;</button>
+        </div>
+        
+        <form asp-action="Create" method="post" id="createForm">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <!-- Chọn loại người dùng -->
+                <div class="form-group">
+                    <label>Loại người dùng <span class="required">*</span></label>
+                    <div class="type-selector">
+                        <div class="type-option" data-type="SINH_VIEN" onclick="selectType('SINH_VIEN')">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                            <span>Sinh viên</span>
+                        </div>
+                        <div class="type-option" data-type="GIANG_VIEN" onclick="selectType('GIANG_VIEN')">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                            <span>Giảng viên</span>
+                        </div>
+                    </div>
+                    <input type="hidden" name="LoaiNguoiDung" id="loaiNguoiDung" required>
+                </div>
+
+                <div class="section-title">Thông tin cơ bản</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Họ và tên <span class="required">*</span></label>
+                        <input type="text" name="HoTen" class="form-control" required placeholder="Nguyễn Văn A">
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" name="Email" class="form-control" required placeholder="email@example.com">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input type="tel" name="Sdt" class="form-control" placeholder="0901234567">
+                    </div>
+                    <div class="form-group">
+                        <label>Trạng thái</label>
+                        <select name="TrangThai" class="form-control">
+                            <option value="1" selected>Hoạt động</option>
+                            <option value="0">Tạm khóa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Thông tin Sinh viên -->
+                <div id="sectionSinhVien" class="conditional-section">
+                    <div class="section-title">Thông tin Sinh viên</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>MSSV <span class="required">*</span></label>
+                            <input type="text" name="Mssv" id="inputMssv" class="form-control" placeholder="2174802010XXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Khóa học</label>
+                            <select name="IdKhoaHoc" class="form-control">
+                                <option value="">-- Chọn khóa --</option>
+                                @if (ViewBag.ListKhoaHoc != null)
+                                {
+                                    foreach (SelectListItem item in ViewBag.ListKhoaHoc)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Chuyên ngành</label>
+                            <select name="IdChuyenNganh" class="form-control">
+                                <option value="">-- Chọn chuyên ngành --</option>
+                                @if (ViewBag.ListChuyenNganh != null)
+                                {
+                                    foreach (SelectListItem item in ViewBag.ListChuyenNganh)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    @* <div class="info-note">
+                        <i class="fa-solid fa-info-circle"></i> Sinh viên sẽ được tự động gán vai trò <strong>"Sinh viên"</strong>
+                    </div> *@
+                </div>
+
+                <!-- Thông tin Giảng viên -->
+                <div id="sectionGiangVien" class="conditional-section">
+                    <div class="section-title">Thông tin Giảng viên</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mã giảng viên <span class="required">*</span></label>
+                            <input type="text" name="MaGv" id="inputMaGv" class="form-control" placeholder="GV_XXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Học vị</label>
+                            <select name="HocVi" class="form-control">
+                                <option value="">-- Chọn học vị --</option>
+                                <option value="Cử nhân">Cử nhân</option>
+                                <option value="Thạc sĩ">Thạc sĩ</option>
+                                <option value="Tiến sĩ">Tiến sĩ</option>
+                                <option value="Phó Giáo sư">Phó Giáo sư</option>
+                                <option value="Giáo sư">Giáo sư</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Bộ môn</label>
+                            <select name="IdBoMon" class="form-control">
+                                <option value="">-- Chọn bộ môn --</option>
+                                @if (ViewBag.ListBoMon != null)
+                                {
+                                    foreach (SelectListItem item in ViewBag.ListBoMon)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Vai trò</label>
+                            <select name="SelectedVaiTroId" id="selectVaiTro" class="form-control">
+                                <option value="">-- Chưa phân quyền --</option>
+                                @if (ViewBag.ListVaiTro != null)
+                                {
+                                    foreach (var vt in ViewBag.ListVaiTro as List<DATN_TMS.Models.VaiTro>)
+                                    {
+                                        // Bỏ vai trò Sinh viên và Chưa phân quyền
+                                        if (vt.MaVaiTro != "SINH_VIEN" && vt.MaVaiTro != "CHUA_PHAN_QUYEN")
+                                        {
+                                            <option value="@vt.Id">@vt.TenVaiTro</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary close-modal">Hủy</button>
+                <button type="submit" class="btn-save">
+                    <i class="fa-solid fa-plus"></i> Thêm người dùng
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const modal = document.getElementById('addModal');
+    const btnOpen = document.getElementById('btnOpenModal');
+    const btnCloses = document.querySelectorAll('.close-modal');
+
+    btnOpen?.addEventListener('click', () => modal.classList.add('show'));
+    btnCloses.forEach(btn => btn.addEventListener('click', () => modal.classList.remove('show')));
+    window.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
+
+    // Mặc định chọn loại Sinh viên để ẩn chọn vai trò và tự gán role phù hợp
+    selectType('SINH_VIEN');
+});
+
+function selectType(type) {
+    // Update UI
+    document.querySelectorAll('.type-option').forEach(opt => opt.classList.remove('active'));
+    document.querySelector(`.type-option[data-type="${type}"]`).classList.add('active');
+    document.getElementById('loaiNguoiDung').value = type;
+
+    // Show/hide sections
+    const sectionSV = document.getElementById('sectionSinhVien');
+    const sectionGV = document.getElementById('sectionGiangVien');
+    const inputMssv = document.getElementById('inputMssv');
+    const inputMaGv = document.getElementById('inputMaGv');
+    const selectVaiTro = document.getElementById('selectVaiTro');
+
+    if (type === 'SINH_VIEN') {
+        sectionSV.classList.add('show');
+        sectionGV.classList.remove('show');
+        inputMssv.required = true;
+        inputMaGv.required = false;
+    } else {
+        sectionSV.classList.remove('show');
+        sectionGV.classList.add('show');
+        inputMssv.required = false;
+        inputMaGv.required = true;
+    }
+}
+
+// Form validation
+document.getElementById('createForm')?.addEventListener('submit', function(e) {
+    const type = document.getElementById('loaiNguoiDung').value;
+    if (!type) {
+        e.preventDefault();
+        Swal.fire({ icon: 'warning', title: 'Chú ý', text: 'Vui lòng chọn loại người dùng!' });
+        return;
+    }
+});
+</script>

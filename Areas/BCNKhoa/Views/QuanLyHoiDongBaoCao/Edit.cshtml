@@ -1,540 +1,534 @@
-﻿@model DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongBaoCaoEditViewModel
+@model DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongBaoCaoEditViewModel
 
 @{
-    ViewData["Title"] = "Cập nhật hội đồng báo cáo";
+    ViewData["Title"] = "Chi tiết hội đồng báo cáo";
+    var isBCNKhoa = ViewBag.IsBCNKhoa ?? false;
 }
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
     .content-card { background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); }
-    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
     
-    .form-group { margin-bottom: 15px; }
-    .form-control { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; outline: none; margin-top: 5px; }
+    /* Header */
+    .page-header-wrapper { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0 0 5px 0; text-transform: uppercase; }
+    .breadcrumb-area { font-size: 13px; color: #666; }
+    .breadcrumb-area a { text-decoration: none; color: #484BE0; }
+    .breadcrumb-area a:hover { text-decoration: underline; }
+    .breadcrumb-area span { margin: 0 5px; color: #ccc; }
+
+    .status-badge { padding: 6px 12px; border-radius: 4px; font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; }
+    .status-approved { background-color: #d4edda; color: #155724; }
+    .status-pending { background-color: #fff3cd; color: #856404; }
+    
+    /* Form */
+    .form-section { margin-bottom: 20px; }
+    .form-row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 15px; }
+    .form-row-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 15px; }
+    .form-group { margin-bottom: 0; }
+    .form-group label { font-weight: 600; font-size: 13px; margin-bottom: 5px; display: block; color: #555; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+    .form-control:focus { border-color: #484BE0; outline: none; }
     .form-control[readonly] { background-color: #f8f9fa; color: #666; }
-    
-    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; color: white; transition: 0.2s; }
-    .btn-primary { background-color: #484BE0; }
-    .btn-save { background-color: #484BE0; padding: 10px 25px; font-size: 16px; }
-    .btn-save:hover { background-color: #3a3dc0; }
-    
-    .tab-header { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; margin-top: 20px; }
-    .tab-btn { padding: 10px 20px; cursor: pointer; font-weight: 600; color: #666; border-bottom: 2px solid transparent; transition: all 0.3s; }
-    .tab-btn:hover { color: #484BE0; }
-    .tab-btn.active { color: #484BE0; border-bottom: 2px solid #484BE0; }
-    .tab-content { display: none; animation: fadeIn 0.3s; }
+
+    /* Tab */
+    .tab-header { display: flex; border-bottom: 2px solid #eee; margin-top: 25px; }
+    .tab-btn { padding: 12px 24px; cursor: pointer; font-weight: 600; color: #666; border: none; border-bottom: 3px solid transparent; background: none; font-size: 14px; }
+    .tab-btn:hover { color: #c0392b; }
+    .tab-btn.active { color: #c0392b; border-bottom-color: #c0392b; }
+    .tab-content { display: none; padding-top: 20px; }
     .tab-content.active { display: block; }
 
-    .toggle-btn { background: none; border: none; cursor: pointer; color: #484BE0; font-size: 14px; }
-    .student-table { width: 100%; margin-top: 10px; background: #f8f9fa; border-radius: 4px; }
-    .student-table th { background: #e9ecef; font-size: 12px; padding: 8px; text-align: left;}
-    .student-table td { font-size: 12px; padding: 8px; border-bottom: 1px solid #dee2e6; }
-    
-    .member-search-container { position: relative; flex: 1; }
-    .suggestion-box { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; z-index: 10; display: none; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .suggestion-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
-    .suggestion-item:hover { background-color: #f1f1f1; }
-    
-    .selected-user-display { display: none; flex: 1; align-items: center; gap: 10px; background: #eef2ff; padding: 8px 12px; border-radius: 4px; border: 1px solid #484BE0; color: #484BE0; font-weight: 500; margin-top: 0; }
-    .btn-remove-selection { cursor: pointer; color: #d9534f; margin-left: auto; }
+    /* Add Bar */
+    .add-bar { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 20px; background: #fafafa; padding: 15px; border-radius: 6px; border: 1px solid #eee; }
+    .add-bar .form-group { margin-bottom: 0; }
+    .search-container { position: relative; flex: 1; }
+    .suggestion-box { position: absolute; top: 100%; left: 0; width: 100%; background: white; border: 1px solid #ddd; z-index: 100; display: none; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 4px; }
+    .suggestion-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 13px; }
+    .suggestion-item:hover { background-color: #f5f5f5; }
 
-    .main-table { width: 100%; border-collapse: collapse; }
-    .main-table th { background-color: #f8f9fa; border-bottom: 2px solid #eee; padding: 10px; text-align: left; font-size: 13px; color: #444; }
-    .main-table td { border-bottom: 1px solid #eee; padding: 10px; font-size: 13px; color: #333; vertical-align: middle; }
-    
-    @@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .selected-display { display: none; flex: 1; align-items: center; gap: 10px; background: #eef2ff; padding: 8px 12px; border-radius: 4px; border: 1px solid #484BE0; color: #484BE0; font-weight: 500; }
+    .btn-clear { cursor: pointer; color: #d9534f; margin-left: auto; }
+
+    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; color: white; }
+    .btn-primary { background-color: #484BE0; }
+    .btn-primary:hover { background-color: #3a3dc0; }
+    .btn-success { background-color: #28a745; }
+    .btn-success:hover { background-color: #218838; }
+    .btn-warning { background-color: #ffc107; color: #333; }
+    .btn-danger { background-color: #dc3545; }
+    .btn-save { background-color: #484BE0; padding: 10px 25px; font-size: 14px; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #eee; font-size: 13px; color: #555; font-weight: 600; }
+    td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; vertical-align: middle; }
+
+    .badge-role { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+    .badge-role.chu-tich { background: #e74c3c; color: white; }
+    .badge-role.thu-ky { background: #3498db; color: white; }
+    .badge-role.phan-bien { background: #f39c12; color: white; }
+    .badge-role.uy-vien { background: #95a5a6; color: white; }
+
+    .no-data { text-align: center; padding: 30px; color: #999; font-style: italic; }
+
+    /* Topic row with expand icon */
+    .topic-row { cursor: pointer; transition: background 0.2s; }
+    .topic-row:hover { background-color: #f0f4ff; }
+    .topic-cell { display: flex; align-items: center; gap: 12px; }
+    .expand-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e9ecef;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #555;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    .topic-row:hover .expand-icon { background: #484BE0; color: white; }
+    .expand-icon.expanded { background: #484BE0; color: white; }
+
+    .student-detail-row { background-color: #fafafa; }
+    .student-table { width: 100%; margin: 0; border: 1px solid #eee; background: white; }
+    .student-table th { background: #f5f5f5; font-size: 12px; padding: 10px 12px; font-weight: 600; }
+    .student-table td { font-size: 12px; padding: 10px 12px; border-bottom: 1px solid #eee; }
+
+    /* Footer */
+    .footer-buttons { margin-top: 30px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 20px; }
+
+    .text-primary { color: #484BE0; text-decoration: none; }
+    .text-primary:hover { text-decoration: underline; }
 </style>
 
 <div class="content-body">
     <div class="content-card">
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 class="page-title">Quản lý hội đồng báo cáo</h2>
-            <a asp-action="Index" style="color:#666; font-size:14px; text-decoration: none;">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại
-            </a>
+        <!-- Header với tiêu đề, breadcrumb và trạng thái -->
+        <div class="page-header-wrapper">
+            <div>
+                <h2 class="page-title">CHI TIẾT HỘI ĐỒNG: @Model.MaHoiDong</h2>
+                <div class="breadcrumb-area">
+                    <a asp-action="Index">Danh sách hội đồng</a>
+                    <span>/</span>
+                    <span style="color: #333; font-weight: 500;">@Model.MaHoiDong</span>
+                </div>
+            </div>
+            <div>
+                @if (Model.TrangThai)
+                {
+                    <span class="status-badge status-approved"><i class="fa-solid fa-check-circle"></i> Đã duyệt</span>
+                }
+                else
+                {
+                    <span class="status-badge status-pending"><i class="fa-solid fa-clock"></i> Chờ duyệt</span>
+                }
+            </div>
         </div>
 
+        <!-- Form thông tin chung -->
         <form id="mainForm" asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
             <input type="hidden" name="Id" value="@Model.Id" />
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
-                <div class="form-group">
-                    <label style="font-weight: 600;">Mã hội đồng:</label>
-                    <input name="MaHoiDong" value="@Model.MaHoiDong" class="form-control" readonly>
+
+            <div class="form-section">
+                <div class="form-row-3">
+                    <div class="form-group">
+                        <label>Mã hội đồng:</label>
+                        <input value="@Model.MaHoiDong" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Tên hội đồng:</label>
+                        <input name="TenHoiDong" value="@Model.TenHoiDong" class="form-control" @(Model.TrangThai ? "readonly" : "")>
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày báo cáo:</label>
+                        <input type="date" name="NgayBaoCao" value="@Model.NgayBaoCao?.ToString("yyyy-MM-dd")" class="form-control" @(Model.TrangThai ? "readonly" : "")>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label style="font-weight: 600;">Tên hội đồng:</label>
-                    <input name="TenHoiDong" value="@Model.TenHoiDong" class="form-control">
-                </div>
-                 <div class="form-group">
-                    <label style="font-weight: 600;">Bộ môn:</label>
-                    <select name="IdBoMon" asp-items="ViewBag.ListBoMon" class="form-control"></select>
-                </div>
-                <div class="form-group">
-                    <label style="font-weight: 600;">Ngày báo cáo:</label>
-                    <input type="date" name="NgayBaoCao" value="@Model.NgayBaoCao?.ToString("yyyy-MM-dd")" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label style="font-weight: 600;">Địa điểm:</label>
-                    <input name="DiaDiem" value="@Model.DiaDiem" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label style="font-weight: 600;">Thời gian dự kiến:</label>
-                    <input type="time" name="ThoiGianDuKien" value="@Model.ThoiGianDuKien?.ToString("HH:mm")" class="form-control">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Địa điểm:</label>
+                        <input name="DiaDiem" value="@Model.DiaDiem" class="form-control" @(Model.TrangThai ? "readonly" : "")>
+                    </div>
+                    <div class="form-group">
+                        <label>Thời gian dự kiến:</label>
+                        <input name="ThoiGianDuKien" value="@(Model.ThoiGianDuKien != null ? Model.ThoiGianDuKien.Value.ToString("HH\\:mm") + " - " + Model.ThoiGianDuKien.Value.AddHours(4).ToString("HH\\:mm") : "")" class="form-control" placeholder="07:30 - 11:30" @(Model.TrangThai ? "readonly" : "")>
+                    </div>
                 </div>
             </div>
         </form>
 
+        <!-- Tab Header -->
         <div class="tab-header">
-            <div class="tab-btn active" onclick="switchTab('tabMembers', this)">Thành viên</div>
-            <div class="tab-btn" onclick="switchTab('tabTopics', this)">Đề tài</div>
+            <button class="tab-btn active" onclick="switchTab('tabMembers', this)">Thành viên</button>
+            <button class="tab-btn" onclick="switchTab('tabTopics', this)">Đề tài</button>
         </div>
 
+        <!-- Tab: Thành viên -->
         <div id="tabMembers" class="tab-content active">
-            <div class="add-member-bar" style="display: flex; gap: 10px; margin-bottom: 20px; align-items: flex-end;">
-                
-                <div class="member-search-container" id="searchContainer">
-                    <input type="text" id="inputSearch" class="form-control" placeholder="Nhập tên, email hoặc MSSV giảng viên..." autocomplete="off">
-                    <div class="suggestion-box" id="suggestionBox"></div>
+            @if (!Model.TrangThai)
+            {
+                <div class="add-bar">
+                    <div class="search-container" id="memberSearchContainer">
+                        <label style="font-size: 13px; font-weight: 500; margin-bottom: 5px; display: block;">Tìm giảng viên:</label>
+                        <input type="text" id="memberSearchInput" class="form-control" placeholder="Nhập tên, email hoặc mã GV..." autocomplete="off">
+                        <div class="suggestion-box" id="memberSuggestionBox"></div>
+                    </div>
+
+                    <div class="selected-display" id="selectedMemberDisplay">
+                        <span id="selectedMemberText"></span>
+                        <input type="hidden" id="selectedMemberId">
+                        <i class="fa-solid fa-xmark btn-clear" id="btnClearMember"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vai trò:</label>
+                        <select class="form-control" id="memberRole" style="width: 150px;">
+                            <option value="UY_VIEN">Ủy viên</option>
+                            <option value="THU_KY">Thư ký</option>
+                            <option value="CHU_TICH">Chủ tịch</option>
+                            <option value="PHAN_BIEN">Phản biện</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" id="btnAddMember" type="button" style="height: 38px; margin-top: 20px;">
+                        <i class="fa-solid fa-plus"></i> Thêm
+                    </button>
                 </div>
+            }
 
-                <div class="selected-user-display" id="selectedDisplay">
-                    <span id="selectedNameText"></span>
-                    <input type="hidden" id="selectedId">
-                    <i class="fa-solid fa-xmark btn-remove-selection" id="btnClearSelection" title="Bỏ chọn"></i>
-                </div>
-
-                <select class="form-control" id="selectRole" style="width: 150px; margin-top: 0;">
-                    <option value="UY_VIEN">Ủy viên</option>
-                    <option value="THU_KY">Thư ký</option>
-                    <option value="CHU_TICH">Chủ tịch</option>
-                    <option value="PHAN_BIEN">Phản biện</option>
-                </select>
-
-                <button class="btn btn-primary" id="btnAddMember" style="height: 36px;">
-                    <i class="fa-solid fa-plus"></i> Thêm
-                </button>
-            </div>
-            
-            <table class="main-table" id="memberTable">
+            <table id="memberTable">
                 <thead>
                     <tr>
                         <th>Mã GV</th>
                         <th>Họ và tên</th>
                         <th>Email</th>
+                        <th>Học vị</th>
                         <th>Vai trò</th>
-                        <th class="text-center">Thao tác</th>
+                        @if (!Model.TrangThai) { <th class="text-center" style="width: 80px;">Thao tác</th> }
                     </tr>
                 </thead>
-                <tbody>
-                    @if (Model.ThanhViens != null)
+                <tbody id="memberTableBody">
+                    @if (Model.ThanhViens != null && Model.ThanhViens.Any())
                     {
                         foreach (var tv in Model.ThanhViens)
                         {
-                            <tr id="row-member-@tv.">
+                            var badgeClass = tv.VaiTro switch { "CHU_TICH" => "chu-tich", "THU_KY" => "thu-ky", "PHAN_BIEN" => "phan-bien", _ => "uy-vien" };
+                            var vaiTroDisplay = tv.VaiTro switch { "CHU_TICH" => "Chủ tịch", "THU_KY" => "Thư ký", "PHAN_BIEN" => "Phản biện", _ => "Ủy viên" };
+                            <tr id="row-member-@tv.IdNguoiDung">
                                 <td>@tv.MaGV</td>
                                 <td>@tv.TenGiangVien</td>
                                 <td>@tv.Email</td>
-                                <td>
-                                    @if(tv.VaiTro == "CHU_TICH") { <span class="badge bg-primary text-white p-2 rounded">Chủ tịch</span> }
-                                    else if(tv.VaiTro == "THU_KY") { <span class="badge bg-info text-dark p-2 rounded">Thư ký</span> }
-                                    else if(tv.VaiTro == "PHAN_BIEN") { <span class="badge bg-warning text-dark p-2 rounded">Phản biện</span> }
-                                    else { <span class="badge bg-secondary text-white p-2 rounded">Ủy viên</span> }
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm" onclick="removeMember(@Model.Id, @tv.)" style="color:#dc3545; background:none;">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </td>
+                                <td>@tv.HocVi</td>
+                                <td><span class="badge-role @badgeClass">@vaiTroDisplay</span></td>
+                                @if (!Model.TrangThai)
+                                {
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-danger" onclick="removeMember(@tv.IdNguoiDung)" style="padding: 4px 10px; font-size: 12px;">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                }
                             </tr>
                         }
+                    }
+                    else
+                    {
+                        <tr id="noMemberRow"><td colspan="@(Model.TrangThai ? 5 : 6)" class="no-data">Chưa có thành viên nào</td></tr>
                     }
                 </tbody>
             </table>
         </div>
 
+        <!-- Tab: Đề tài -->
         <div id="tabTopics" class="tab-content">
-            <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: flex-end;">
-                <div class="member-search-container" style="position: relative; flex: 1;">
-                    <label style="font-size:13px; font-weight:500; margin-bottom:6px; display:block;">Thêm đề tài:</label>
-                    <div style="display:flex; gap: 10px;">
-                        <input type="text" id="topicSearch" class="form-control" placeholder="Nhập tên hoặc mã đề tài..." autocomplete="off" style="margin-top:0;">
-                        <input type="hidden" id="selectedTopicId">
-                        <button class="btn btn-primary" id="btnAddTopic" style="background:#6f42c1; height: 36px;"> 
-                            <i class="fa-solid fa-plus"></i> Thêm
-                        </button>
-                    </div>
-                    <div class="suggestion-box" id="topicSuggestionBox" style="top: 100%;"></div>
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="main-table" id="topicTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;"></th>
-                            <th>Tên đề tài</th>
-                            <th>Chuyên ngành</th>
-                            <th>GV Hướng dẫn</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.DeTais != null)
-                        {
-                            foreach (var dt in Model.DeTais)
+            @if (!Model.TrangThai)
+            {
+                <div class="add-bar">
+                    <div class="form-group">
+                        <label>Bộ môn đề xuất:</label>
+                        <select id="filterBoMon" class="form-control" style="min-width: 150px;">
+                            @if (ViewBag.ListBoMon != null)
                             {
-                                <tr class="parent-row" id="row-topic-@dt.IdDeTai">
-                                    <td class="text-center">
-                                        <button class="toggle-btn" onclick="toggleRow(this)"><i class="fa-solid fa-plus"></i></button>
-                                    </td>
-                                    <td style="font-weight: 500;">
-                                        @dt.TenDeTai <br/>
-                                        <small style="color:#666">(@dt.MaDeTai)</small>
-                                    </td>
-                                    <td>@dt.ChuyenNganh</td>
-                                    <td>@dt.GVHD</td>
-                                    <td class="text-center">
-                                        <button class="btn btn-sm" onclick="removeTopic(@Model.Id, @dt.IdDeTai)" style="color:#dc3545; background:none;">
+                                foreach (SelectListItem item in ViewBag.ListBoMon)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="search-container" id="topicSearchContainer" style="flex: 2;">
+                        <label style="font-size: 13px; font-weight: 500; margin-bottom: 5px; display: block;">Thêm đề tài:</label>
+                        <input type="text" id="topicSearchInput" class="form-control" placeholder="Nhập tên đề tài..." autocomplete="off">
+                        <div class="suggestion-box" id="topicSuggestionBox"></div>
+                    </div>
+                    <input type="hidden" id="selectedTopicId">
+
+                    <button class="btn btn-primary" id="btnAddTopic" type="button" style="height: 38px; margin-top: 20px;">
+                        <i class="fa-solid fa-plus"></i> Thêm
+                    </button>
+                </div>
+            }
+
+            <table id="topicTable">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;">Tên đề tài</th>
+                        <th>Chuyên ngành</th>
+                        <th>GV Hướng dẫn</th>
+                        <th>Tài liệu báo cáo</th>
+                        <th>Đánh giá & Nhận xét</th>
+                        @if (!Model.TrangThai) { <th class="text-center" style="width: 80px;">Thao tác</th> }
+                    </tr>
+                </thead>
+                <tbody id="topicTableBody">
+                    @if (Model.DeTais != null && Model.DeTais.Any())
+                    {
+                        foreach (var dt in Model.DeTais)
+                        {
+                            <tr id="row-topic-@dt.IdDeTai" class="topic-row" onclick="toggleStudentDetail(@dt.IdDeTai)">
+                                <td>
+                                    <div class="topic-cell">
+                                        <span class="expand-icon" id="icon-@dt.IdDeTai">+</span>
+                                        <span>@dt.TenDeTai</span>
+                                    </div>
+                                </td>
+                                <td>@dt.ChuyenNganh</td>
+                                <td>@dt.GVHD</td>
+                                <td><a href="#" class="text-primary">DATN_@dt.IdDeTai</a></td>
+                                <td><a href="#" class="text-primary">Đánh giá và nhận xét</a></td>
+                                @if (!Model.TrangThai)
+                                {
+                                    <td class="text-center" onclick="event.stopPropagation();">
+                                        <button type="button" class="btn btn-danger" onclick="removeTopic(@dt.IdDeTai)" style="padding: 4px 10px; font-size: 12px;">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </td>
-                                </tr>
-                                <tr class="detail-row" style="display:none; background-color: #fcfcfc;">
-                                    <td colspan="5" style="padding: 10px 20px;">
-                                        <table class="student-table">
-                                            <thead>
+                                }
+                            </tr>
+                            <tr id="detail-topic-@dt.IdDeTai" class="student-detail-row" style="display: none;">
+                                <td colspan="@(Model.TrangThai ? 5 : 6)" style="padding: 0 12px 12px 50px;">
+                                    <table class="student-table">
+                                        <thead>
+                                            <tr>
+                                                <th>MSSV</th>
+                                                <th>Họ và tên sinh viên</th>
+                                                <th>Khóa</th>
+                                                <th>Chuyên ngành</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var sv in dt.SinhViens)
+                                            {
                                                 <tr>
-                                                    <th>MSSV</th>
-                                                    <th>Họ và tên sinh viên</th>
-                                                    <th>Khóa</th>
-                                                    <th>Chuyên ngành</th>
+                                                    <td>@sv.MSSV</td>
+                                                    <td>@sv.HoTen</td>
+                                                    <td>@sv.LopKhoa</td>
+                                                    <td>@sv.ChuyenNganh</td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var sv in dt.SinhViens)
-                                                {
-                                                    <tr>
-                                                        <td>@sv.MSSV</td>
-                                                        <td>@sv.HoTen</td>
-                                                        <td>@sv.LopKhoa</td>
-                                                        <td>@sv.ChuyenNganh</td>
-                                                    </tr>
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                </tr>
-                            }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
                         }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                    else
+                    {
+                        <tr id="noTopicRow"><td colspan="@(Model.TrangThai ? 5 : 6)" class="no-data">Chưa có đề tài nào</td></tr>
+                    }
+                </tbody>
+            </table>
         </div>
 
-        <div style="margin-top:30px; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #eee; padding-top: 20px;">
-            @if(Model.TrangThai)
+        <!-- Footer Buttons -->
+        <div class="footer-buttons">
+            @if (!Model.TrangThai)
             {
-                 <span class="text-success" style="font-weight:bold; padding: 10px; display:flex; align-items:center; gap:5px;">
-                     <i class="fa-solid fa-check-circle"></i> Hội đồng đã được duyệt
-                 </span>
+                <button type="submit" form="mainForm" class="btn btn-save">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu
+                </button>
+                @if (isBCNKhoa)
+                {
+                    <button type="button" class="btn btn-success" onclick="approveCouncil()" style="padding: 10px 25px; font-size: 14px;">
+                        <i class="fa-solid fa-check"></i> Duyệt hội đồng
+                    </button>
+                }
             }
-            
-            <button type="button" class="btn btn-save" onclick="document.getElementById('mainForm').submit()">
-                <i class="fa-solid fa-floppy-disk"></i> Lưu
-            </button>
-            
-            @if(!Model.TrangThai)
+            else if (isBCNKhoa)
             {
-                <button class="btn" style="background-color: #28a745; color: white;" onclick="approveCouncil()">
-                    <i class="fa-solid fa-check"></i> Duyệt hội đồng
+                <button type="button" class="btn btn-warning" onclick="unapproveCouncil()" style="padding: 10px 25px; font-size: 14px;">
+                    <i class="fa-solid fa-undo"></i> Hủy duyệt
                 </button>
             }
         </div>
-
     </div>
 </div>
 
 <script>
-    const councilId = @Model.Id;
+const councilId = @Model.Id;
+const isBCNKhoa = @(isBCNKhoa ? "true" : "false");
 
-    // 1. Chuyển Tab
-    function switchTab(tabId, btn) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        btn.classList.add('active');
-    }
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
 
-    // 2. Toggle Row (Hiện danh sách sinh viên)
-    function toggleRow(btn) {
-        const tr = btn.closest('tr');
-        const detailRow = tr.nextElementSibling;
-        const icon = btn.querySelector('i');
-        
-        if (detailRow.style.display === 'none') {
-            detailRow.style.display = 'table-row';
-            icon.classList.remove('fa-plus');
-            icon.classList.add('fa-minus');
-        } else {
-            detailRow.style.display = 'none';
-            icon.classList.remove('fa-minus');
-            icon.classList.add('fa-plus');
+function toggleStudentDetail(topicId) {
+    const row = document.getElementById(`detail-topic-${topicId}`);
+    const icon = document.getElementById(`icon-${topicId}`);
+    if (row) {
+        const isHidden = row.style.display === 'none';
+        row.style.display = isHidden ? 'table-row' : 'none';
+        if (icon) {
+            icon.textContent = isHidden ? '−' : '+';
+            icon.classList.toggle('expanded', isHidden);
         }
     }
+}
 
-    // ===== LOGIC TÌM KIẾM & THÊM THÀNH VIÊN =====
-    const inputSearch = document.getElementById('inputSearch');
-    const suggestionBox = document.getElementById('suggestionBox');
-    const selectedDisplay = document.getElementById('selectedDisplay');
-    const selectedNameText = document.getElementById('selectedNameText');
-    const selectedId = document.getElementById('selectedId');
-    const btnClearSelection = document.getElementById('btnClearSelection');
-    const selectRole = document.getElementById('selectRole');
-    const btnAddMember = document.getElementById('btnAddMember');
-    const searchContainer = document.getElementById('searchContainer');
+// Member search
+const mInput = document.getElementById('memberSearchInput');
+const mBox = document.getElementById('memberSuggestionBox');
+const mDisplay = document.getElementById('selectedMemberDisplay');
+const mContainer = document.getElementById('memberSearchContainer');
+const mText = document.getElementById('selectedMemberText');
+const mId = document.getElementById('selectedMemberId');
+let mData = {};
 
-    let searchTimeout;
+mInput?.addEventListener('input', function() {
+    const q = this.value;
+    if (q.length < 2) { mBox.style.display = 'none'; return; }
+    fetch(`@Url.Action("SearchMembers")?term=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(data => {
+            mBox.innerHTML = data.length ? data.map(i => `<div class="suggestion-item" data-id="${i.id}" data-hoten="${i.hoTen}" data-email="${i.email}" data-magv="${i.maGV}" data-hocvi="${i.hocVi}"><strong>${i.hoTen}</strong> (${i.maGV})<br><small>${i.email} - ${i.hocVi || 'N/A'}</small></div>`).join('') : '<div class="suggestion-item" style="color:#999">Không tìm thấy</div>';
+            mBox.style.display = 'block';
+            mBox.querySelectorAll('.suggestion-item[data-id]').forEach(item => {
+                item.onclick = () => {
+                    mData = { id: item.dataset.id, hoTen: item.dataset.hoten, email: item.dataset.email, maGV: item.dataset.magv, hocVi: item.dataset.hocvi };
+                    mId.value = mData.id;
+                    mText.innerText = `${mData.hoTen} (${mData.maGV})`;
+                    mContainer.style.display = 'none';
+                    mDisplay.style.display = 'flex';
+                    mBox.style.display = 'none';
+                };
+            });
+        });
+});
 
-    inputSearch.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        const keyword = this.value.trim();
-        
-        if (keyword.length < 2) {
-            suggestionBox.style.display = 'none';
+document.getElementById('btnClearMember')?.addEventListener('click', () => {
+    mContainer.style.display = 'block'; mDisplay.style.display = 'none'; mInput.value = ''; mId.value = ''; mData = {};
+});
+
+document.getElementById('btnAddMember')?.addEventListener('click', function() {
+    if (!mId.value) { Swal.fire('Chú ý', 'Vui lòng chọn giảng viên!', 'warning'); return; }
+    const role = document.getElementById('memberRole').value;
+    
+    if (role === 'CHU_TICH') {
+        const hocVi = (mData.hocVi || '').toLowerCase();
+        const validHocVi = ['tiến sĩ', 'ts', 'ts.', 'phó giáo sư', 'pgs', 'pgs.', 'giáo sư', 'gs', 'gs.'];
+        if (!validHocVi.some(v => hocVi.includes(v))) {
+            Swal.fire('Không hợp lệ', 'Chủ tịch hội đồng phải là giảng viên có học vị Tiến sĩ trở lên!', 'error');
             return;
         }
-
-        searchTimeout = setTimeout(() => {
-            fetch(`@Url.Action("SearchMembers")?term=${encodeURIComponent(keyword)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        suggestionBox.innerHTML = data.map(item => 
-                            `<div class="suggestion-item" data-id="${item.id}" data-name="${item.label}" data-email="${item.email}" data-magv="${item.maGV}">
-                                <strong>${item.label}</strong><br>
-                                <small>${item.email} (${item.maGV})</small>
-                            </div>`
-                        ).join('');
-                        suggestionBox.style.display = 'block';
-
-                        // Click vào suggestion
-                        document.querySelectorAll('.suggestion-item').forEach(item => {
-                            item.addEventListener('click', function() {
-                                selectedId.value = this.dataset.id;
-                                selectedNameText.textContent = `${this.dataset.name} (${this.dataset.magv})`;
-                                
-                                // Ẩn search box, hiện selected display
-                                searchContainer.style.display = 'none';
-                                selectedDisplay.style.display = 'flex';
-                                suggestionBox.style.display = 'none';
-                            });
-                        });
-                    } else {
-                        suggestionBox.innerHTML = '<div class="suggestion-item">Không tìm thấy</div>';
-                        suggestionBox.style.display = 'block';
-                    }
-                })
-                .catch(err => console.error(err));
-        }, 300);
+    }
+    
+    fetch('@Url.Action("AddMember")', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ CouncilId: councilId, TeacherId: parseInt(mId.value), Role: role }) })
+    .then(r => r.json()).then(data => {
+        if (data.success) {
+            document.getElementById('noMemberRow')?.remove();
+            const badgeClass = role === 'CHU_TICH' ? 'chu-tich' : (role === 'THU_KY' ? 'thu-ky' : (role === 'PHAN_BIEN' ? 'phan-bien' : 'uy-vien'));
+            const vaiTroDisplay = role === 'CHU_TICH' ? 'Chủ tịch' : (role === 'THU_KY' ? 'Thư ký' : (role === 'PHAN_BIEN' ? 'Phản biện' : 'Ủy viên'));
+            document.getElementById('memberTableBody').insertAdjacentHTML('beforeend', `<tr id="row-member-${data.data.idGiangVien}"><td>${data.data.maGV}</td><td>${data.data.tenGiangVien}</td><td>${data.data.email}</td><td>${data.data.hocVi}</td><td><span class="badge-role ${badgeClass}">${vaiTroDisplay}</span></td><td class="text-center"><button type="button" class="btn btn-danger" onclick="removeMember(${data.data.idGiangVien})" style="padding:4px 10px;font-size:12px"><i class="fa-solid fa-trash"></i></button></td></tr>`);
+            document.getElementById('btnClearMember').click();
+            Swal.fire({ icon: 'success', title: 'Đã thêm!', timer: 1500, showConfirmButton: false });
+        } else { Swal.fire('Không thể thêm', data.message, 'error'); }
     });
+});
 
-    // Bỏ chọn
-    btnClearSelection.addEventListener('click', function() {
-        selectedId.value = '';
-        selectedNameText.textContent = '';
-        inputSearch.value = '';
-        searchContainer.style.display = 'block';
-        selectedDisplay.style.display = 'none';
-    });
-
-    // Thêm thành viên
-    btnAddMember.addEventListener('click', function() {
-        const teacherId = selectedId.value;
-        const role = selectRole.value;
-
-        if (!teacherId) {
-            alert('Vui lòng chọn giảng viên!');
-            return;
+function removeMember(id) {
+    Swal.fire({ title: 'Xóa thành viên?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonText: 'Hủy', confirmButtonText: 'Xóa' }).then(r => {
+        if (r.isConfirmed) {
+            fetch('@Url.Action("RemoveMember")', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ CouncilId: councilId, TeacherId: id }) })
+                .then(r => r.json()).then(data => { if (data.success) { document.getElementById(`row-member-${id}`)?.remove(); Swal.fire({ icon: 'success', title: 'Đã xóa!', timer: 1500, showConfirmButton: false }); } else { Swal.fire('Lỗi', data.message, 'error'); } });
         }
-
-        fetch(`@Url.Action("AddMember")?councilId=${councilId}&teacherId=${teacherId}&role=${role}`, {
-            method: 'POST'
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                // Thêm dòng mới vào bảng
-                const tbody = document.querySelector('#memberTable tbody');
-                const roleLabel = getRoleLabel(data.data.vaiTro);
-                
-                const newRow = `
-                    <tr id="row-member-${data.data.idGiangVien}">
-                        <td>${data.data.maGV}</td>
-                        <td>${data.data.tenGiangVien}</td>
-                        <td>${data.data.email}</td>
-                        <td>${roleLabel}</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm" onclick="removeMember(${councilId}, ${data.data.idGiangVien})" style="color:#dc3545; background:none;">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', newRow);
-
-                // Reset
-                btnClearSelection.click();
-                alert('Đã thêm thành viên!');
-            } else {
-                alert(data.message);
-            }
-        });
     });
+}
 
-    function getRoleLabel(role) {
-        const roles = {
-            'CHU_TICH': '<span class="badge bg-primary text-white p-2 rounded">Chủ tịch</span>',
-            'THU_KY': '<span class="badge bg-info text-dark p-2 rounded">Thư ký</span>',
-            'PHAN_BIEN': '<span class="badge bg-warning text-dark p-2 rounded">Phản biện</span>',
-            'UY_VIEN': '<span class="badge bg-secondary text-white p-2 rounded">Ủy viên</span>'
-        };
-        return roles[role] || roles['UY_VIEN'];
-    }
+// Topic search
+const tInput = document.getElementById('topicSearchInput');
+const tBox = document.getElementById('topicSuggestionBox');
+const tId = document.getElementById('selectedTopicId');
 
-    // ===== LOGIC TÌM KIẾM & THÊM ĐỀ TÀI =====
-    const topicSearch = document.getElementById('topicSearch');
-    const topicSuggestionBox = document.getElementById('topicSuggestionBox');
-    const selectedTopicId = document.getElementById('selectedTopicId');
-    const btnAddTopic = document.getElementById('btnAddTopic');
+tInput?.addEventListener('input', function() {
+    const q = this.value;
+    if (q.length < 2) { tBox.style.display = 'none'; return; }
+    fetch(`@Url.Action("SearchTopics")?term=${encodeURIComponent(q)}`)
+        .then(r => r.json()).then(data => {
+            tBox.innerHTML = data.length ? data.map(i => `<div class="suggestion-item" data-id="${i.id}">${i.tenDeTai}<br><small>Mã: ${i.maDeTai} | GVHD: ${i.gvhd}</small></div>`).join('') : '<div class="suggestion-item" style="color:#999">Không tìm thấy</div>';
+            tBox.style.display = 'block';
+            tBox.querySelectorAll('.suggestion-item[data-id]').forEach(item => {
+                item.onclick = () => {
+                    tId.value = item.dataset.id;
+                    tInput.value = item.textContent.split('\n')[0];
+                    tBox.style.display = 'none';
+                };
+            });
+        });
+});
 
-    let topicSearchTimeout;
+document.getElementById('btnAddTopic')?.addEventListener('click', function() {
+    if (!tId.value) { Swal.fire('Chú ý', 'Vui lòng chọn đề tài!', 'warning'); return; }
+    fetch('@Url.Action("AddTopic")', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ CouncilId: councilId, TopicId: parseInt(tId.value) }) })
+        .then(r => r.json()).then(data => { if (data.success) { Swal.fire({ icon: 'success', title: 'Thêm thành công!', timer: 1500, showConfirmButton: false }).then(() => location.reload()); } else { Swal.fire('Lỗi', data.message, 'error'); } });
+});
 
-    topicSearch.addEventListener('input', function() {
-        clearTimeout(topicSearchTimeout);
-        const keyword = this.value.trim();
-        
-        if (keyword.length < 2) {
-            topicSuggestionBox.style.display = 'none';
-            return;
+function removeTopic(id) {
+    Swal.fire({ title: 'Xóa đề tài?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', cancelButtonText: 'Hủy', confirmButtonText: 'Xóa' }).then(r => {
+        if (r.isConfirmed) {
+            fetch('@Url.Action("RemoveTopic")', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ CouncilId: councilId, TopicId: id }) })
+                .then(r => r.json()).then(data => { if (data.success) { document.getElementById(`row-topic-${id}`)?.remove(); document.getElementById(`detail-topic-${id}`)?.remove(); Swal.fire({ icon: 'success', title: 'Đã xóa!', timer: 1500, showConfirmButton: false }); } else { Swal.fire('Lỗi', data.message, 'error'); } });
         }
-
-        topicSearchTimeout = setTimeout(() => {
-            fetch(`@Url.Action("SearchTopics")?term=${encodeURIComponent(keyword)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        topicSuggestionBox.innerHTML = data.map(item => 
-                            `<div class="suggestion-item" data-id="${item.id}">
-                                <strong>${item.label}</strong><br>
-                                <small>Mã: ${item.maDeTai} | GVHD: ${item.gvhd}</small>
-                            </div>`
-                        ).join('');
-                        topicSuggestionBox.style.display = 'block';
-
-                        document.querySelectorAll('#topicSuggestionBox .suggestion-item').forEach(item => {
-                            item.addEventListener('click', function() {
-                                selectedTopicId.value = this.dataset.id;
-                                topicSearch.value = this.querySelector('strong').textContent;
-                                topicSuggestionBox.style.display = 'none';
-                            });
-                        });
-                    } else {
-                        topicSuggestionBox.innerHTML = '<div class="suggestion-item">Không tìm thấy</div>';
-                        topicSuggestionBox.style.display = 'block';
-                    }
-                });
-        }, 300);
     });
+}
 
-    btnAddTopic.addEventListener('click', function() {
-        const topicId = selectedTopicId.value;
-
-        if (!topicId) {
-            alert('Vui lòng chọn đề tài!');
-            return;
+function approveCouncil() {
+    if (!isBCNKhoa) { Swal.fire('Không có quyền', 'Chỉ BCN Khoa được duyệt!', 'error'); return; }
+    Swal.fire({ title: 'Duyệt hội đồng?', text: 'Hành động này sẽ chốt danh sách.', icon: 'question', showCancelButton: true, confirmButtonText: 'Duyệt', confirmButtonColor: '#28a745', cancelButtonText: 'Hủy' }).then(r => {
+        if (r.isConfirmed) {
+            fetch('@Url.Action("ApproveCouncil")', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ CouncilId: councilId }) })
+                .then(r => r.json()).then(data => { if (data.success) { Swal.fire({ icon: 'success', title: 'Thành công!', text: data.message }).then(() => location.reload()); } else { Swal.fire('Lỗi', data.message, 'error'); } });
         }
-
-        fetch(`@Url.Action("AddTopic")?councilId=${councilId}&topicId=${topicId}`, {
-            method: 'POST'
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                location.reload(); // Reload để hiển thị đầy đủ thông tin
-            } else {
-                alert(data.message);
-            }
-        });
     });
+}
 
-    // ===== XÓA THÀNH VIÊN =====
-    function removeMember(councilId, teacherId) {
-        if(!confirm('Xóa thành viên này?')) return;
-        
-        fetch(`@Url.Action("RemoveMember")?councilId=${councilId}&teacherId=${teacherId}`, { 
-            method: 'POST' 
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                document.getElementById(`row-member-${teacherId}`).remove();
-            } else {
-                alert(data.message);
-            }
-        });
-    }
+function unapproveCouncil() {
+    if (!isBCNKhoa) { Swal.fire('Không có quyền', 'Chỉ BCN Khoa được hủy duyệt!', 'error'); return; }
+    Swal.fire({ title: 'Hủy duyệt?', text: 'Hội đồng sẽ trở về trạng thái chờ duyệt.', icon: 'warning', showCancelButton: true, confirmButtonText: 'Hủy duyệt', confirmButtonColor: '#ffc107', cancelButtonText: 'Đóng' }).then(r => {
+        if (r.isConfirmed) {
+            fetch('@Url.Action("UnapproveCouncil")', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ CouncilId: councilId }) })
+                .then(r => r.json()).then(data => { if (data.success) { Swal.fire({ icon: 'success', title: 'Thành công!', text: data.message }).then(() => location.reload()); } else { Swal.fire('Lỗi', data.message, 'error'); } });
+        }
+    });
+}
 
-    // ===== XÓA ĐỀ TÀI =====
-    function removeTopic(councilId, topicId) {
-        if(!confirm('Xóa đề tài này khỏi hội đồng?')) return;
-        
-        fetch(`@Url.Action("RemoveTopic")?councilId=${councilId}&topicId=${topicId}`, { 
-            method: 'POST' 
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                const row = document.getElementById(`row-topic-${topicId}`);
-                if(row) {
-                    if(row.nextElementSibling && row.nextElementSibling.classList.contains('detail-row')) {
-                        row.nextElementSibling.remove();
-                    }
-                    row.remove();
-                }
-            } else {
-                alert(data.message);
-            }
-        });
-    }
+document.addEventListener('click', e => { 
+    if (mContainer && !mContainer.contains(e.target)) mBox.style.display = 'none'; 
+    const tContainer = document.getElementById('topicSearchContainer');
+    if (tContainer && !tContainer.contains(e.target)) tBox.style.display = 'none'; 
+});
 
-    // ===== DUYỆT HỘI ĐỒNG =====
-    function approveCouncil() {
-        Swal.fire({
-            title: 'Duyệt hội đồng?',
-            text: "Hành động này sẽ chốt danh sách và công bố lịch bảo vệ.",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Duyệt ngay',
-            confirmButtonColor: '#28a745',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`@Url.Action("ApproveCouncil")?councilId=${councilId}`, { 
-                    method: 'POST' 
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success) {
-                        Swal.fire('Thành công!', data.message, 'success')
-                            .then(() => location.reload());
-                    } else {
-                        Swal.fire('Lỗi!', data.message, 'error');
-                    }
-                });
-            }
-        });
-    }
+document.addEventListener("DOMContentLoaded", function() {
+    @if (TempData["SuccessMessage"] != null) { <text>Swal.fire({ icon: 'success', title: 'Thành công!', text: '@Html.Raw(TempData["SuccessMessage"])', timer: 2000, showConfirmButton: false });</text> }
+    @if (TempData["ErrorMessage"] != null) { <text>Swal.fire({ icon: 'error', title: 'Lỗi!', text: '@Html.Raw(TempData["ErrorMessage"])' });</text> }
+});
 </script>

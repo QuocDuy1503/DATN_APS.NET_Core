@@ -1,0 +1,382 @@
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@using System;
+@model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyNguoiDungViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<style>
+    .content-card { background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0 0 20px 0; text-transform: uppercase; }
+
+    /* Stat Cards - Màu mới theo yêu cầu */
+    .stats-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-card { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px 16px; min-width: 160px; flex: 1; cursor: pointer; transition: all 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .stat-info h3 { font-size: 20px; font-weight: 700; margin: 0; color: #2c3e50; }
+    .stat-info p { font-size: 12px; color: #666; margin: 4px 0 0 0; }
+    .stat-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
+    /* Màu icon theo vai trò */
+    .bg-sv { background: #17a2b8; } /* Xanh nước */
+    .bg-gv { background: #28a745; } /* Xanh lá */
+    .bg-bcn { background: #fd7e14; } /* Cam */
+    .bg-bm { background: #6f42c1; } /* Tím */
+    .bg-none { background: #dc3545; } /* Đỏ */
+
+    /* Toolbar */
+    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+    .toolbar-left { display: flex; gap: 20px; align-items: flex-end; }
+    .toolbar-right { display: flex; gap: 10px; align-items: flex-end; }
+    .filter-item { display: flex; flex-direction: column; }
+    .filter-label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; }
+    
+    /* Fix dropdown filter */
+    select.form-control { 
+        padding: 8px 12px; 
+        border: 1px solid #ddd; 
+        border-radius: 4px; 
+        font-size: 13px; 
+        min-width: 150px; 
+        background-color: #ffffff !important; 
+        color: #333 !important; 
+        height: 38px;
+    }
+    select.form-control:focus { outline: none; border-color: #484BE0; }
+    
+    .toolbar-input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; background-color: #fff; color: #333; height: 38px; box-sizing: border-box; }
+
+    .btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; border: none; font-size: 13px; display: inline-flex; align-items: center; gap: 5px; color: white; transition: 0.2s; height: 38px; }
+    .btn-primary { background-color: #484BE0; }
+    .btn-primary:hover { background-color: #3a3dc0; }
+
+    /* Table */
+    .table-responsive { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; white-space: nowrap; }
+    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
+    tr:hover { background-color: #f9f9f9; }
+
+    /* Badge vai trò - Màu theo yêu cầu */
+    .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block; margin-right: 3px; margin-bottom: 2px; }
+    .badge-sv { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; } /* Xanh nước nhẹ */
+    .badge-gv { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; } /* Xanh lá nhẹ */
+    .badge-bcn { background-color: #ffe5d0; color: #c45c00; border: 1px solid #ffd3b0; } /* Cam nhạt */
+    .badge-bm { background-color: #e2d9f3; color: #5a3d8a; border: 1px solid #d4c6eb; } /* Tím nhạt */
+    .badge-none { background-color: #f8d7da; color: #721c24; border: 1px dashed #f5c6cb; } /* Đỏ nhạt */
+
+    /* Toggle Switch */
+    .toggle-switch { position: relative; width: 36px; height: 20px; display: inline-block; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.3s; border-radius: 20px; }
+    .toggle-slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; }
+    input:checked + .toggle-slider { background-color: #10b981; }
+    input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+    .action-btn { background: none; border: none; cursor: pointer; padding: 5px 8px; font-size: 14px; }
+    .btn-edit-icon { color: #484BE0; }
+    .btn-edit-icon:hover { color: #3a3dc0; }
+    .btn-delete-icon { color: #dc3545; }
+    .btn-delete-icon:hover { color: #c82333; }
+
+    /* Pagination */
+    .pagination-container { display: flex; justify-content: center; padding-top: 15px; border-top: 1px solid #eee; }
+    .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; margin-bottom: 0; }
+    .pagination li a, .pagination li span { padding: 8px 16px; border: 1px solid #dee2e6; border-radius: 4px; color: #333; text-decoration: none; background-color: #fff; }
+    .pagination li a:hover { background-color: #e9ecef; }
+    .pagination li.active span { background-color: #484BE0; color: white; border-color: #484BE0; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title">Quản lý người dùng</h2>
+
+        <!-- Stat Cards -->
+        <div class="stats-container">
+            <div class="stat-card" onclick="filterByRole('Sinh viên')">
+                <div class="stat-info">
+                    <h3>@ViewBag.CountSV</h3>
+                    <p>Sinh viên</p>
+                </div>
+                <div class="stat-icon bg-sv"><i class="fa-solid fa-graduation-cap"></i></div>
+            </div>
+            <div class="stat-card" onclick="filterByRole('Giảng viên')">
+                <div class="stat-info">
+                    <h3>@ViewBag.CountGV</h3>
+                    <p>Giảng viên</p>
+                </div>
+                <div class="stat-icon bg-gv"><i class="fa-solid fa-chalkboard-user"></i></div>
+            </div>
+            <div class="stat-card" onclick="filterByRole('BCN Khoa')">
+                <div class="stat-info">
+                    <h3>@ViewBag.CountBCN</h3>
+                    <p>BCN Khoa</p>
+                </div>
+                <div class="stat-icon bg-bcn"><i class="fa-solid fa-user-tie"></i></div>
+            </div>
+            <div class="stat-card" onclick="filterByRole('Bộ môn')">
+                <div class="stat-info">
+                    <h3>@ViewBag.CountBM</h3>
+                    <p>Bộ môn</p>
+                </div>
+                <div class="stat-icon bg-bm"><i class="fa-solid fa-building-user"></i></div>
+            </div>
+            <div class="stat-card" onclick="filterByRole('Tạm khóa')">
+                <div class="stat-info">
+                    <h3>@(ViewBag.CountTamKhoa ?? 0)</h3>
+                    <p>Tạm khóa</p>
+                </div>
+                <div class="stat-icon bg-none"><i class="fa-solid fa-user-lock"></i></div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <label class="filter-label">Vai trò:</label>
+                    <select class="form-control" id="roleFilter" style="width: 180px;" onchange="applyFilter()">
+                        <option value="">-- Tất cả --</option>
+                        <option value="Sinh viên">Sinh viên</option>
+                        <option value="Giảng viên">Giảng viên</option>
+                        <option value="BCN Khoa">BCN Khoa</option>
+                        <option value="Bộ môn">Bộ môn</option>
+                        <option value="Tạm khóa">Tạm khóa</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <div class="filter-item">
+                    <label class="filter-label">Tìm kiếm:</label>
+                    <input type="text" id="searchInput" class="toolbar-input" placeholder="Tìm tên, email, mã số..." value="@ViewBag.CurrentFilter" style="width: 250px;">
+                </div>
+                <button class="btn btn-primary" id="btnOpenModal">
+                    <i class="fa-solid fa-plus"></i> Thêm người dùng
+                </button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>MSSV / MaGV</th>
+                        <th>Họ và tên</th>
+                        <th>Email</th>
+                        <th>Vai trò</th>
+                        <th>Học vị / Khóa</th>
+                        <th style="text-align:center; width: 100px;">Trạng thái</th>
+                        <th style="text-align:center; width: 80px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@(item.MaSo ?? "-")</td>
+                                <td>@item.HoTen</td>
+                                <td>@item.Email</td>
+                                <td class="role-cell">
+                                    @if (item.TrangThai == 0)
+                                    {
+                                        <span class="badge badge-none">Tạm khóa</span>
+                                    }
+                                    else if (item.VaiTros.Any())
+                                    {
+                                        foreach (var vt in item.VaiTros)
+                                        {
+                                            var badgeClass = "badge-none";
+                                            var displayText = vt;
+                                            if (vt.Contains("Sinh viên")) badgeClass = "badge-sv";
+                                            else if (vt.Contains("Giảng viên")) badgeClass = "badge-gv";
+                                            else if (vt.Contains("BCN") || vt.Contains("Ban Chủ nhiệm")) badgeClass = "badge-bcn";
+                                            else if (vt.Contains("Bộ môn")) badgeClass = "badge-bm";
+                                            else if (vt.Contains("Chưa phân quyền") || vt.Contains("chua phan quyen", StringComparison.OrdinalIgnoreCase)) displayText = "Tạm khóa";
+
+                                            <span class="badge @badgeClass">@displayText</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-none">Tạm khóa</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.LoaiNguoiDung == "Giảng viên")
+                                    {
+                                        @(item.HocVi ?? "-")
+                                    }
+                                    else if (item.LoaiNguoiDung == "Sinh viên")
+                                    {
+                                        @(item.TenKhoaHoc ?? "-")
+                                    }
+                                </td>
+                                <td style="text-align:center;">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" @(item.TrangThai == 1 ? "checked" : "") onchange="toggleStatus(@item.Id, this)">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </td>
+                                <td style="text-align:center;">
+                                    <button class="action-btn btn-edit-icon btn-edit" data-id="@item.Id" data-type="@item.LoaiNguoiDung" title="Chỉnh sửa">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </button>
+                                    <button class="action-btn btn-delete-icon btn-delete" data-id="@item.Id" data-name="@item.HoTen" title="Xóa">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">Không tìm thấy người dùng nào.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page, role = ViewBag.CurrentRole, searchString = ViewBag.CurrentFilter }),
+            new PagedListRenderOptions {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                LinkToPreviousPageFormat = "«",
+                LinkToNextPageFormat = "»"
+            })
+        </div>
+    </div>
+
+    <!-- Modal Thêm người dùng -->
+    <partial name="_CreateModal" />
+    
+    <!-- Modal Sửa người dùng -->
+    <partial name="_EditModal" />
+
+    <!-- Form xóa ẩn -->
+    <form id="deleteForm" asp-action="Delete" method="post" style="display:none;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="deleteId" />
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Hiển thị thông báo
+    document.addEventListener("DOMContentLoaded", function() {
+        var successMsg = '@Html.Raw(TempData["SuccessMessage"])';
+        var errorMsg = '@Html.Raw(TempData["ErrorMessage"])';
+        if (successMsg) Swal.fire({ icon: 'success', title: 'Thành công!', text: successMsg, timer: 3000, confirmButtonColor: '#484BE0' });
+        if (errorMsg) Swal.fire({ icon: 'error', title: 'Lỗi!', text: errorMsg, confirmButtonColor: '#d33' });
+
+        // Set selected value for role filter
+        @* var currentRole = '@(ViewBag.CurrentRole ?? "")'; *@
+        var currentRole = '@Html.Raw(ViewBag.CurrentRole ?? "")';
+        var roleSelect = document.getElementById('roleFilter');
+        if (roleSelect && currentRole) {
+            roleSelect.value = currentRole;
+        }
+    });
+
+    // Filter by role (click stat card)
+    function filterByRole(role) {
+        window.location.href = '@Url.Action("Index")' + '?role=' + encodeURIComponent(role);
+    }
+
+    // Apply filter from dropdown
+    function applyFilter() {
+        var role = document.getElementById('roleFilter').value;
+        var search = document.getElementById('searchInput').value;
+        var url = '@Url.Action("Index")';
+        var params = [];
+        if (role) params.push('role=' + encodeURIComponent(role));
+        if (search) params.push('searchString=' + encodeURIComponent(search));
+        window.location.href = url + (params.length ? '?' + params.join('&') : '');
+    }
+
+    // Search
+    let searchTimeout;
+    document.getElementById('searchInput')?.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => applyFilter(), 800);
+    });
+
+    // Toggle status
+    function toggleStatus(userId, checkboxEl) {
+        const isActive = checkboxEl?.checked;
+        fetch('@Url.Action("ToggleStatus")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ UserId: userId, Status: isActive ? 1 : 0 })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const fallbackMsg = isActive ? 'Người dùng đã được kích hoạt' : 'Người dùng đã tạm khóa';
+                const row = checkboxEl?.closest('tr');
+                const roleCell = row?.querySelector('.role-cell');
+                if (!isActive && roleCell) {
+                    roleCell.innerHTML = '<span class="badge badge-none">Tạm khóa</span>';
+                } else if (isActive) {
+                    // Reload để đồng bộ lại vai trò hiển thị đúng
+                    window.location.reload();
+                }
+                Swal.fire({ icon: 'success', title: 'Thành công', text: data.message || fallbackMsg, timer: 1500, showConfirmButton: false });
+            } else {
+                if (checkboxEl) checkboxEl.checked = !isActive;
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+            }
+        })
+        .catch(() => {
+            if (checkboxEl) checkboxEl.checked = !isActive;
+            Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể cập nhật trạng thái. Vui lòng thử lại.' });
+        });
+    }
+
+    // Edit - Mở modal sửa
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            // Load dữ liệu và mở modal
+            fetch('@Url.Action("GetUserForEdit")' + '?id=' + id)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        openEditModal(data.user);
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+                    }
+                });
+        });
+    });
+
+    // Delete
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                html: `Bạn có chắc muốn xóa người dùng <strong>"${name}"</strong>?<br><small style="color:#d33">Hành động này không thể hoàn tác!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonText: 'Hủy',
+                confirmButtonText: 'Xóa'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    document.getElementById('deleteId').value = id;
+                    document.getElementById('deleteForm').submit();
+                }
+            });
+        });
+    });
+</script>

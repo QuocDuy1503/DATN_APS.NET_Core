@@ -1,12 +1,13 @@
-@using X.PagedList.Mvc.Core;
+﻿@using X.PagedList.Mvc.Core;
 @using X.PagedList;
-@model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.BoMonViewModel>
+@model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.ChuyenNganhViewModel>
 
 @{
-    ViewData["Title"] = "Quản lý Bộ Môn";
+    ViewData["Title"] = "Quản lý Chuyên ngành";
 }
 
 <style>
+    /* CSS gốc từ file mẫu */
     .content-card {
         background-color: #fff;
         border-radius: 8px;
@@ -16,52 +17,80 @@
         flex-direction: column;
         min-height: calc(100vh - 140px);
     }
-    .table-responsive { width: 100%; margin-bottom: 20px; flex: 1; }
-    .page-header-row { margin-bottom: 10px; }
+    .table-responsive { width: 100%; margin-bottom: 20px; flex: 1; margin-top: 15px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+    
+    /* CSS cho Toolbar theo demo */
+    .toolbar-row { display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 10px; }
+    .toolbar-input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
+    .toolbar-input:focus { border-color: #484BE0; }
+    .filter-label { font-weight: 600; font-size: 14px; color: #555; }
 
+    /* Nút Purple theo demo */
+    .btn-purple {
+        background-color: #6f42c1; /* Màu tím tương tự demo */
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+    }
+    .btn-purple:hover { background-color: #59359a; color: white; }
+
+    /* CSS Table */
+    table { width: 100%; border-collapse: collapse; }
+    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; white-space: nowrap; }
+    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
+    
+    /* Pagination */
     .pagination-container { display: flex; justify-content: center; padding-top: 15px; border-top: 1px solid #eee; }
     .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; margin-bottom: 0; }
     .pagination li a, .pagination li span { padding: 8px 16px; border: 1px solid #dee2e6; border-radius: 4px; color: #333; text-decoration: none; background-color: #fff; transition: all 0.2s; }
     .pagination li a:hover { background-color: #e9ecef; border-color: #dee2e6; }
-    .pagination li.active span { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+    .pagination li.active span { background-color: #6f42c1; color: white; border-color: #6f42c1; } /* Màu tím cho phân trang active */
     .pagination li.disabled span { color: #6c757d; pointer-events: none; }
 
-    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; white-space: nowrap; }
-    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
+    /* Action buttons */
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 16px; margin: 0 4px; transition: color 0.2s; }
+    .btn-edit-icon { color: #0d6efd; }
+    .btn-delete-icon { color: #dc3545; }
+    .btn-edit-icon:hover { color: #0b5ed7; }
+    .btn-delete-icon:hover { color: #bb2d3b; }
 </style>
 
 <div class="content-body">
     <div class="content-card">
-        <div class="page-header-row">
-            <h2 class="page-title">Quản lý Bộ Môn</h2>
-        </div>
+        <h2 class="page-title" style="margin-bottom: 20px;">Quản lý Chuyên ngành</h2>
 
         <div class="toolbar-row">
-            <div class="toolbar-left"></div>
-
-            <div class="toolbar-right">
-                <div style="display:flex; align-items:center; gap:5px;">
-                    <span class="filter-label">Tìm kiếm:</span>
-                    <input type="text" id="searchInput" name="searchString" 
-                           value="@ViewBag.CurrentFilter" 
-                           class="toolbar-input" 
-                           placeholder="Nhập mã hoặc tên bộ môn..." 
-                           style="width: 280px;">
-                </div>
-                
-                <button type="button" class="btn btn-primary" id="btnOpenModal">
-                    <i class="fa-solid fa-plus"></i> Thêm bộ môn mới
-                </button>
+            <div style="display:flex; align-items:center; gap:5px;">
+                <span class="filter-label">Tìm kiếm:</span>
+                <input type="text" id="searchInput" name="searchString" 
+                       value="@ViewBag.CurrentFilter" 
+                       class="toolbar-input" 
+                       placeholder="Nhập tìm kiếm..." 
+                       style="width: 200px;">
             </div>
+            
+            <button type="button" class="btn-purple" id="btnOpenModal">
+                <i class="fa-solid fa-plus"></i> Thêm chuyên ngành
+            </button>
         </div>
 
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table id="tableChuyenNganh">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">Mã bộ môn</th>
-                        <th>Tên bộ môn</th>
+                        <th style="width: 120px;">Mã chuyên ngành</th>
+                        <th>Tên Chuyên ngành</th>
+                        <th>Tên viết tắt</th>
                         <th>Người tạo</th>
                         <th style="width: 110px;">Ngày tạo</th>
                         <th>Người sửa</th>
@@ -75,8 +104,9 @@
                         foreach (var item in Model)
                         {
                             <tr>
-                                <td><span>@item.TenVietTat</span></td>
-                                <td><span>@item.TenBoMon</span></td>
+                                <td><span>@(item.Stt.HasValue ? item.Stt : "-")</span></td>
+                                <td><span>@item.TenChuyenNganh</span></td>
+                                <td>@item.TenVietTat</td>
                                 <td>@item.NguoiTao</td>
                                 <td>@(item.NgayTao.HasValue ? item.NgayTao.Value.ToString("dd/MM/yyyy") : "-")</td>
                                 <td>@item.NguoiSua</td>
@@ -91,7 +121,7 @@
                                     
                                     <button class="action-btn btn-delete-icon btn-delete-confirm" 
                                             data-id="@item.Id" 
-                                            data-name="@item.TenBoMon" 
+                                            data-name="@item.TenChuyenNganh" 
                                             title="Xóa">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
@@ -101,20 +131,19 @@
                     }
                     else
                     {
-                        <tr><td colspan="7" class="text-center text-muted p-4">Không tìm thấy dữ liệu bộ môn nào.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted p-4">Không tìm thấy dữ liệu phù hợp.</td></tr>
                     }
                 </tbody>
             </table>
         </div>
 
-        <!-- Partial: Modal Thêm mới -->
         <partial name="_CreateModal" />
 
-        <!-- Partial: Modal Sửa -->
         <partial name="_EditModal" />
 
         <div class="pagination-container">
-             @Html.PagedListPager(Model, page => Url.Action("Index", new { page, searchString = ViewBag.CurrentFilter }),
+             @Html.PagedListPager(Model, 
+            page => Url.Action("Index", new { page, searchString = ViewBag.CurrentFilter }),
             new PagedListRenderOptions {
                 LiElementClasses = new string[] { "page-item" },
                 PageClasses = new string[] { "page-link" },
@@ -128,14 +157,12 @@
         </div>
     </div>
 
-    <!-- Form ẩn cho Delete -->
     <form id="deleteForm" asp-action="Delete" method="post" style="display:none;">
         @Html.AntiForgeryToken()
         <input type="hidden" name="id" id="deleteId" />
     </form>
 </div>
 
-<!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
@@ -150,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
             title: 'Thành công!',
             text: successMsg,
             confirmButtonText: 'Đóng',
-            confirmButtonColor: '#484BE0',
+            confirmButtonColor: '#6f42c1',
             timer: 3000
         });
     }
@@ -172,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         Swal.fire({
             title: 'Xác nhận xóa?',
-            html: `Bạn có chắc chắn muốn xóa bộ môn <strong>"${name}"</strong>?<br>Hành động này không thể hoàn tác!`,
+            html: `Bạn có chắc chắn muốn xóa chuyên ngành <strong>"${name}"</strong>?<br>Hành động này không thể hoàn tác!`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',

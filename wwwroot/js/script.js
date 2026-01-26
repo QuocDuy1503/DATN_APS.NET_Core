@@ -2,40 +2,89 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- XỬ LÝ MENU SIDEBAR ---
     const menuLinks = document.querySelectorAll('.menu-link');
 
+    const setSubmenuState = (submenu, isOpen) => {
+        if (!submenu) return;
+        if (isOpen) {
+            submenu.classList.add('open');
+            submenu.style.maxHeight = `${submenu.scrollHeight}px`;
+        } else {
+            submenu.classList.remove('open');
+            submenu.style.maxHeight = null;
+        }
+    };
+
+    const resetMenuState = () => {
+        document.querySelectorAll('.submenu').forEach(sub => setSubmenuState(sub, false));
+        document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active-parent'));
+        document.querySelectorAll('.submenu a').forEach(a => a.classList.remove('active-sub'));
+    };
+
+    const normalizePath = (path) => {
+        if (!path) return '';
+        let normalized = path.toLowerCase();
+        normalized = normalized.replace(/\/?index(\.html)?$/, '');
+        if (normalized.endsWith('/')) normalized = normalized.slice(0, -1);
+        return normalized;
+    };
+
+    const setActiveByUrl = () => {
+        const currentPath = normalizePath(window.location.pathname);
+        let matched = false;
+
+        document.querySelectorAll('.submenu a').forEach(a => {
+            const linkPath = normalizePath(new URL(a.href, window.location.origin).pathname);
+            if (!linkPath) return;
+
+            const isSame = currentPath === linkPath;
+            const isChild = currentPath.startsWith(`${linkPath}/`) || currentPath.startsWith(linkPath);
+            const hasAppPrefix = currentPath.endsWith(linkPath);
+
+            if (isSame || isChild || hasAppPrefix) {
+                a.classList.add('active-sub');
+
+                const submenu = a.closest('.submenu');
+                const parentLink = submenu?.previousElementSibling;
+
+                setSubmenuState(submenu, true);
+                if (parentLink) parentLink.classList.add('active-parent');
+                matched = true;
+            }
+        });
+
+        // Nếu không khớp route nào, giữ nguyên trạng thái hiện có (hoặc mặc định)
+        if (!matched) return;
+    };
+
+    const closeOtherMenus = (current) => {
+        document.querySelectorAll('.submenu.open').forEach(openMenu => {
+            if (openMenu !== current) {
+                setSubmenuState(openMenu, false);
+                const parentLink = openMenu.previousElementSibling;
+                if (parentLink) parentLink.classList.remove('active-parent');
+            }
+        });
+    };
+
+    // Đặt trạng thái ban đầu theo URL hiện tại
+    resetMenuState();
+    setActiveByUrl();
+
+    // Đảm bảo submenu đang mở sẵn được đặt đúng chiều cao sau khi tính toán
+    document.querySelectorAll('.submenu.open').forEach(submenu => {
+        submenu.style.maxHeight = `${submenu.scrollHeight}px`;
+    });
+
     menuLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             const submenu = link.nextElementSibling;
 
-            // Kiểm tra nếu đây là menu cha (có submenu bên trong)
             if (submenu && submenu.classList.contains('submenu')) {
-                e.preventDefault(); // Ngăn chặn chuyển trang
+                e.preventDefault();
 
-                // Đóng tất cả các menu khác đang mở
-                const openMenus = document.querySelectorAll('.submenu.open');
-                openMenus.forEach(openMenu => {
-                    // Nếu menu đang mở KHÔNG PHẢI là cái mình  Đóng nó lại
-                    if (openMenu !== submenu) {
-                        openMenu.classList.remove('open');
-                        
-                        // Tìm cái nút cha của menu đó để tắt trạng thái active và xoay mũi tên lại
-                        const parentLink = openMenu.previousElementSibling;
-                        if (parentLink) {
-                            parentLink.classList.remove('active-parent');
-                            const chevron = parentLink.querySelector('.chevron');
-                            if (chevron) chevron.style.transform = 'rotate(0deg)';
-                        }
-                    }
-                });
-
-                //  Mở hoặc Đóng menu hiện tại
-                submenu.classList.toggle('open');
-                link.classList.toggle('active-parent');
-                
-                // Xoay mũi tên của menu hiện tại
-                const chevron = link.querySelector('.chevron');
-                if(chevron) {
-                    chevron.style.transform = submenu.classList.contains('open') ? 'rotate(90deg)' : 'rotate(0deg)';
-                }
+                const willOpen = !submenu.classList.contains('open');
+                closeOtherMenus(submenu);
+                setSubmenuState(submenu, willOpen);
+                link.classList.toggle('active-parent', willOpen);
             }
         });
     });

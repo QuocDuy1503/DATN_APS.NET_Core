@@ -1,0 +1,95 @@
+<!-- Modal Sửa ngành -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Chỉnh sửa ngành</div>
+            <button type="button" class="btn-close-custom close-edit-modal">&times;</button>
+        </div>
+        
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" id="editId">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Mã ngành <span class="required">*</span></label>
+                    <input type="text" name="MaNganh" id="editMaNganh" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tên ngành <span class="required">*</span></label>
+                    <input type="text" name="TenNganh" id="editTenNganh" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tên viết tắt</label>
+                    <input type="text" name="TenVietTat" id="editTenVietTat" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label>Bộ môn quản lý</label>
+                    <select name="IdBoMon" id="editIdBoMon" class="form-control" asp-items="ViewBag.ListBoMon">
+                        <option value="">-- Chọn bộ môn --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-edit-modal">Hủy</button>
+                <button type="submit" class="btn btn-save">Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var editModal = document.getElementById('editModal');
+        var btnCloses = document.querySelectorAll('.close-edit-modal');
+
+        // Đóng modal
+        btnCloses.forEach(function(btn) {
+            btn.addEventListener('click', function () {
+                editModal.classList.remove('show');
+            });
+        });
+
+        // Đóng khi click ra ngoài
+        window.addEventListener('click', function (e) {
+            if (e.target == editModal) {
+                editModal.classList.remove('show');
+            }
+        });
+    });
+
+    // Hàm mở modal sửa và load dữ liệu
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`@Url.Action("ChiTiet")?id=${id}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('editId').value = result.data.id;
+                document.getElementById('editMaNganh').value = result.data.maNganh || '';
+                document.getElementById('editTenNganh').value = result.data.tenNganh || '';
+                document.getElementById('editTenVietTat').value = result.data.tenVietTat || '';
+                document.getElementById('editIdBoMon').value = result.data.idBoMon || '';
+                
+                document.getElementById('editModal').classList.add('show');
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: result.message,
+                    confirmButtonColor: '#d33'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Không thể lấy thông tin ngành.',
+                confirmButtonColor: '#d33'
+            });
+        }
+    }
+</script>

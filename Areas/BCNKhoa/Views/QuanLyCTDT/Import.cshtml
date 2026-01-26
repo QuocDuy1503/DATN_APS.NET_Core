@@ -1,0 +1,55 @@
+﻿<style>
+    .upload-area.dragging {
+        border-color: #484BE0 !important;
+        background: #f0f2ff !important;
+    }
+</style>
+
+<div class="modal-overlay" id="importModal">
+    <div class="modal-dialog" style="width: 500px;">
+        <div class="modal-header">
+            <div class="modal-title">Import Chương trình đào tạo</div>
+            <button class="btn-close close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            @Html.AntiForgeryToken()
+            <div class="upload-area" id="dropZone" style="border: 2px dashed #9ca3af; border-radius: 8px; padding: 18px; background: #fbfbfb; cursor: pointer; text-align: center; transition: border-color 0.2s, background 0.2s;">
+                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                <p style="margin-bottom: 5px; font-weight: 500;">Kéo thả file vào đây hoặc click để chọn</p>
+                <p style="font-size: 12px; color: #666;">Hỗ trợ định dạng: .xlsx, .xls</p>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;">
+            </div>
+            <div id="fileInfo" style="display: none; margin-bottom: 15px; font-size: 13px; color: var(--primary-red);">
+                <i class="fa-solid fa-file-excel"></i> <span id="fileName">...</span>
+            </div>
+            
+            <div class="form-group" style="margin-bottom:10px;">
+                <label>Áp dụng cho Khóa:</label>
+                <select class="form-control" id="importKhoa" name="khoaHocId">
+                    <option value="">-- Chọn khóa --</option>
+                    @if (ViewBag.ListKhoaHoc != null)
+                    {
+                        foreach (var k in ViewBag.ListKhoaHoc as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)
+                        {
+                            <option value="@k.Value">@k.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:10px;">
+                <label>Mã chương trình:</label>
+                <input type="text" class="form-control" id="importMa" name="maCtdt" placeholder="CT_K27_CNTT">
+            </div>
+            <div class="form-group">
+                <label>Tên chương trình:</label>
+                <input type="text" class="form-control" id="importTen" name="tenCtdt" placeholder="Khung CTĐT K27 CNTT">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary close-modal" type="button">Hủy</button>
+            <button class="btn btn-green" id="btnProcessImport" type="button">
+                <i class="fa-solid fa-upload"></i> Tải lên & Xử lý
+            </button>
+        </div>
+    </div>
+</div>

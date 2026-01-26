@@ -1,0 +1,81 @@
+<!-- Modal Sửa bộ môn -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Chỉnh sửa bộ môn</div>
+            <button type="button" class="btn-close-custom close-edit-modal">&times;</button>
+        </div>
+        
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" id="editId">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Mã bộ môn <span class="required">*</span></label>
+                    <input type="text" name="MaBoMon" id="editMaBoMon" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tên bộ môn <span class="required">*</span></label>
+                    <input type="text" name="TenBoMon" id="editTenBoMon" class="form-control" required>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-edit-modal">Hủy</button>
+                <button type="submit" class="btn btn-save">Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var editModal = document.getElementById('editModal');
+        var btnCloses = document.querySelectorAll('.close-edit-modal');
+
+        // Đóng modal
+        btnCloses.forEach(function(btn) {
+            btn.addEventListener('click', function () {
+                editModal.classList.remove('show');
+            });
+        });
+
+        // Đóng khi click ra ngoài
+        window.addEventListener('click', function (e) {
+            if (e.target == editModal) {
+                editModal.classList.remove('show');
+            }
+        });
+    });
+
+    // Hàm mở modal sửa và load dữ liệu
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`@Url.Action("ChiTiet")?id=${id}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                document.getElementById('editId').value = result.data.id;
+                document.getElementById('editMaBoMon').value = result.data.tenVietTat || '';
+                document.getElementById('editTenBoMon').value = result.data.tenBoMon || '';
+                
+                document.getElementById('editModal').classList.add('show');
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: result.message,
+                    confirmButtonColor: '#d33'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi',
+                text: 'Không thể lấy thông tin bộ môn.',
+                confirmButtonColor: '#d33'
+            });
+        }
+    }
+</script>

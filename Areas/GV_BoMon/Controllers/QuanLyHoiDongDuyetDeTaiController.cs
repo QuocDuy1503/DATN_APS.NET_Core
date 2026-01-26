@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using DATN_TMS.Areas.BCNKhoa.Models;
+using DATN_TMS.Areas.GV_BoMon.Models;
 using DATN_TMS.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using X.PagedList;
+
 using X.PagedList.Extensions;
 
-namespace DATN_TMS.Areas.BCNKhoa.Controllers
+namespace DATN_TMS.Areas.GV_BoMon.Controllers
 {
-    [Area("BCNKhoa")]
+    [Area("GV_BoMon")]
     public class QuanLyHoiDongDuyetDeTaiController : Controller
     {
         private readonly QuanLyDoAnTotNghiepContext _context;
@@ -65,7 +65,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             }
 
             // 4. Map sang ViewModel
-            var modelQuery = query.Select(hd => new QuanLyHoiDongViewModel
+            var modelQuery = query.Select(hd => new GV_BoMon.Models.QuanLyHoiDongViewModel
             {
                 Id = hd.Id,
                 MaHoiDong = hd.MaHoiDong,
@@ -141,7 +141,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
             if (hd == null) return NotFound();
 
-            var model = new QuanLyHoiDongEditViewModel
+            var model = new GV_BoMon.Models.QuanLyHoiDongEditViewModel
             {
                 Id = hd.Id,
                 MaHoiDong = hd.MaHoiDong ?? "",
@@ -152,7 +152,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 TrangThai = hd.TrangThai ?? false,
 
                 // Map danh sách thành viên
-                ThanhViens = hd.ThanhVienHdBaoCaos.Select(tv => new ThanhVienHoiDongViewModel
+                ThanhViens = hd.ThanhVienHdBaoCaos.Select(tv => new GV_BoMon.Models.ThanhVienHoiDongViewModel
                 {
                     IdNguoiDung = tv.IdGiangVien ?? 0,
                     TenGiangVien = tv.IdGiangVienNavigation?.IdNguoiDungNavigation?.HoTen ?? "Chưa cập nhật",

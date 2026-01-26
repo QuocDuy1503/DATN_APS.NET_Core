@@ -1,0 +1,66 @@
+﻿<div class="modal-overlay" id="addModal">
+    <div class="modal-dialog" style="width: 500px;">
+        <div class="modal-header">
+            <div class="modal-title">Thêm học kì mới</div>
+            <button class="btn-close-custom close-modal">&times;</button>
+        </div>
+        
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tên học kì: <span style="color:red">*</span></label>
+                    <input type="text" name="MaHocKi" class="form-control" placeholder="VD: HK1_101" required>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Năm bắt đầu:</label>
+                        <input type="number" name="NamBatDau" class="form-control" placeholder="2024">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Năm kết thúc:</label>
+                        <input type="number" name="NamKetThuc" class="form-control" placeholder="2025">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Tuần bắt đầu:</label>
+                        <input type="number" name="TuanBatDau" class="form-control" placeholder="VD: 5">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Ngày bắt đầu:</label>
+                        <input type="date" name="NgayBatDau" class="form-control">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="border-top: none; padding-top: 0;">
+                <button type="button" class="btn btn-secondary close-modal" style="min-width: 80px;">Hủy</button>
+                <button type="submit" class="btn btn-purple" style="min-width: 80px; justify-content: center;">Lưu</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var modal = document.getElementById('addModal');
+        var btnOpen = document.getElementById('btnOpenModal');
+        var btnCloses = document.querySelectorAll('#addModal .close-modal');
+
+        if (btnOpen) {
+            btnOpen.addEventListener('click', function (e) {
+                e.preventDefault();
+                modal.classList.add('show');
+            });
+        }
+        btnCloses.forEach(function(btn) {
+            btn.addEventListener('click', function () { modal.classList.remove('show'); });
+        });
+        window.addEventListener('click', function (e) {
+            if (e.target == modal) modal.classList.remove('show');
+        });
+    });
+</script>

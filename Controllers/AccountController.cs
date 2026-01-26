@@ -76,7 +76,7 @@ namespace DATN_TMS.Controllers
 
             else if (roleCode == "BO_MON")
             {
-                return RedirectToAction("Index", "QuanLyDotDoAn");
+                return RedirectToAction("Index", "QuanLyDangKy", new {area = "GV_BoMon"});
             }
 
             else if (roleCode == "GV")

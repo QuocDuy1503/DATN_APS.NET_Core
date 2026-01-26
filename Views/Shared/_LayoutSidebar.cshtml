@@ -6,10 +6,10 @@
             <ul class="menu">
 
                 <li class="menu-item">
-                    <div class="menu-link active-parent"> <span><i class="fa-solid fa-layer-group"></i> Đợt đồ án</span>
+                    <div class="menu-link"> <span><i class="fa-solid fa-layer-group"></i> Đợt đồ án</span>
                         <i class="fa-solid fa-chevron-right chevron"></i>
                     </div>
-                    <ul class="submenu open"> 
+                    <ul class="submenu"> 
                         <li>
                             <a asp-area="BCNKhoa" asp-controller="QuanlyDotDoAn" asp-action="Index">Quản lý đợt đồ án</a>
                         </li>
@@ -49,9 +49,15 @@
                         <li>
                             <a asp-area="BCNKhoa" asp-controller="QuanLyBoMon" asp-action="Index">Bộ môn</a>
                         </li>
-                        <li><a href="QL_ChuyenNganh.html">Chuyên ngành</a></li>
-                        <li><a href="QL_HocKi.html">Học kì</a></li>
-                        <li><a href="QL_Khoa.html">Khóa</a></li>
+                        <li>
+                            <a asp-area="BCNKhoa" asp-controller="QuanLyChuyenNganh" asp-action="Index">Chuyên ngành</a>
+                        </li>
+                        <li>
+                            <a asp-area="BCNKhoa" asp-controller="QuanLyHocKi" asp-action="Index">Học kì</a>
+                        </li>
+                        <li>
+                            <a asp-area="BCNKhoa" asp-controller="QuanLyKhoa" asp-action="Index">Khóa</a>
+                        </li>
                     </ul>
                 </li>
                 
@@ -61,14 +67,16 @@
                         <i class="fa-solid fa-chevron-right chevron"></i>
                     </div>
                     <ul class="submenu">
+                        <li>
+                            <a asp-area="BCNKhoa" asp-controller="QuanLyCTDT" asp-action="Index">Chương trình đào tạo</a>
+                        </li>
                         <li><a href="QL_Khoa.html">Import điểm</a></li>
-                        <li><a href="QL_CT.html">Chương trình đào tạo</a></li>
                     </ul>
                 </li>
 
                 <li class="menu-item">
-                    <a href="QL_NguoiDung.html" class="menu-link">
-                        <span><i class="fa-solid fa-user-gear"></i> Người dùng</span>
+                    <a asp-area="BCNKhoa" asp-controller="QuanLyNguoiDung" asp-action="Index" class="menu-link">
+                        <span><i class="fa-solid fa-user-gear"></i>Người dùng</span>
                     </a>
                 </li>
                 <li class="menu-item">

@@ -1,0 +1,83 @@
+﻿<div class="modal-overlay" id="editModal">
+    <div class="modal-dialog" style="width: 500px;">
+        <div class="modal-header">
+            <div class="modal-title">Cập nhật thông tin khóa</div>
+            <button class="btn-close-custom close-edit-modal">&times;</button>
+        </div>
+        
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" id="editId">
+            
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Mã khóa <span style="color:red">*</span></label>
+                    <input type="text" name="MaKhoa" id="editMaKhoa" class="form-control" required>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Tên khóa <span style="color:red">*</span></label>
+                    <input type="text" name="TenKhoa" id="editTenKhoa" class="form-control" required>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Năm nhập học</label>
+                        <input type="number" name="NamNhapHoc" id="editNamNhapHoc" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Năm tốt nghiệp (Dự kiến)</label>
+                        <input type="number" name="NamTotNghiep" id="editNamTotNghiep" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Trạng thái</label>
+                    <select name="TrangThai" id="editTrangThai" class="form-control">
+                        <option value="true">Đang đào tạo</option>
+                        <option value="false">Đã tốt nghiệp</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modal-footer" style="border-top: none; padding-top: 0;">
+                <button type="button" class="btn btn-secondary close-edit-modal" style="min-width: 80px;">Hủy</button>
+                <button type="submit" class="btn btn-purple" style="min-width: 80px; justify-content: center;">Cập nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var editModal = document.getElementById('editModal');
+        var btnCloses = document.querySelectorAll('.close-edit-modal');
+        btnCloses.forEach(btn => btn.addEventListener('click', () => editModal.classList.remove('show')));
+        window.addEventListener('click', e => { if (e.target == editModal) editModal.classList.remove('show'); });
+    });
+
+    async function openEditModal(id) {
+        try {
+            const response = await fetch(`@Url.Action("ChiTiet")?id=${id}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                const data = result.data;
+                document.getElementById('editId').value = data.id;
+                document.getElementById('editMaKhoa').value = data.maKhoa || '';
+                document.getElementById('editTenKhoa').value = data.tenKhoa || '';
+                document.getElementById('editNamNhapHoc').value = data.namNhapHoc || '';
+                document.getElementById('editNamTotNghiep').value = data.namTotNghiep || '';
+                
+                // Set trạng thái
+                document.getElementById('editTrangThai').value = data.trangThai ? "true" : "false";
+
+                document.getElementById('editModal').classList.add('show');
+            } else {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: result.message });
+            }
+        } catch (error) {
+            Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể tải dữ liệu.' });
+        }
+    }
+</script>

@@ -82,6 +82,7 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
     public virtual DbSet<TieuChiChamDiem> TieuChiChamDiems { get; set; }
 
     public virtual DbSet<VaiTro> VaiTros { get; set; }
+    public object DangKyDoAns { get; internal set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");

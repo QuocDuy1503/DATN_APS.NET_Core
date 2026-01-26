@@ -19,6 +19,10 @@
 
   <ItemGroup>
     <Compile Include="Areas\BCNKhoa\Models\BoMonViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\ChuyenNganhViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\CTDTViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\HocKiViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\KhoaViewModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\NganhViewModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\QuanLyHoiDongBaoCaoEditViewModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\QuanLyHoiDongBaoCaoViewModel.cs" />
@@ -27,11 +31,13 @@
     <Compile Include="Areas\BCNKhoa\Models\KetQuaHocTapModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\QuanLyDangky.cs" />
     <Compile Include="Areas\BCNKhoa\Models\ChiTietDeTaiViewModel.cs" />
+    <Compile Include="Areas\BCNKhoa\Models\QuanLyNguoiDungViewModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\ViewModels\DotDoAnViewModel.cs" />
     <Compile Include="Areas\BCNKhoa\Models\ViewModels\QuanLyDeTaiViewModel.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
@@ -40,6 +46,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="X.PagedList.Mvc.Core" Version="10.5.9" />
+    <PackageReference Include="ClosedXML" Version="0.104.0" />
   </ItemGroup>
 
 </Project>
