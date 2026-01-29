@@ -1,0 +1,184 @@
+﻿@model DATN_TMS.Areas.BCNKhoa.Models.ThongBaoViewModel
+@{
+    ViewData["Title"] = "Cấu hình thông báo";
+    var titles = new Dictionary<string, string>
+    {
+        {"dangky_detai", "Đăng ký đề tài"},
+        {"dexuat_detai", "Đề xuất đề tài"},
+        {"duyet_detai", "Duyệt đề tài"},
+        {"duyet_nguyenvong", "Duyệt đăng ký nguyện vọng"},
+        {"ketqua_cuoiki", "Kết quả điểm cuối kì"}
+    };
+
+    var receivers = new Dictionary<string, string>
+    {
+        {"dangky_detai", "Sinh viên"},
+        {"dexuat_detai", "Sinh viên, Giảng viên"},
+        {"duyet_detai", "Thành viên hội đồng"},
+        {"duyet_nguyenvong", "Bộ môn"},
+        {"ketqua_cuoiki", "Sinh viên"}
+    };
+}
+
+<style>
+    .content-body, .content-card, input, textarea, select, button, label { font-family: 'Inter', 'Segoe UI', sans-serif; }
+    .btn-purple {
+        background-color: #8A2BE2; color: white; border: none; padding: 8px 16px;
+        border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-purple:hover { background-color: #7b27cc; }
+
+    .switch { position: relative; display: inline-block; width: 36px; height: 18px; margin-right: 10px; vertical-align: middle; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+    .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #8A2BE2; }
+    input:checked + .slider:before { transform: translateX(18px); }
+
+    .config-card { border: 1px solid #ececec; border-radius: 10px; padding: 16px; margin-bottom: 16px; background: #fff; }
+    .config-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .config-title h4 { margin: 0; font-size: 16px; font-weight: 700; }
+    .config-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; }
+    .config-grid .form-group { margin-bottom: 10px; }
+    .form-group label { font-weight: 600; font-size: 13px; color: #333; }
+    .form-control, textarea, select { width: 100%; border: 1px solid #dcdcdc; border-radius: 6px; padding: 8px 10px; font-size: 13px; }
+    textarea { min-height: 120px; }
+    .pill { display: inline-block; padding: 4px 8px; border-radius: 20px; background: #f3f0ff; color: #7b27cc; font-size: 12px; margin-left: 6px; }
+    .note { font-size: 12px; color: #666; margin-top: 6px; }
+    .flex { display: flex; gap: 10px; align-items: center; }
+    .content-card { background: #fff; padding: 18px; border-radius: 10px; border: 1px solid #eee; width: 100%; }
+    .page-title { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+    .select-dot { width: 260px; }
+    .content-body { width: 100%; }
+    .tab-header { display: flex; gap: 8px; border-bottom: 1px solid #eee; margin: 16px 0; overflow-x: auto; }
+    .tab-btn { padding: 10px 14px; border: none; background: transparent; font-weight: 600; color: #666; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+    .tab-btn.active { color: #8A2BE2; border-color: #8A2BE2; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="toolbar">
+            <div>
+                <h2 class="page-title">Cấu hình thông báo</h2>
+                @* <div class="note">Áp dụng chung cho tất cả các đợt theo mốc ngày bắt đầu/kết thúc.</div> *@
+            </div>
+        </div>
+
+        @* @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        } *@
+
+        <form asp-area="BCNKhoa" asp-controller="QuanLyThongBao" asp-action="Save" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="tab-header" id="tabHeader">
+                @for (var i = 0; i < Model.CauHinhs.Count; i++)
+                {
+                    var key = Model.CauHinhs[i].LoaiSuKien;
+                    <button type="button" class="tab-btn @(i == 0 ? "active" : string.Empty)" data-target="#tab-@i">
+                        @(titles.ContainsKey(key) ? titles[key] : key)
+                    </button>
+                }
+            </div>
+
+            @for (var i = 0; i < Model.CauHinhs.Count; i++)
+            {
+                var item = Model.CauHinhs[i];
+                var key = item.LoaiSuKien;
+                <div class="tab-content @(i == 0 ? "active" : string.Empty)" id="tab-@i">
+                    <div class="config-card">
+                        <div class="config-title">
+                            <div>
+                                <h4>@(titles.ContainsKey(key) ? titles[key] : key)
+                                    <span class="pill">@receivers.GetValueOrDefault(key, item.DoiTuongNhan ?? "")</span>
+                                </h4>
+                                @* <div class="note">Tùy chỉnh tiêu đề, nội dung và mốc thời gian gửi.</div> *@
+                            </div>
+                            <label class="switch">
+                                <input type="hidden" name="CauHinhs[@i].TrangThai" value="false" />
+                                <input type="checkbox" name="CauHinhs[@i].TrangThai" value="true" @(item.TrangThai ? "checked" : "") />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <input type="hidden" name="CauHinhs[@i].LoaiSuKien" value="@item.LoaiSuKien" />
+                        <input type="hidden" name="CauHinhs[@i].DoiTuongNhan" value="@item.DoiTuongNhan" />
+
+                        <div class="config-grid">
+                            <div>
+                                <div class="form-group">
+                                    <label>Tiêu đề</label>
+                                    <input class="form-control" name="CauHinhs[@i].TieuDeMau" value="@item.TieuDeMau" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Nội dung</label>
+                                    <textarea name="CauHinhs[@i].NoiDungMau">@item.NoiDungMau</textarea>
+                                    <div class="note">Biến có sẵn: {Ten_Sinh_Vien}, {Ten_Dot}, {Ten_De_Tai}, {Ngay_Bat_Dau}, {Ngay_Ket_Thuc}</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="form-group">
+                                    <label>Thời điểm gửi</label>
+                                    <select name="CauHinhs[@i].MocThoiGian">
+                                        <option value="ON_START" selected="@((item.MocThoiGian == "ON_START") ? "selected" : null)">Khi bắt đầu mốc</option>
+                                        <option value="BEFORE_START" selected="@((item.MocThoiGian == "BEFORE_START") ? "selected" : null)">Trước ngày bắt đầu</option>
+                                        <option value="BEFORE_END" selected="@((item.MocThoiGian == "BEFORE_END") ? "selected" : null)">Trước ngày kết thúc</option>
+                                        <option value="ON_RESULT" selected="@((item.MocThoiGian == "ON_RESULT") ? "selected" : null)">Khi công bố kết quả</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Số ngày chênh lệch</label>
+                                    <input type="number" class="form-control" name="CauHinhs[@i].SoNgayChenhLech" value="@(item.SoNgayChenhLech ?? 0)" min="0" />
+                                    @* <div class="note">Áp dụng cho lựa chọn gửi trước; 0 = ngay tại mốc.</div> *@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div style="text-align:right; margin-top:14px;">
+                <button type="submit" class="btn btn-purple"><i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabs = document.querySelectorAll('.tab-btn');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function () {
+                tabs.forEach(t => t.classList.remove('active'));
+                contents.forEach(c => c.classList.remove('active'));
+
+                const target = document.querySelector(this.dataset.target);
+                this.classList.add('active');
+                if (target) {
+                    target.classList.add('active');
+                }
+            });
+        });
+
+        const success = '@(TempData["SuccessMessage"] ?? "")';
+        const error = '@(TempData["ErrorMessage"] ?? "")';
+        if (success && success !== '') {
+            Swal.fire({ icon: 'success', title: success, toast: true, timer: 2500, position: 'top-end', showConfirmButton: false });
+        }
+        if (error && error !== '') {
+            Swal.fire({ icon: 'error', title: error, toast: true, timer: 3000, position: 'top-end', showConfirmButton: false });
+        }
+    });
+</script>

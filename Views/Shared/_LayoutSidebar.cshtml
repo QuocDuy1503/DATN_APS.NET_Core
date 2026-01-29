@@ -85,12 +85,14 @@
                         <i class="fa-solid fa-chevron-right chevron"></i>
                     </div>
                     <ul class="submenu">
-                        <li><a href="CH_MAIL.html">Thông báo</a></li>
-                        <li><a href="TC.html">Tiêu chí</a></li>
+                        <li>
+                            <a asp-area="BCNKhoa" asp-controller="QuanLyThongBao" asp-action="Index">Thông báo</a>
+                        </li>
+                        <li><a asp-area="BCNKhoa" asp-controller="QuanLyTieuChi" asp-action="Index">Tiêu chí</a></li>
                     </ul>
                 </li>
                 <li class="menu-item">
-                    <a href="BCTK.html" class="menu-link">
+                    <a a asp-area="BCNKhoa" asp-controller="QuanLyBaoCaoThongKe" asp-action="Index" class="menu-link">
                         <span><i class="fa-solid fa-chart-pie"></i> Báo cáo và thống kê</span>
                     </a>
                 </li>

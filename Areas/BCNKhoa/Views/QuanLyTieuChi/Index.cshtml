@@ -1,0 +1,670 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@model DATN_TMS.Areas.BCNKhoa.Models.TieuChiViewModel
+
+@{
+    var totalWeight = Model?.TongTrongSo ?? 0;
+    var weightValid = totalWeight >= 100;
+    var weightStatusText = weightValid ? "(Đủ 100%)" : "(Chưa đủ 100%)";
+    var weightStatusColor = weightValid ? "color:#28a745;" : "color:red;";
+    var selectedDotId = Model?.SelectedDotId?.ToString() ?? "";
+    var selectedLoaiPhieuId = Model?.SelectedLoaiPhieuId?.ToString() ?? "";
+}
+
+<style>
+    .content-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 140px);
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 20px 0;
+        text-transform: uppercase;
+    }
+
+    /* --- FORM CHỌN LOẠI PHIẾU --- */
+    .setup-header {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid #eee;
+        margin-bottom: 25px;
+    }
+
+    .setup-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+    }
+
+    /* --- BẢNG NHẬP TIÊU CHÍ --- */
+    .criteria-table th {
+        background-color: #f1f3f5;
+        color: #333;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .criteria-table input,
+    .criteria-table textarea {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px;
+        width: 100%;
+        font-size: 13px;
+        resize: vertical; /* Cho phép kéo giãn chiều cao textarea */
+    }
+
+    .criteria-table input:focus,
+    .criteria-table textarea:focus {
+        border-color: #D71920;
+        outline: none;
+    }
+
+    /* Cột trọng số và điểm */
+    .input-number {
+        text-align: center;
+        font-weight: 600;
+    }
+
+    /* Nút xóa dòng */
+    .btn-remove-row {
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 16px;
+        background: none;
+        border: none;
+        transition: 0.2s;
+    }
+    .btn-remove-row:hover {
+        color: #a71d2a;
+        transform: scale(1.1);
+    }
+
+    /* --- THANH TỔNG KẾT (FOOTER FIXED) --- */
+    .total-summary-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        padding: 15px 20px;
+        border-top: 2px solid #eee;
+        margin-top: 10px;
+    }
+
+    .total-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #555;
+    }
+
+    .total-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #D71920;
+    }
+
+    .total-valid {
+        color: #28a745 !important; /* Màu xanh khi đủ 100% */
+    }
+
+    .btn-add-row {
+        background-color: #e7f1ff;
+        color: #0d6efd;
+        border: 1px dashed #0d6efd;
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 4px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-add-row:hover {
+        background-color: #d0e3ff;
+    }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="page-header-row" style="margin-bottom: 15px;">
+            <h2 class="page-title">Cấu hình tiêu chí chấm điểm</h2>
+        </div>
+
+        <div class="setup-header">
+            <h4 style="margin-bottom:15px; font-size:15px; color:var(--primary-red);">1. Thông tin phiếu chấm</h4>
+            <form method="get">
+                <div class="setup-grid">
+                    <div class="form-group">
+                        <label>Áp dụng cho đợt:</label>
+                        <select class="form-control" name="dotId" onchange="this.form.submit()">
+                            @foreach (var opt in Model?.DotOptions ?? Enumerable.Empty<SelectListItem>())
+                            {
+                                <option value="@opt.Value" selected="@(opt.Value == selectedDotId ? "selected" : null)">@opt.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Loại phiếu chấm:</label>
+                        <select class="form-control" id="selectRubricType" name="loaiPhieuId" onchange="this.form.submit()">
+                            @foreach (var opt in Model?.LoaiPhieuOptions ?? Enumerable.Empty<SelectListItem>())
+                            {
+                                <option value="@opt.Value" selected="@(opt.Value == selectedLoaiPhieuId ? "selected" : null)">@opt.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Thang điểm:</label>
+                        <input type="text" class="form-control" value="10" readonly style="background:#f9f9f9;">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <form asp-action="SaveAll" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="loaiPhieuId" value="@Model?.SelectedLoaiPhieuId" />
+            <input type="hidden" name="dotId" value="@Model?.SelectedDotId" />
+        <div>
+            <h4 style="margin-bottom:15px; font-size:15px; color:var(--primary-red);">2. Chi tiết tiêu chí</h4>
+            
+            <div class="table-responsive">
+                <table class="criteria-table" id="criteriaTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center;">STT</th>
+                            <th style="width: 250px;">Tên tiêu chí</th>
+                            <th>Mô tả / Hướng dẫn chấm</th>
+                            <th style="width: 100px; text-align: center;">Trọng số (%)</th>
+                            <th style="width: 100px; text-align: center;">Điểm tối đa</th>
+                            <th style="width: 50px; text-align: center;">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="criteriaBody">
+                        @if (Model?.TieuChis != null && Model.TieuChis.Any())
+                        {
+                            for (int i = 0; i < Model.TieuChis.Count; i++)
+                            {
+                                var item = Model.TieuChis[i];
+                                <tr data-index="@i">
+                                    <td class="text-center stt"><span class="stt-display">@(item.Stt ?? (i + 1))</span><input type="hidden" name="items[@i].Id" value="@item.Id" /><input type="hidden" class="stt-input" name="items[@i].Stt" value="@(item.Stt ?? (i + 1))" /></td>
+                                    <td><input type="text" name="items[@i].TenTieuChi" class="form-control" value="@item.TenTieuChi" required></td>
+                                    <td><textarea name="items[@i].MoTa" class="form-control" rows="1">@item.MoTa</textarea></td>
+                                    <td><input type="number" name="items[@i].TrongSo" class="form-control input-number weight-input" value="@item.TrongSo" min="0" max="100" step="0.1" required></td>
+                                    <td><input type="number" name="items[@i].DiemToiDa" class="form-control input-number" value="@item.DiemToiDa" min="0" step="0.1" required></td>
+                                    <td class="text-center">
+                                        <button class="btn-remove-row btn-delete-existing" type="button" data-id="@item.Id"><i class="fa-solid fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="empty-row" style="text-align:center; padding: 16px; color:#777;">Chưa có tiêu chí cho loại phiếu này.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="button" class="btn-add-row" id="btnAddInline">
+                <i class="fa-solid fa-plus"></i> Thêm tiêu chí mới
+            </button>
+
+            <div class="total-summary-bar">
+                <div class="total-label">
+                    Tổng trọng số: <span id="totalWeight" class="total-value">@totalWeight.ToString("0.##")%</span> 
+                    <span id="weightStatus" style="font-size:12px; margin-left:10px; @weightStatusColor">@weightStatusText</span>
+                </div>
+                <div>
+                    <button class="btn btn-secondary" type="button" style="margin-right: 10px;">Hủy bỏ</button>
+                    <button class="btn btn-save" id="btnSaveCriteria" type="submit">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình
+                    </button>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+<div id="tempMessages" data-success="@TempData["SuccessMessage"]" data-error="@TempData["ErrorMessage"]"></div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const criteriaBody = document.getElementById('criteriaBody');
+    const addButton = document.getElementById('btnAddInline');
+    const totalWeightEl = document.getElementById('totalWeight');
+    const weightStatusEl = document.getElementById('weightStatus');
+
+    const getWeightInputs = () => Array.from(criteriaBody.querySelectorAll('.weight-input'));
+
+    function renumberRows() {
+        const rows = Array.from(criteriaBody.querySelectorAll('tr')).filter(r => !r.classList.contains('empty-row'));
+        rows.forEach((row, idx) => {
+            row.dataset.index = idx;
+            const sttDisplay = row.querySelector('.stt-display');
+            const sttInput = row.querySelector('.stt-input');
+            const idInput = row.querySelector('input[name$=".Id"]');
+            const tenInput = row.querySelector('input[name*="TenTieuChi"]');
+            const moTaInput = row.querySelector('textarea[name*="MoTa"]');
+            const trongSoInput = row.querySelector('input[name*="TrongSo"]');
+            const diemInput = row.querySelector('input[name*="DiemToiDa"]');
+
+            sttDisplay.textContent = idx + 1;
+            if (sttInput) {
+                sttInput.name = `items[${idx}].Stt`;
+                sttInput.value = idx + 1;
+            }
+            if (idInput) idInput.name = `items[${idx}].Id`;
+            if (tenInput) tenInput.name = `items[${idx}].TenTieuChi`;
+            if (moTaInput) moTaInput.name = `items[${idx}].MoTa`;
+            if (trongSoInput) trongSoInput.name = `items[${idx}].TrongSo`;
+            if (diemInput) diemInput.name = `items[${idx}].DiemToiDa`;
+        });
+        calcTotalWeight();
+    }
+
+    function calcTotalWeight() {
+        let sum = 0;
+        getWeightInputs().forEach(inp => {
+            const val = parseFloat(inp.value);
+            if (!isNaN(val)) sum += val;
+        });
+
+        totalWeightEl.textContent = `${sum.toFixed(2)}%`;
+        const valid = sum >= 100;
+        weightStatusEl.textContent = valid ? '(Đủ 100%)' : '(Chưa đủ 100%)';
+        weightStatusEl.style.color = valid ? '#28a745' : 'red';
+    }
+
+    function createNewRow() {
+        const emptyRow = criteriaBody.querySelector('.empty-row');
+        if (emptyRow) emptyRow.remove();
+
+        const newIndex = criteriaBody.querySelectorAll('tr').length;
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td class="text-center stt"><span class="stt-display"></span><input type="hidden" name="items[${newIndex}].Id" value="0" /><input type="hidden" class="stt-input" name="items[${newIndex}].Stt" value="${newIndex + 1}" /></td>
+            <td><input type="text" name="items[${newIndex}].TenTieuChi" class="form-control" required></td>
+            <td><textarea name="items[${newIndex}].MoTa" class="form-control" rows="1"></textarea></td>
+            <td><input type="number" name="items[${newIndex}].TrongSo" class="form-control input-number weight-input" min="0" max="100" step="0.1" required></td>
+            <td><input type="number" name="items[${newIndex}].DiemToiDa" class="form-control input-number" min="0" step="0.1" required></td>
+            <td class="text-center">
+                <button type="button" class="btn-remove-row btn-remove-new"><i class="fa-solid fa-trash"></i></button>
+            </td>`;
+
+        criteriaBody.appendChild(newRow);
+        newRow.querySelectorAll('.weight-input').forEach(inp => inp.addEventListener('input', calcTotalWeight));
+        newRow.querySelector('.btn-remove-new').addEventListener('click', () => {
+            newRow.remove();
+            if (!criteriaBody.querySelectorAll('tr').length) {
+                criteriaBody.innerHTML = '<tr><td colspan="6" class="empty-row" style="text-align:center; padding: 16px; color:#777;">Chưa có tiêu chí cho loại phiếu này.</td></tr>';
+            }
+            renumberRows();
+        });
+        renumberRows();
+        const firstInput = newRow.querySelector('input[name*="TenTieuChi"]');
+        firstInput?.focus();
+    }
+
+    addButton?.addEventListener('click', createNewRow);
+
+    document.querySelectorAll('.weight-input').forEach(inp => inp.addEventListener('input', calcTotalWeight));
+    renumberRows();
+
+    function submitDelete(id) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        const form = document.createElement('form');
+        form.method = 'post';
+        form.action = '@Url.Action("Delete", "QuanLyTieuChi", new { area = "BCNKhoa" })';
+        form.innerHTML = `
+            <input type="hidden" name="__RequestVerificationToken" value="${token}">
+            <input type="hidden" name="id" value="${id}">
+            <input type="hidden" name="loaiPhieuId" value="@Model?.SelectedLoaiPhieuId">
+            <input type="hidden" name="dotId" value="@Model?.SelectedDotId">`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    document.querySelectorAll('.btn-delete-existing').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            Swal.fire({
+                title: 'Xóa tiêu chí?',
+                text: 'Hành động này không thể hoàn tác.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    submitDelete(id);
+                }
+            });
+        });
+    });
+
+    const msgHolder = document.getElementById('tempMessages');
+    const successMsg = msgHolder?.dataset.success;
+    const errorMsg = msgHolder?.dataset.error;
+    if (successMsg) {
+        Swal.fire({ icon: 'success', title: 'Thành công', text: successMsg });
+    }
+    if (errorMsg) {
+        Swal.fire({ icon: 'error', title: 'Thông báo', text: errorMsg });
+    }
+</script>
+
+
+
+
+
+
+
+@*                 <style>
+        /* --- FORM CHỌN LOẠI PHIẾU --- */
+.setup-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    margin-bottom: 25px;
+}
+
+.setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+/* --- BẢNG NHẬP TIÊU CHÍ --- */
+.criteria-table th {
+    background-color: #f1f3f5;
+    color: #333;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.criteria-table input,
+.criteria-table textarea {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    width: 100%;
+    font-size: 13px;
+    resize: vertical; /* Cho phép kéo giãn chiều cao textarea */
+}
+
+.criteria-table input:focus,
+.criteria-table textarea:focus {
+    border-color: #D71920;
+    outline: none;
+}
+
+/* Cột trọng số và điểm */
+.input-number {
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Nút xóa dòng */
+.btn-remove-row {
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 16px;
+    background: none;
+    border: none;
+    transition: 0.2s;
+}
+.btn-remove-row:hover {
+    color: #a71d2a;
+    transform: scale(1.1);
+}
+
+/* --- THANH TỔNG KẾT (FOOTER FIXED) --- */
+.total-summary-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 15px 20px;
+    border-top: 2px solid #eee;
+    margin-top: 10px;
+}
+
+.total-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+}
+
+.total-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #D71920;
+}
+
+.total-valid {
+    color: #28a745 !important; /* Màu xanh khi đủ 100% */
+}
+
+.btn-add-row {
+    background-color: #e7f1ff;
+    color: #0d6efd;
+    border: 1px dashed #0d6efd;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.btn-add-row:hover {
+    background-color: #d0e3ff;
+}
+    </style>
+
+
+<div class="content-body">
+                <div class="content-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:15px;">
+                        <h2 class="page-title">Cấu hình tiêu chí chấm điểm</h2>
+                        <a href="index.html" style="color:#666; text-decoration:none; font-size:14px;">
+                            <i class="fa-solid fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+
+                    <div class="setup-header">
+                        <h4 style="margin-bottom:15px; font-size:15px; color:var(--primary-red);">1. Thông tin phiếu chấm</h4>
+                        <div class="setup-grid">
+                            <div class="form-group">
+                                <label>Áp dụng cho đợt:</label>
+                                <select class="form-control">
+                                    <option>DATN_K27_HK1</option>
+                                    <option>DATN_K27_HK2</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Loại phiếu chấm:</label>
+                                <select class="form-control" id="selectRubricType">
+                                    <option value="GVHD">Giảng viên hướng dẫn (GVHD)</option>
+                                    <option value="GVPB">Giảng viên phản biện (GVPB)</option>
+                                    <option value="HD">Hội đồng bảo vệ</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Thang điểm:</label>
+                                <input type="text" class="form-control" value="10" readonly style="background:#f9f9f9;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom:15px; font-size:15px; color:var(--primary-red);">2. Chi tiết tiêu chí</h4>
+                        
+                        <div class="table-responsive">
+                            <table class="criteria-table" id="criteriaTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px; text-align: center;">STT</th>
+                                        <th style="width: 250px;">Tên tiêu chí</th>
+                                        <th>Mô tả / Hướng dẫn chấm</th>
+                                        <th style="width: 100px; text-align: center;">Trọng số (%)</th>
+                                        <th style="width: 100px; text-align: center;">Điểm tối đa</th>
+                                        <th style="width: 50px; text-align: center;">Xóa</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="criteriaBody">
+                                    <tr>
+                                        <td class="text-center stt">1</td>
+                                        <td><input type="text" placeholder="Vd: Hình thức trình bày" value="Hình thức báo cáo"></td>
+                                        <td><textarea rows="1" placeholder="Mô tả chi tiết...">Đúng format, văn phong khoa học, không sai lỗi chính tả.</textarea></td>
+                                        <td><input type="number" class="input-number weight-input" value="10" min="0" max="100"></td>
+                                        <td class="text-center score-display">1.0</td>
+                                        <td class="text-center"><button class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center stt">2</td>
+                                        <td><input type="text" placeholder="Vd: Nội dung thực hiện" value="Nội dung và kết quả"></td>
+                                        <td><textarea rows="1" placeholder="Mô tả chi tiết...">Đáp ứng đủ các yêu cầu đã đề ra, có tính mới.</textarea></td>
+                                        <td><input type="number" class="input-number weight-input" value="40" min="0" max="100"></td>
+                                        <td class="text-center score-display">4.0</td>
+                                        <td class="text-center"><button class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <button class="btn-add-row" onclick="addRow()">
+                            <i class="fa-solid fa-plus"></i> Thêm tiêu chí mới
+                        </button>
+
+                        <div class="total-summary-bar">
+                            <div class="total-label">
+                                Tổng trọng số: <span id="totalWeight" class="total-value">50%</span> 
+                                <span id="weightStatus" style="font-size:12px; color:red; margin-left:10px;">(Chưa đủ 100%)</span>
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary" style="margin-right: 10px;">Hủy bỏ</button>
+                                <button class="btn btn-save" id="btnSaveCriteria" onclick="saveCriteria()">
+                                    <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <script>
+        // --- LOGIC XỬ LÝ BẢNG TIÊU CHÍ ---
+
+        // 1. Cập nhật STT và Tính tổng
+        function updateTable() {
+            const rows = document.querySelectorAll('#criteriaBody tr');
+            let totalW = 0;
+
+            rows.forEach((row, index) => {
+                // Cập nhật số thứ tự
+                row.querySelector('.stt').innerText = index + 1;
+                
+                // Lấy trọng số
+                const weightInput = row.querySelector('.weight-input');
+                const val = parseFloat(weightInput.value) || 0;
+                totalW += val;
+
+                // Tính điểm tối đa (Thang 10)
+                const score = (val / 100) * 10;
+                row.querySelector('.score-display').innerText = score.toFixed(1);
+            });
+
+            // Cập nhật giao diện tổng
+            const totalDisplay = document.getElementById('totalWeight');
+            const statusDisplay = document.getElementById('weightStatus');
+            
+            totalDisplay.innerText = totalW + '%';
+
+            if (totalW === 100) {
+                totalDisplay.classList.add('total-valid');
+                totalDisplay.style.color = '#28a745';
+                statusDisplay.innerText = '(Hợp lệ)';
+                statusDisplay.style.color = '#28a745';
+                document.getElementById('btnSaveCriteria').disabled = false;
+                document.getElementById('btnSaveCriteria').style.opacity = '1';
+            } else {
+                totalDisplay.classList.remove('total-valid');
+                totalDisplay.style.color = '#D71920';
+                statusDisplay.innerText = `(Chưa đủ 100%. Còn thiếu ${100 - totalW}%)`;
+                if(totalW > 100) statusDisplay.innerText = `(Vượt quá 100%. Dư ${totalW - 100}%)`;
+                
+                statusDisplay.style.color = '#D71920';
+                // Có thể disable nút lưu nếu muốn bắt buộc
+                // document.getElementById('btnSaveCriteria').disabled = true;
+                // document.getElementById('btnSaveCriteria').style.opacity = '0.6';
+            }
+        }
+
+        // 2. Thêm dòng mới
+        function addRow() {
+            const tbody = document.getElementById('criteriaBody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-center stt"></td>
+                <td><input type="text" placeholder="Nhập tên tiêu chí..."></td>
+                <td><textarea rows="1" placeholder="Mô tả..."></textarea></td>
+                <td><input type="number" class="input-number weight-input" value="0" min="0" max="100"></td>
+                <td class="text-center score-display">0.0</td>
+                <td class="text-center"><button class="btn-remove-row" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+            
+            // Gán lại sự kiện input cho ô mới
+            attachInputEvent(tr.querySelector('.weight-input'));
+            updateTable();
+        }
+
+        // 3. Xóa dòng
+        function removeRow(btn) {
+            const row = btn.closest('tr');
+            row.remove();
+            updateTable();
+        }
+
+        // 4. Gán sự kiện tính toán khi nhập số
+        function attachInputEvent(input) {
+            input.addEventListener('input', updateTable);
+        }
+
+        // 5. Khởi tạo
+        document.addEventListener('DOMContentLoaded', () => {
+            // Gán sự kiện cho các ô trọng số có sẵn
+            document.querySelectorAll('.weight-input').forEach(input => {
+                attachInputEvent(input);
+            });
+            updateTable();
+        });
+
+        // 6. Lưu dữ liệu
+        function saveCriteria() {
+            const totalText = document.getElementById('totalWeight').innerText;
+            if (totalText !== '100%') {
+                alert('Cảnh báo: Tổng trọng số chưa bằng 100%. Vui lòng kiểm tra lại!');
+                return;
+            }
+            alert('Đã lưu cấu hình tiêu chí chấm điểm thành công!');
+            // Code gọi API lưu dữ liệu ở đây
+        }
+    </script> *@
