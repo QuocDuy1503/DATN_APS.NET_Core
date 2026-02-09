@@ -152,20 +152,7 @@
                         <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucDuyetDeXuatDeTai" class="table-date-input"></td>
                         <td style="border-bottom:none;"></td>
                     </tr>
-                    <tr class="config-row">
-                        <td colspan="4">
-                            <div class="config-item">
-                                <span class="config-label">Lập Hội đồng sau:</span>
-                                <input type="number" asp-for="NgayLapHoiDongDuyetDxdt" class="table-int-input" min="0">
-                                <span>ngày (tính từ ngày bắt đầu)</span>
-                            </div>
-                            <div class="config-item">
-                                <span class="config-label">Duyệt Đề tài sau:</span>
-                                <input type="number" asp-for="NgayDuyetDxdt" class="table-int-input" min="0">
-                                <span>ngày</span>
-                            </div>
-                        </td>
-                    </tr>
+                    @* Các mốc lập hội đồng/duyệt đề tài sẽ cấu hình trong QuanLyThongBao *@
 
                     <tr class="section-separator">
                         <td colspan="4">Giai đoạn Thực hiện & Báo cáo</td>
@@ -184,20 +171,7 @@
                         <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucBaoCaoGiuaKi" class="table-date-input"></td>
                         <td style="border-bottom:none;"></td>
                     </tr>
-                    <tr class="config-row">
-                        <td colspan="4">
-                            <div class="config-item">
-                                <span class="config-label">Lập HĐ sau:</span>
-                                <input type="number" asp-for="NgayLapHdBcgk" class="table-int-input" min="0">
-                                <span>ngày</span>
-                            </div>
-                            <div class="config-item">
-                                <span class="config-label">Nộp tài liệu sau:</span>
-                                <input type="number" asp-for="NgayNopTaiLieuBcgk" class="table-int-input" min="0">
-                                <span>ngày</span>
-                            </div>
-                        </td>
-                    </tr>
+                    @* Các mốc lập HĐ / nộp tài liệu sẽ cấu hình trong QuanLyThongBao *@
 
                     <tr>
                         <td style="border-bottom:none;"><div class="activity-name">Báo cáo cuối kỳ</div></td>
@@ -205,25 +179,7 @@
                         <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucBaoCaoCuoiKi" class="table-date-input"></td>
                         <td style="border-bottom:none;"></td>
                     </tr>
-                    <tr class="config-row">
-                        <td colspan="4">
-                            <div class="config-item">
-                                <span class="config-label">Lập HĐ sau:</span>
-                                <input type="number" asp-for="NgayLapHdBcck" class="table-int-input" min="0">
-                                <span>ngày</span>
-                            </div>
-                            <div class="config-item">
-                                <span class="config-label">Nộp tài liệu sau:</span>
-                                <input type="number" asp-for="NgayNopTaiLieuBcck" class="table-int-input" min="0">
-                                <span>ngày</span>
-                            </div>
-                            <div class="config-item">
-                                <span class="config-label">Công bố KQ sau:</span>
-                                <input type="number" asp-for="NgayCongBoKqBcck" class="table-int-input" min="0">
-                                <span>ngày</span>
-                            </div>
-                        </td>
-                    </tr>
+                    @* Các mốc lập HĐ / nộp tài liệu / công bố KQ sẽ cấu hình trong QuanLyThongBao *@
                 </tbody>
             </table>
 

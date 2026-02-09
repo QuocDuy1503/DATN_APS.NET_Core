@@ -27,5 +27,24 @@ namespace DATN_TMS.Areas.BCNKhoa.Models
         public string? TieuDeMau { get; set; }
 
         public string? NoiDungMau { get; set; }
+
+        public List<ThongBaoThoiGianItem> ThoiGians { get; set; } = new();
+    }
+
+    public class ThongBaoThoiGianItem
+    {
+        public string Key { get; set; } = string.Empty;
+
+        public string Title { get; set; } = string.Empty;
+
+        public string MocThoiGian { get; set; } = string.Empty;
+
+        public int? SoNgayChenhLech { get; set; }
+
+        public bool TrangThai { get; set; }
+
+        public bool ChoPhepNhapSoNgay { get; set; } = true;
+
+        public string? GhiChu { get; set; }
     }
 }

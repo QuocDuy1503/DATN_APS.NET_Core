@@ -3,25 +3,28 @@
     ViewData["Title"] = "Cấu hình thông báo";
     var titles = new Dictionary<string, string>
     {
-        {"dangky_detai", "Đăng ký đề tài"},
+        {"dangky_nguyenvong", "Đăng ký nguyện vọng"},
+        {"duyet_nguyenvong", "Duyệt nguyện vọng"},
         {"dexuat_detai", "Đề xuất đề tài"},
         {"duyet_detai", "Duyệt đề tài"},
-        {"duyet_nguyenvong", "Duyệt đăng ký nguyện vọng"},
-        {"ketqua_cuoiki", "Kết quả điểm cuối kì"}
+        {"nop_decuong", "Nộp đề cương"},
+        {"baocao_giuaki", "Báo cáo giữa kì"},
+        {"baocao_cuoiki", "Báo cáo cuối kì"}
     };
 
     var receivers = new Dictionary<string, string>
     {
-        {"dangky_detai", "Sinh viên"},
+        {"dangky_nguyenvong", "Sinh viên"},
+        {"duyet_nguyenvong", "Bộ môn, BCN Khoa"},
         {"dexuat_detai", "Sinh viên, Giảng viên"},
         {"duyet_detai", "Thành viên hội đồng"},
-        {"duyet_nguyenvong", "Bộ môn"},
-        {"ketqua_cuoiki", "Sinh viên"}
+        {"nop_decuong", "Sinh viên"},
+        {"baocao_giuaki", "Bộ môn, BCN Khoa"},
+        {"baocao_cuoiki", "Bộ môn, BCN Khoa"}
     };
 }
 
 <style>
-    .content-body, .content-card, input, textarea, select, button, label { font-family: 'Inter', 'Segoe UI', sans-serif; }
     .btn-purple {
         background-color: #8A2BE2; color: white; border: none; padding: 8px 16px;
         border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
@@ -39,7 +42,7 @@
     .config-card { border: 1px solid #ececec; border-radius: 10px; padding: 16px; margin-bottom: 16px; background: #fff; }
     .config-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .config-title h4 { margin: 0; font-size: 16px; font-weight: 700; }
-    .config-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; }
+    .config-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 18px; align-items: start; }
     .config-grid .form-group { margin-bottom: 10px; }
     .form-group label { font-weight: 600; font-size: 13px; color: #333; }
     .form-control, textarea, select { width: 100%; border: 1px solid #dcdcdc; border-radius: 6px; padding: 8px 10px; font-size: 13px; }
@@ -57,6 +60,14 @@
     .tab-btn.active { color: #8A2BE2; border-color: #8A2BE2; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
+    .time-item { display: flex; gap: 10px; padding: 10px; border: 1px solid #f1f1f1; border-radius: 8px; margin-bottom: 8px; background: #faf7ff; align-items: center; }
+    .time-content { flex: 1; }
+    .time-title { font-weight: 600; font-size: 13px; color: #333; }
+    .btn-ghost { background: #f3f0ff; color: #7b27cc; border: 1px solid #e7dfff; border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-ghost:hover { background: #e7dfff; }
+    media (max-width: 992px) {
+        .config-grid { grid-template-columns: 1fr; }
+    }
 </style>
 
 <div class="content-body">
@@ -112,6 +123,8 @@
 
                         <input type="hidden" name="CauHinhs[@i].LoaiSuKien" value="@item.LoaiSuKien" />
                         <input type="hidden" name="CauHinhs[@i].DoiTuongNhan" value="@item.DoiTuongNhan" />
+                        <input type="hidden" name="CauHinhs[@i].MocThoiGian" value="@item.MocThoiGian" />
+                        <input type="hidden" name="CauHinhs[@i].SoNgayChenhLech" value="@(item.SoNgayChenhLech ?? 0)" />
 
                         <div class="config-grid">
                             <div>
@@ -124,21 +137,41 @@
                                     <textarea name="CauHinhs[@i].NoiDungMau">@item.NoiDungMau</textarea>
                                     <div class="note">Biến có sẵn: {Ten_Sinh_Vien}, {Ten_Dot}, {Ten_De_Tai}, {Ngay_Bat_Dau}, {Ngay_Ket_Thuc}</div>
                                 </div>
+                                <div class="note">Lịch gửi nhắc nhở sử dụng cấu hình mặc định, bạn chỉ cần tùy chỉnh tiêu đề và nội dung.</div>
                             </div>
                             <div>
-                                <div class="form-group">
-                                    <label>Thời điểm gửi</label>
-                                    <select name="CauHinhs[@i].MocThoiGian">
-                                        <option value="ON_START" selected="@((item.MocThoiGian == "ON_START") ? "selected" : null)">Khi bắt đầu mốc</option>
-                                        <option value="BEFORE_START" selected="@((item.MocThoiGian == "BEFORE_START") ? "selected" : null)">Trước ngày bắt đầu</option>
-                                        <option value="BEFORE_END" selected="@((item.MocThoiGian == "BEFORE_END") ? "selected" : null)">Trước ngày kết thúc</option>
-                                        <option value="ON_RESULT" selected="@((item.MocThoiGian == "ON_RESULT") ? "selected" : null)">Khi công bố kết quả</option>
-                                    </select>
+                                <div class="flex" style="justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div class="note" style="margin:0;">Cấu hình thời gian thông báo</div>
+                                    <div class="flex" style="gap:6px;">
+                                        <button type="button" class="btn-ghost btn-toggle-all" data-toggle-all="on" data-group="@i">Bật tất cả</button>
+                                        <button type="button" class="btn-ghost btn-toggle-all" data-toggle-all="off" data-group="@i">Tắt tất cả</button>
+                                    </div>
                                 </div>
-                                <div class="form-group">
-                                    <label>Số ngày chênh lệch</label>
-                                    <input type="number" class="form-control" name="CauHinhs[@i].SoNgayChenhLech" value="@(item.SoNgayChenhLech ?? 0)" min="0" />
-                                    @* <div class="note">Áp dụng cho lựa chọn gửi trước; 0 = ngay tại mốc.</div> *@
+                                <div class="time-list">
+                                    @for (var j = 0; j < (item.ThoiGians?.Count ?? 0); j++)
+                                    {
+                                        var tg = item.ThoiGians[j];
+                                        <div class="time-item">
+                                            <label class="switch" style="margin:0;">
+                                                <input type="hidden" name="CauHinhs[@i].ThoiGians[@j].TrangThai" value="false" />
+                                                <input type="checkbox" class="time-toggle" data-group="@i" name="CauHinhs[@i].ThoiGians[@j].TrangThai" value="true" @(tg.TrangThai ? "checked" : string.Empty) />
+                                                <span class="slider"></span>
+                                            </label>
+                                            <div class="time-content">
+                                                <div class="time-title">@tg.Title</div>
+                                                <input type="hidden" name="CauHinhs[@i].ThoiGians[@j].Key" value="@tg.Key" />
+                                                <input type="hidden" name="CauHinhs[@i].ThoiGians[@j].MocThoiGian" value="@tg.MocThoiGian" />
+                                                <div class="flex" style="gap: 8px; align-items: center; margin-top: 4px;">
+                                                    <span class="note" style="margin:0;">Số ngày</span>
+                                                    <input type="number" min="0" class="form-control" style="width: 100px;" name="CauHinhs[@i].ThoiGians[@j].SoNgayChenhLech" value="@(tg.SoNgayChenhLech ?? 0)" @(tg.ChoPhepNhapSoNgay ? string.Empty : "readonly") />
+                                                </div>
+                                                @if (!string.IsNullOrWhiteSpace(tg.GhiChu))
+                                                {
+                                                    <div class="note">@tg.GhiChu</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -180,5 +213,13 @@
         if (error && error !== '') {
             Swal.fire({ icon: 'error', title: error, toast: true, timer: 3000, position: 'top-end', showConfirmButton: false });
         }
+
+        document.querySelectorAll('.btn-toggle-all').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const group = btn.dataset.group;
+                const shouldCheck = btn.dataset.toggleAll === 'on';
+                document.querySelectorAll(`.time-toggle[data-group="${group}"]`).forEach(cb => cb.checked = shouldCheck);
+            });
+        });
     });
 </script>
