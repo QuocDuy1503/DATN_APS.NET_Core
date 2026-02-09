@@ -19,7 +19,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(int? khoaId, string? searchString)
+        public async Task<IActionResult> Index(int? khoaId, string? searchString, int page = 1)
         {
             var query = _context.ChuongTrinhDaoTaos
                 .Include(ct => ct.IdKhoaHocNavigation)
@@ -35,9 +35,18 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 query = query.Where(ct => ct.MaCtdt.Contains(searchString) || (ct.TenCtdt ?? "").Contains(searchString));
             }
 
+            const int pageSize = 12;
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            if (totalPages == 0) totalPages = 1;
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
             var items = await query
                 .OrderBy(ct => ct.SttHienThi)
                 .ThenBy(ct => ct.MaCtdt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(ct => new CTDTItem
                 {
                     Id = ct.Id,
@@ -55,6 +64,8 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 KhoaHocId = khoaId,
                 SearchString = searchString,
                 ChuongTrinhs = items,
+                Page = page,
+                TotalPages = totalPages,
                 KhoaOptions = await _context.KhoaHocs
                     .OrderByDescending(k => k.Id)
                     .Select(k => new SelectListItem { Value = k.Id.ToString(), Text = k.TenKhoa ?? $"K{k.Id}" })
@@ -112,6 +123,13 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             if (ext != ".xlsx" && ext != ".xls")
                 return Json(new { success = false, message = "Định dạng file không hợp lệ. Vui lòng chọn file .xlsx hoặc .xls." });
 
+            var targetMaCtdt = string.IsNullOrWhiteSpace(maCtdt)
+                ? Path.GetFileNameWithoutExtension(file.FileName)
+                : maCtdt.Trim();
+
+            if (string.IsNullOrWhiteSpace(targetMaCtdt))
+                return Json(new { success = false, message = "Không xác định được mã CTĐT. Vui lòng nhập mã hoặc đặt lại tên file." });
+
             // Đọc và kiểm tra dữ liệu trước
             var parsedChiTiet = new List<ChiTietCtdt>();
             int tongTinChi = 0;
@@ -130,13 +148,17 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                         return Json(new { success = false, message = "File Excel trống." });
 
                     int rowCount = lastRow.RowNumber();
-                    int startRow = 6; // theo mẫu
+                    int startRow = 3; // dòng dữ liệu đầu tiên sau tiêu đề (điều chỉnh nếu template thay đổi)
                     int currentHocKy = 0;
 
                     for (int row = startRow; row <= rowCount; row++)
                     {
-                        var maHp = worksheet.Cell(row, 4).GetValue<string>().Trim(); // Cột D
+                        var maHp = worksheet.Cell(row, 2).GetValue<string>().Trim(); // Cột B
                         if (string.IsNullOrEmpty(maHp)) continue;
+
+                        var tenHp = worksheet.Cell(row, 3).GetValue<string>().Trim(); // Cột C
+                        var loaiHp = worksheet.Cell(row, 9).GetValue<string>().Trim(); // Cột I
+                        var dkTienQuyet = worksheet.Cell(row, 10).GetValue<string>().Trim(); // Cột J
 
                         var valHocKy = worksheet.Cell(row, 1).GetValue<string>().Trim(); // Cột A
                         if (!string.IsNullOrEmpty(valHocKy) && int.TryParse(valHocKy, out var hk))
@@ -144,18 +166,35 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                             currentHocKy = hk;
                         }
 
-                        int.TryParse(worksheet.Cell(row, 3).GetValue<string>(), out var stt); // Cột C
-                        int.TryParse(worksheet.Cell(row, 6).GetValue<string>(), out var soTc); // Cột F
+                        int.TryParse(worksheet.Cell(row, 1).GetValue<string>(), out var stt); // Cột A
+                        int.TryParse(worksheet.Cell(row, 5).GetValue<string>(), out var soTc); // Cột E
+
+                        int? hocKiToChuc = null;
+                        var hocKiCell = worksheet.Cell(row, 12).GetValue<string>().Trim(); // Cột L
+                        if (int.TryParse(hocKiCell, out var hkToChuc))
+                        {
+                            hocKiToChuc = hkToChuc;
+                        }
+                        else if (currentHocKy != 0)
+                        {
+                            hocKiToChuc = currentHocKy;
+                        }
+
+                        // Bỏ qua dòng nếu thiếu bất kỳ cột bắt buộc
+                        if (string.IsNullOrWhiteSpace(tenHp) || string.IsNullOrWhiteSpace(loaiHp) || string.IsNullOrWhiteSpace(dkTienQuyet) || soTc <= 0 || hocKiToChuc == null)
+                        {
+                            continue;
+                        }
 
                         var chiTiet = new ChiTietCtdt
                         {
                             Stt = stt,
                             MaHocPhan = maHp,
-                            TenHocPhan = worksheet.Cell(row, 5).GetValue<string>().Trim(), // Cột E
+                            TenHocPhan = tenHp,
                             SoTinChi = soTc,
-                            LoaiHocPhan = worksheet.Cell(row, 11).GetValue<string>().Trim(), // Cột K
-                            DieuKienTienQuyet = worksheet.Cell(row, 12).GetValue<string>().Trim(), // Cột L
-                            HocKiToChuc = currentHocKy == 0 ? null : currentHocKy
+                            LoaiHocPhan = loaiHp,
+                            DieuKienTienQuyet = dkTienQuyet,
+                            HocKiToChuc = hocKiToChuc
                         };
 
                         parsedChiTiet.Add(chiTiet);
@@ -171,13 +210,10 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
             // Xóa dữ liệu CTDT trùng (cùng khóa hoặc cùng mã) sau khi file hợp lệ
             var targetKhoaId = khoaHocId;
-            var existingQuery = _context.ChuongTrinhDaoTaos.AsQueryable();
-            if (targetKhoaId.HasValue)
-                existingQuery = existingQuery.Where(ct => ct.IdKhoaHoc == targetKhoaId.Value);
-            if (!string.IsNullOrWhiteSpace(maCtdt))
-                existingQuery = existingQuery.Where(ct => ct.MaCtdt == maCtdt);
-
-            var existingIds = await existingQuery.Select(ct => ct.Id).ToListAsync();
+            var existingIds = await _context.ChuongTrinhDaoTaos
+                .Where(ct => ct.MaCtdt == targetMaCtdt || (targetKhoaId.HasValue && ct.IdKhoaHoc == targetKhoaId.Value))
+                .Select(ct => ct.Id)
+                .ToListAsync();
             if (existingIds.Any())
             {
                 var details = _context.ChiTietCtdts.Where(d => d.IdCtdt != null && existingIds.Contains(d.IdCtdt.Value));
@@ -190,8 +226,8 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             // Thêm mới CTDT và chi tiết
             var newCtdt = new ChuongTrinhDaoTao
             {
-                MaCtdt = maCtdt ?? Path.GetFileNameWithoutExtension(file.FileName),
-                TenCtdt = tenCtdt ?? "Chương trình đào tạo mới",
+                MaCtdt = targetMaCtdt,
+                TenCtdt = string.IsNullOrWhiteSpace(tenCtdt) ? "Chương trình đào tạo mới" : tenCtdt.Trim(),
                 IdKhoaHoc = targetKhoaId,
                 TongTinChi = 0,
                 TrangThai = true,

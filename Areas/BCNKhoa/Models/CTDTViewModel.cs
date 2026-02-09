@@ -6,6 +6,8 @@
         public string? SearchString { get; set; }
         public List<CTDTItem> ChuongTrinhs { get; set; } = new();
         public List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>? KhoaOptions { get; set; }
+        public int Page { get; set; }
+        public int TotalPages { get; set; }
     }
 
     public class CTDTItem

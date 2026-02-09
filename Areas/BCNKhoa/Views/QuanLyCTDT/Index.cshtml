@@ -32,6 +32,43 @@
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); display: none; justify-content: center; align-items: center; z-index: 9999; }
     .modal-overlay.show { display: flex; }
     .modal-dialog { background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; }
+
+    .table-wrapper { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    .table-scroll table { width: 100%; border-collapse: collapse; }
+    .table-scroll thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700; }
+    .table-scroll th, .table-scroll td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
+
+    .pager-container { display: flex; justify-content: center; margin-top: 12px; margin-top: auto; padding-top: 8px; }
+    .pager-nav { display: inline-flex; align-items: center; gap: 8px; }
+    .pager-btn {
+        min-width: 42px;
+        height: 38px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #374151;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 12px;
+        text-decoration: none;
+        transition: all 0.15s ease;
+        font-weight: 600;
+    }
+    .pager-btn:hover { border-color: #2563eb; color: #2563eb; }
+    .pager-btn.active {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(13,110,253,0.25);
+    }
+    .pager-btn.disabled, .pager-btn.disabled:hover {
+        color: #9ca3af;
+        border-color: #e5e7eb;
+        cursor: default;
+        box-shadow: none;
+    }
 </style>
 
 <div class="content-body">
@@ -70,49 +107,64 @@
             </div>
         </div>
 
-        <div class="table-responsive">
-            <table id="tableCTDT">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">STT</th>
-                        <th>Mã chương trình</th>
-                        <th>Tên chương trình</th>
-                        <th>Khóa</th>
-                        <th>Tổng tín chỉ</th>
-                        <th>Trạng thái</th>
-                        <th style="text-align: center;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.ChuongTrinhs.Any())
-                    {
-                        var stt = 1;
-                        foreach (var item in Model.ChuongTrinhs)
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table id="tableCTDT">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">STT</th>
+                            <th>Mã chương trình</th>
+                            <th>Tên chương trình</th>
+                            <th>Khóa</th>
+                            <th>Tổng tín chỉ</th>
+                            <th>Trạng thái</th>
+                            <th style="text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.ChuongTrinhs.Any())
                         {
-                            <tr>
-                                <td>@stt</td>
-                                <td>@item.MaCtdt</td>
-                                <td>@item.TenCtdt</td>
-                                <td>@item.Khoa</td>
-                                <td>@item.TongTinChi</td>
-                                <td>
-                                    <span class="badge @((item.TrangThai ? "badge-gv" : "badge-none"))">@(item.TrangThai ? "Đang áp dụng" : "Ngưng")</span>
-                                </td>
-                                <td style="text-align: center;">
-                                    <a class="action-btn" title="Chi tiết" asp-action="Details" asp-route-id="@item.Id">
-                                        <i class="fa-solid fa-eye" style="color: #17a2b8;"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            stt++;
+                            var stt = 1 + (Model.Page - 1) * 12;
+                            foreach (var item in Model.ChuongTrinhs)
+                            {
+                                <tr>
+                                    <td>@stt</td>
+                                    <td>@item.MaCtdt</td>
+                                    <td>@item.TenCtdt</td>
+                                    <td>@item.Khoa</td>
+                                    <td>@item.TongTinChi</td>
+                                    <td>
+                                        <span class="badge @((item.TrangThai ? "badge-gv" : "badge-none"))">@(item.TrangThai ? "Đang áp dụng" : "Ngưng")</span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <a class="action-btn" title="Chi tiết" asp-action="Details" asp-route-id="@item.Id">
+                                            <i class="fa-solid fa-eye" style="color: #17a2b8;"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                stt++;
+                            }
                         }
-                    }
-                    else
-                    {
-                        <tr><td colspan="7" style="text-align:center; padding:20px; color:#888;">Không có dữ liệu.</td></tr>
-                    }
-                </tbody>
-            </table>
+                        else
+                        {
+                            <tr><td colspan="7" style="text-align:center; padding:20px; color:#888;">Không có dữ liệu.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="pager-container">
+            <div class="pager-nav">
+                <a class="pager-btn @(Model.Page <= 1 ? "disabled" : "")" asp-action="Index" asp-route-page="@(Model.Page - 1 < 1 ? 1 : Model.Page - 1)" asp-route-khoaId="@Model.KhoaHocId" asp-route-searchString="@Model.SearchString">«</a>
+
+                @for (var p = 1; p <= (Model.TotalPages == 0 ? 1 : Model.TotalPages); p++)
+                {
+                    <a class="pager-btn @(p == Model.Page ? "active" : "")" asp-action="Index" asp-route-page="@p" asp-route-khoaId="@Model.KhoaHocId" asp-route-searchString="@Model.SearchString">@p</a>
+                }
+
+                <a class="pager-btn @(Model.Page >= (Model.TotalPages == 0 ? 1 : Model.TotalPages) ? "disabled" : "")" asp-action="Index" asp-route-page="@(Model.Page + 1 > (Model.TotalPages == 0 ? 1 : Model.TotalPages) ? (Model.TotalPages == 0 ? 1 : Model.TotalPages) : Model.Page + 1)" asp-route-khoaId="@Model.KhoaHocId" asp-route-searchString="@Model.SearchString">»</a>
+            </div>
         </div>
     </div>
 </div>

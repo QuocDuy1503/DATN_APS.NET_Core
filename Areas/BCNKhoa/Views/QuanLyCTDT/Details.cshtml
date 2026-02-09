@@ -37,9 +37,11 @@
     .info-item { font-size: 14px; color: #333; }
     .info-label { font-weight: 600; color: #555; margin-right: 6px; }
 
-    .table-responsive { border-radius: 6px 6px 0 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); flex: 1; }
+    .table-wrapper { border-radius: 6px 6px 0 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eee; overflow: hidden; flex: 1; background: #fff; }
+    .table-scroll { max-height: calc(100vh - 320px); overflow-y: auto; }
     #tableSubject { width: 100%; border-collapse: collapse; }
-    #tableSubject th { background-color: #f8f9fa; color: #444; font-weight: 700; text-transform: uppercase; font-size: 12px; border-top: 1px solid #eee; padding: 12px; border-bottom: 2px solid #eee; text-align: left; }
+    #tableSubject thead th { position: sticky; top: 0; z-index: 2; background-color: #f8f9fa; }
+    #tableSubject th { color: #444; font-weight: 700; text-transform: uppercase; font-size: 12px; border-top: 1px solid #eee; padding: 12px; border-bottom: 2px solid #eee; text-align: left; }
     #tableSubject td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
     #tableSubject th:nth-child(4), #tableSubject th:nth-child(5), #tableSubject th:nth-child(6), #tableSubject th:nth-child(7),
     #tableSubject td:nth-child(4), #tableSubject td:nth-child(5), #tableSubject td:nth-child(6), #tableSubject td:nth-child(7) { text-align: center; }
@@ -84,45 +86,47 @@
             <div class="info-item"><span class="info-label">Khóa:</span> @Model.Khoa</div>
         </div>
 
-        <div class="table-responsive">
-            <table id="tableSubject">
-                <thead>
-                    <tr>
-                        <th>STT</th>
-                        <th>Mã Học Phần</th>
-                        <th>Tên Học Phần</th>
-                        <th>Số TC</th>
-                        <th>Loại HP</th>
-                        <th>ĐK Tiên Quyết</th>
-                        <th>HK Tổ Chức</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.HocPhans.Any())
-                    {
-                        foreach (var hp in Model.HocPhans)
+        <div class="table-wrapper">
+            <div class="table-scroll">
+                <table id="tableSubject">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã Học Phần</th>
+                            <th>Tên Học Phần</th>
+                            <th>Số TC</th>
+                            <th>Loại HP</th>
+                            <th>ĐK Tiên Quyết</th>
+                            <th>HK Tổ Chức</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.HocPhans.Any())
                         {
-                            <tr>
-                                <td>@hp.Stt</td>
-                                <td>@hp.MaHocPhan</td>
-                                <td>@hp.TenHocPhan</td>
-                                <td>@hp.SoTinChi</td>
-                                <td>
-                                    <span class="badge-type @((hp.LoaiHocPhan != null && hp.LoaiHocPhan.Contains("tự" , StringComparison.OrdinalIgnoreCase)) ? "badge-elective" : "badge-compulsory")">
-                                        @hp.LoaiHocPhan
-                                    </span>
-                                </td>
-                                <td>@hp.DieuKienTienQuyet</td>
-                                <td>@hp.HocKiToChuc</td>
-                            </tr>
+                            foreach (var hp in Model.HocPhans)
+                            {
+                                <tr>
+                                    <td>@hp.Stt</td>
+                                    <td>@hp.MaHocPhan</td>
+                                    <td>@hp.TenHocPhan</td>
+                                    <td>@hp.SoTinChi</td>
+                                    <td>
+                                        <span class="badge-type @((hp.LoaiHocPhan != null && hp.LoaiHocPhan.Contains("tự" , StringComparison.OrdinalIgnoreCase)) ? "badge-elective" : "badge-compulsory")">
+                                            @hp.LoaiHocPhan
+                                        </span>
+                                    </td>
+                                    <td>@hp.DieuKienTienQuyet</td>
+                                    <td>@hp.HocKiToChuc</td>
+                                </tr>
+                            }
                         }
-                    }
-                    else
-                    {
-                        <tr><td colspan="7" style="text-align:center; padding:20px; color:#888;">Chưa có học phần.</td></tr>
-                    }
-                </tbody>
-            </table>
+                        else
+                        {
+                            <tr><td colspan="7" style="text-align:center; padding:20px; color:#888;">Chưa có học phần.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="summary-footer">

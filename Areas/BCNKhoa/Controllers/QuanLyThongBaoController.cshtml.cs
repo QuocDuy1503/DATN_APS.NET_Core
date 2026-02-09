@@ -49,22 +49,87 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             },
             ["baocao_giuaki"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi m? ??t báo cáo gi?a kì", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo t? ??ng khi ??t ???c m?." },
-                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nh?c nh? l?p h?i ??ng: g?i sau X ngày khi ??t báo cáo gi?a kì b?t ??u", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "after_start_nop", Title = "Nh?c nh? n?p tài li?u: g?i sau X ngày khi báo cáo gi?a kì b?t ??u", MocThoiGian = "AFTER_START_NOP", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nh?c nh? duy?t: g?i tr??c X ngày khi k?t thúc ??t báo cáo gi?a kì", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "open", Title = "Khi m? ??t báo cáo gi?a k?", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo t? ??ng khi ??t ???c m?." },
+                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nh?c nh? l?p h?i ??ng: g?i sau X ngày khi ??t báo cáo gi?a k? b?t ??u", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "after_start_nop", Title = "Nh?c nh? n?p tài li?u: g?i sau X ngày khi báo cáo gi?a k? b?t ??u", MocThoiGian = "AFTER_START_NOP", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nh?c nh? duy?t: g?i tr??c X ngày khi k?t thúc ??t báo cáo gi?a k?", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
             },
             ["baocao_cuoiki"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi m? ??t báo cáo cu?i kì", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo t? ??ng khi ??t ???c m?." },
-                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nh?c nh? l?p h?i ??ng: g?i sau X ngày khi ??t báo cáo cu?i kì b?t ??u", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "after_start_nop", Title = "Nh?c nh? n?p tài li?u: g?i sau X ngày khi báo cáo cu?i kì b?t ??u", MocThoiGian = "AFTER_START_NOP", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nh?c nh? duy?t: g?i tr??c X ngày khi k?t thúc ??t báo cáo cu?i kì", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "after_end_publish", Title = "Công b? ?i?m: g?i sau X ngày khi k?t thúc ??t báo cáo cu?i kì", MocThoiGian = "AFTER_END_PUBLISH", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "open", Title = "Khi m? ??t báo cáo cu?i k?", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo t? ??ng khi ??t ???c m?." },
+                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nh?c nh? l?p h?i ??ng: g?i sau X ngày khi ??t báo cáo cu?i k? b?t ??u", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "after_start_nop", Title = "Nh?c nh? n?p tài li?u: g?i sau X ngày khi báo cáo cu?i k? b?t ??u", MocThoiGian = "AFTER_START_NOP", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nh?c nh? duy?t: g?i tr??c X ngày khi k?t thúc ??t báo cáo cu?i k?", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "after_end_publish", Title = "Công b? ?i?m: g?i sau X ngày khi k?t thúc ??t báo cáo cu?i k?", MocThoiGian = "AFTER_END_PUBLISH", SoNgayChenhLech = 2, TrangThai = true }
             }
         };
 
         private static readonly List<ThongBaoCauHinhItem> _defaultTemplates = BuildDefaultTemplates();
+
+        private static string GetDefaultTimeTitle(string loaiSuKien, string key)
+        {
+            return (loaiSuKien, key) switch
+            {
+                ("dangky_nguyenvong", "open") => "Khi m? ??t g?i thông báo",
+                ("dangky_nguyenvong", "before_start") => "Nh?c m? ??t: g?i tr??c X ngày khi ??t b?t ??u",
+                ("dangky_nguyenvong", "before_end") => "Nh?c s?p h?t h?n: g?i tr??c X ngày khi ??t k?t thúc",
+
+                ("duyet_nguyenvong", "open") => "Khi m? ??t g?i thông báo",
+                ("duyet_nguyenvong", "before_start") => "Nh?c m? ??t: g?i tr??c X ngày khi ??t b?t ??u",
+                ("duyet_nguyenvong", "before_end") => "Nh?c s?p h?t h?n: g?i tr??c X ngày khi ??t k?t thúc",
+
+                ("dexuat_detai", "open") => "Khi m? ??t g?i thông báo",
+                ("dexuat_detai", "before_start") => "Nh?c m? ??t: g?i tr??c X ngày khi ??t b?t ??u",
+                ("dexuat_detai", "before_end") => "Nh?c s?p h?t h?n: g?i tr??c X ngày khi ??t k?t thúc",
+
+                ("duyet_detai", "open") => "Khi m? ??t g?i thông báo",
+                ("duyet_detai", "after_start_hd") => "Nh?c nh? l?p h?i ??ng: g?i sau X ngày khi duy?t ?? tài b?t ??u",
+                ("duyet_detai", "after_start_review") => "Nh?c nh? duy?t ?? tài: g?i sau X ngày khi duy?t ?? tài b?t ??u",
+                ("duyet_detai", "before_end") => "Nh?c s?p k?t thúc duy?t ?? tài: g?i tr??c X ngày khi duy?t ?? tài k?t thúc",
+
+                ("nop_decuong", "open") => "Khi m? ??t g?i thông báo",
+                ("nop_decuong", "before_start") => "Nh?c m? ??t: g?i tr??c X ngày khi ??t b?t ??u",
+                ("nop_decuong", "before_end") => "Nh?c s?p h?t h?n: g?i tr??c X ngày khi ??t k?t thúc",
+
+                ("baocao_giuaki", "open") => "Khi m? ??t báo cáo gi?a k?",
+                ("baocao_giuaki", "after_start_hd") => "Nh?c nh? l?p h?i ??ng: g?i sau X ngày khi ??t báo cáo gi?a k? b?t ??u",
+                ("baocao_giuaki", "after_start_nop") => "Nh?c nh? n?p tài li?u: g?i sau X ngày khi báo cáo gi?a k? b?t ??u",
+                ("baocao_giuaki", "before_end") => "Nh?c nh? duy?t: g?i tr??c X ngày khi k?t thúc ??t báo cáo gi?a k?",
+
+                ("baocao_cuoiki", "open") => "Khi m? ??t báo cáo cu?i k?",
+                ("baocao_cuoiki", "after_start_hd") => "Nh?c nh? l?p h?i ??ng: g?i sau X ngày khi ??t báo cáo cu?i k? b?t ??u",
+                ("baocao_cuoiki", "after_start_nop") => "Nh?c nh? n?p tài li?u: g?i sau X ngày khi báo cáo cu?i k? b?t ??u",
+                ("baocao_cuoiki", "before_end") => "Nh?c nh? duy?t: g?i tr??c X ngày khi k?t thúc ??t báo cáo cu?i k?",
+                ("baocao_cuoiki", "after_end_publish") => "Công b? ?i?m: g?i sau X ngày khi k?t thúc ??t báo cáo cu?i k?",
+                _ => string.Empty
+            };
+        }
+
+        private static string? GetDefaultTimeNote(string loaiSuKien, string key)
+        {
+            return (loaiSuKien, key) switch
+            {
+                ("dangky_nguyenvong", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
+                ("duyet_nguyenvong", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
+                ("dexuat_detai", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
+                ("duyet_detai", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
+                ("nop_decuong", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
+                ("baocao_giuaki", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
+                ("baocao_cuoiki", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
+                _ => null
+            };
+        }
+
+        private static bool LooksCorrupted(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return true;
+            }
+
+            // Các ký t? th??ng xu?t hi?n khi l?i mã hóa: '?' ho?c '?' (U+FFFD)
+            return value.Contains('?') || value.Contains('?');
+        }
 
         private static List<ThongBaoCauHinhItem> BuildDefaultTemplates()
         {
@@ -120,8 +185,8 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     LoaiSuKien = "baocao_giuaki",
                     DoiTuongNhan = "bomon,bcnkhoa",
                     TrangThai = true,
-                    TieuDeMau = "[VLU] Nh?c báo cáo gi?a kì",
-                    NoiDungMau = "??t {Ten_Dot} s?p ??n h?n báo cáo gi?a kì vào {Ngay_Bat_Dau}. Vui lòng chu?n b? h?i ??ng và tài li?u.",
+                    TieuDeMau = "[VLU] Nh?c báo cáo gi?a k?",
+                    NoiDungMau = "??t {Ten_Dot} s?p ??n h?n báo cáo gi?a k? vào {Ngay_Bat_Dau}. Vui lòng chu?n b? h?i ??ng và tài li?u.",
                     ThoiGians = CloneTimeConfigs(_defaultTimeConfigs["baocao_giuaki"])
                 },
                 new ThongBaoCauHinhItem
@@ -129,8 +194,8 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     LoaiSuKien = "baocao_cuoiki",
                     DoiTuongNhan = "bomon,bcnkhoa",
                     TrangThai = true,
-                    TieuDeMau = "[VLU] Nh?c báo cáo cu?i kì",
-                    NoiDungMau = "??t {Ten_Dot} s?p ??n h?n báo cáo cu?i kì vào {Ngay_Bat_Dau}. Vui lòng chu?n b? h?i ??ng và tài li?u.",
+                    TieuDeMau = "[VLU] Nh?c báo cáo cu?i k?",
+                    NoiDungMau = "??t {Ten_Dot} s?p ??n h?n báo cáo cu?i k? vào {Ngay_Bat_Dau}. Vui lòng chu?n b? h?i ??ng và tài li?u.",
                     ThoiGians = CloneTimeConfigs(_defaultTimeConfigs["baocao_cuoiki"])
                 }
             };
@@ -198,15 +263,17 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                         .Select(t =>
                         {
                             var matched = currentGroup.FirstOrDefault(x => x.MocThoiGian == t.MocThoiGian);
+                            var defaultTitle = GetDefaultTimeTitle(template.LoaiSuKien, t.Key);
+                            var defaultNote = GetDefaultTimeNote(template.LoaiSuKien, t.Key);
                             return new ThongBaoThoiGianItem
                             {
                                 Key = t.Key,
-                                Title = t.Title,
+                                Title = string.IsNullOrWhiteSpace(defaultTitle) ? t.Title : defaultTitle,
                                 MocThoiGian = t.MocThoiGian,
                                 SoNgayChenhLech = matched?.SoNgayChenhLech ?? t.SoNgayChenhLech,
                                 TrangThai = matched?.TrangThai ?? t.TrangThai,
                                 ChoPhepNhapSoNgay = t.ChoPhepNhapSoNgay,
-                                GhiChu = t.GhiChu
+                                GhiChu = string.IsNullOrWhiteSpace(defaultNote) ? t.GhiChu : defaultNote
                             };
                         })
                         .ToList();
@@ -215,12 +282,12 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     return new ThongBaoCauHinhItem
                     {
                         LoaiSuKien = template.LoaiSuKien,
-                        DoiTuongNhan = first?.DoiTuongNhan ?? template.DoiTuongNhan,
+                        DoiTuongNhan = LooksCorrupted(first?.DoiTuongNhan) ? template.DoiTuongNhan : first?.DoiTuongNhan ?? template.DoiTuongNhan,
                         MocThoiGian = template.MocThoiGian,
                         SoNgayChenhLech = template.SoNgayChenhLech,
                         TrangThai = thoiGians.Any(x => x.TrangThai) || (first?.TrangThai ?? template.TrangThai),
-                        TieuDeMau = first?.TieuDeMau ?? template.TieuDeMau,
-                        NoiDungMau = first?.NoiDungMau ?? template.NoiDungMau,
+                        TieuDeMau = LooksCorrupted(first?.TieuDeMau) ? template.TieuDeMau : first?.TieuDeMau ?? template.TieuDeMau,
+                        NoiDungMau = LooksCorrupted(first?.NoiDungMau) ? template.NoiDungMau : first?.NoiDungMau ?? template.NoiDungMau,
                         ThoiGians = thoiGians
                     };
                 })
@@ -250,6 +317,25 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 if (string.IsNullOrWhiteSpace(item.LoaiSuKien))
                 {
                     continue;
+                }
+
+                var defaultTemplate = _defaultTemplates.FirstOrDefault(x => x.LoaiSuKien == item.LoaiSuKien);
+                if (defaultTemplate != null)
+                {
+                    if (LooksCorrupted(item.TieuDeMau))
+                    {
+                        item.TieuDeMau = defaultTemplate.TieuDeMau;
+                    }
+
+                    if (LooksCorrupted(item.NoiDungMau))
+                    {
+                        item.NoiDungMau = defaultTemplate.NoiDungMau;
+                    }
+
+                    if (LooksCorrupted(item.DoiTuongNhan))
+                    {
+                        item.DoiTuongNhan = defaultTemplate.DoiTuongNhan;
+                    }
                 }
 
                 var timeConfigs = item.ThoiGians ?? new List<ThongBaoThoiGianItem>();
