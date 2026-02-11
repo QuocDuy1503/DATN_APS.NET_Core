@@ -1,7 +1,8 @@
 ﻿@model DATN_TMS.Areas.BCNKhoa.Models.CTDTViewModel
 
 <style>
-    .content-card {
+    .content-body.dotdoan-page, .content-body.ctdt-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dotdoan-page .content-card, .ctdt-page .content-card {
         background: #fff;
         border-radius: 8px;
         padding: 20px;
@@ -9,7 +10,7 @@
         display: flex;
         flex-direction: column;
         min-height: calc(100vh - 140px);
-        font-family: 'Segoe UI', Tahoma, sans-serif;
+        font-family: inherit;
     }
 
     .page-header-row { margin-bottom: 15px; }
@@ -19,9 +20,9 @@
     .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
     .filter-item { display: flex; flex-direction: column; gap: 4px; }
     .filter-item select.form-control { background: #ffffff !important; border: 1px solid #ced4da !important; height: 38px !important; padding: 6px 12px !important; font-size: 13px !important; color: #333 !important; border-radius: 4px; min-width: 150px; }
-    .filter-label { font-weight: 600; font-size: 13px; color: #333; display: block; margin-bottom: 4px; }
-    .toolbar-input, .form-control { background: #fff; font-size: 13px; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; height: 36px; }
-    .toolbar-input:focus, .form-control:focus { border-color: #484BE0; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1); outline: none; }
+    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
+    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
 
     .search-box { display:flex; flex-direction: column; gap:6px; align-items: flex-start; }
     .search-input { padding-left: 12px; font-size: 13px; text-align: left; }
@@ -33,11 +34,12 @@
     .modal-overlay.show { display: flex; }
     .modal-dialog { background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); overflow: hidden; }
 
-    .table-wrapper { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
-    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
-    .table-scroll table { width: 100%; border-collapse: collapse; }
-    .table-scroll thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700; }
-    .table-scroll th, .table-scroll td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
+    .dotdoan-page .table-responsive, .ctdt-page .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .dotdoan-page .table-scroll, .ctdt-page .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    .dotdoan-page .table-scroll table, .ctdt-page .table-scroll table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    .dotdoan-page .table-scroll thead th, .ctdt-page .table-scroll thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px !important; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; }
+    .dotdoan-page .table-scroll tbody td, .ctdt-page .table-scroll tbody td { padding: 12px 12px !important; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    .dotdoan-page .table-scroll tbody tr:hover, .ctdt-page .table-scroll tbody tr:hover { background: #f9f9f9; }
 
     .pager-container { display: flex; justify-content: center; margin-top: 12px; margin-top: auto; padding-top: 8px; }
     .pager-nav { display: inline-flex; align-items: center; gap: 8px; }
@@ -71,7 +73,7 @@
     }
 </style>
 
-<div class="content-body">
+<div class="content-body ctdt-page dotdoan-page">
     <div class="content-card">
         <div class="page-header-row" style="margin-bottom: 15px;">
             <h2 class="page-title">Quản lý Chương trình đào tạo</h2>
@@ -107,7 +109,7 @@
             </div>
         </div>
 
-        <div class="table-wrapper">
+        <div class="table-responsive">
             <div class="table-scroll">
                 <table id="tableCTDT">
                     <thead>
@@ -124,7 +126,7 @@
                     <tbody>
                         @if (Model.ChuongTrinhs.Any())
                         {
-                            var stt = 1 + (Model.Page - 1) * 12;
+                            var stt = 1 + (Model.Page - 1) * 10;
                             foreach (var item in Model.ChuongTrinhs)
                             {
                                 <tr>

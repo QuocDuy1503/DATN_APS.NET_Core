@@ -35,7 +35,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 query = query.Where(ct => ct.MaCtdt.Contains(searchString) || (ct.TenCtdt ?? "").Contains(searchString));
             }
 
-            const int pageSize = 12;
+            const int pageSize = 10;
             var totalCount = await query.CountAsync();
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
             if (totalPages == 0) totalPages = 1;

@@ -17,7 +17,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         {
             _context = context;
         }
-        public IActionResult Index(int? page, int? khoaId, string searchString)
+        public IActionResult Index(int? page, int? khoaId, string? namHoc, string searchString)
         {
             int pageSize = 10;
             int pageNumber = page ?? 1;
@@ -25,14 +25,46 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             var listKhoa = _context.KhoaHocs.OrderByDescending(k => k.Id).ToList();
             ViewBag.ListKhoa = new SelectList(listKhoa, "Id", "TenKhoa", khoaId);
             ViewBag.CurrentKhoaId = khoaId;
+            ViewBag.CurrentFilter = searchString;
+            ViewBag.CurrentNamHoc = namHoc;
+
+            var listNamHoc = _context.HocKis
+                .GroupBy(h => new { h.NamBatDau, h.NamKetThuc })
+                .OrderByDescending(g => g.Key.NamBatDau)
+                .Select(g => new SelectListItem
+                {
+                    Value = $"{g.Key.NamBatDau}-{g.Key.NamKetThuc}",
+                    Text = $"{g.Key.NamBatDau}-{g.Key.NamKetThuc}"
+                })
+                .ToList();
+            ViewBag.ListNamHoc = listNamHoc;
             var query = _context.DotDoAns
                 .Include(d => d.IdKhoaHocNavigation) 
                 .Include(d => d.IdHocKiNavigation)
                 .AsQueryable();
 
+            int? namBatDau = null;
+            int? namKetThuc = null;
+            if (!string.IsNullOrWhiteSpace(namHoc))
+            {
+                var parts = namHoc.Split('-', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2 && int.TryParse(parts[0], out var start) && int.TryParse(parts[1], out var end))
+                {
+                    namBatDau = start;
+                    namKetThuc = end;
+                }
+            }
+
             if (khoaId.HasValue && khoaId.Value > 0)
             {
                 query = query.Where(d => d.IdKhoaHoc == khoaId);
+            }
+
+            if (namBatDau.HasValue && namKetThuc.HasValue)
+            {
+                query = query.Where(d => d.IdHocKiNavigation != null &&
+                    d.IdHocKiNavigation.NamBatDau == namBatDau.Value &&
+                    d.IdHocKiNavigation.NamKetThuc == namKetThuc.Value);
             }
 
             if (!string.IsNullOrEmpty(searchString))

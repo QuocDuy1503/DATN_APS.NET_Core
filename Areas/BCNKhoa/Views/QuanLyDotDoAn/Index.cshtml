@@ -7,196 +7,159 @@
 }
 
 <style>
-    .content-card {
-        background-color: #fff;
+    .dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+
+    .dotdoan-page .content-card {
+        background: #fff;
         border-radius: 8px;
         padding: 20px;
         box-shadow: 0 0 10px rgba(0,0,0,0.05);
         display: flex;
         flex-direction: column;
         min-height: calc(100vh - 140px);
+        font-family: inherit;
     }
 
-    .table-responsive {
-        width: 100%;
-        margin-bottom: 20px;
-        flex: 1;
-    }
+    .page-header-row { margin-bottom: 15px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
-    .pagination-container {
-        display: flex;
-        justify-content: center;
-        padding-top: 15px;
-        border-top: 1px solid #eee; 
-    }
-    
-    .pagination {
-        display: flex;
-        padding-left: 0;
-        list-style: none;
-        gap: 5px;
-        margin-bottom: 0;
-    }
+    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
+    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
 
-    .pagination li a, .pagination li span {
-        padding: 8px 16px;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        color: #333;
-        text-decoration: none;
-        background-color: #fff;
-        transition: all 0.2s;
-    }
+    .btn-primary { background-color: #0d6efd; border-color: #0d6efd; }
+    .btn-primary:hover { background-color: #0b5ed7; border-color: #0b5ed7; }
 
-    .pagination li a:hover {
-        background-color: #e9ecef;
-        border-color: #dee2e6;
-    }
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; }
+    tbody td { padding: 12px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    tbody tr:hover { background: #f9f9f9; }
 
-    .pagination li.active span {
-        background-color: #0d6efd;
-        color: white;
-        border-color: #0d6efd;
-    }
-    
-    .pagination li.disabled span, .pagination li.disabled a {
-        color: #6c757d;
-        pointer-events: none;
-        background-color: #fff;
-        border-color: #dee2e6;
-    }
-    .page-title { 
-    font-size: 20px; 
-    font-weight: 700; 
-    color: #2c3e50; 
-    margin: 0; 
-    text-transform: uppercase; 
-    }
-    .page-header-row { 
-        margin-bottom: 10px; 
-    }
-    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; }
-    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
+    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
+    .status-running { background: #16a34a; }
+
+    .pagination-container { display: flex; justify-content: center; margin-top: 12px; margin-top: auto; padding-top: 8px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; }
+    .pagination li a:hover { border-color: #2563eb; color: #2563eb; }
+    .pagination li.active span { background: #0d6efd; border-color: #0d6efd; color: #fff; box-shadow: 0 6px 18px rgba(13,110,253,0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
 </style>
 
-<div class="content-body">
+<div class="content-body dotdoan-page">
     <div class="content-card">
         <div class="page-header-row">
             <h2 class="page-title">Quản lý đợt đồ án</h2>
         </div>
         <form method="get" asp-action="Index">
             <div class="toolbar-row">
-                <div class="toolbar-left">
+                <div class="filter-wrapper">
                     <div class="filter-item">
-                        <span class="filter-label">Học kì</span>
-                        <select class="toolbar-input" style="width: 150px;">
-                            <option value="">-- Tất cả --</option>
-                            <option value="K26">101</option>
-                            <option value="K27">102</option>
-                            <option value="K28">103</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-item">
-                        <span class="filter-label">Năm học</span>
-                        <select class="toolbar-input" style="width: 150px;">
-                            <option value="">-- Tất cả --</option>
-                            <option value="K26">2023-2024</option>
-                            <option value="K27">2024-2025</option>
-                            <option value="K28">2025-2026</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-item">
-                        <span class="filter-label">Khóa</span>
-                        <select name="khoaId" id="khoaSelect" class="toolbar-input" style="width: 150px;"
-                                asp-items="ViewBag.ListKhoa" 
+                        <span class="filter-label">Khóa:</span>
+                        <select name="khoaId" id="khoaSelect" class="form-control" style="width: 150px;"
+                                asp-items="ViewBag.ListKhoa"
                                 onchange="this.form.submit()">
                             <option value="">-- Tất cả --</option>
                         </select>
                     </div>
+
+                    <div class="filter-item">
+                        <span class="filter-label">Năm học:</span>
+                        <select name="namHoc" id="namHocSelect" class="form-control" style="width: 150px;" onchange="this.form.submit()">
+                            <option value="">-- Tất cả --</option>
+                            @if (ViewBag.ListNamHoc != null)
+                            {
+                                foreach (SelectListItem item in ViewBag.ListNamHoc)
+                                {
+                                    <option value="@item.Value" selected="@(item.Value == (ViewBag.CurrentNamHoc as string ?? string.Empty))">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
                 </div>
 
-                <div class="toolbar-right">
-                    <div style="display:flex; align-items:center; gap:5px;">
-                    <span class="filter-label">Tìm kiếm:</span>
-                    <input type="text" id="searchInput" name="searchString" 
-                           value="@ViewBag.CurrentFilter" 
-                           class="toolbar-input" 
-                           placeholder="Nhập tên đợt..." 
-                           style="width: 250px;">
-                </div>
-                    
+                <div class="toolbar-right" style="display:flex; align-items:flex-end; gap:10px;">
+                    <div class="search-box" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                        <span class="filter-label">Tìm kiếm</span>
+                        <input type="text" id="searchInput" name="searchString"
+                               value="@ViewBag.CurrentFilter"
+                               class="toolbar-input search-input"
+                               placeholder="Nhập tên đợt..." style="width: 240px;" />
+                    </div>
                     <button type="button" class="btn btn-primary" id="btnOpenModal">
                         <i class="fa-solid fa-plus"></i> Thêm đợt đồ án
                     </button>
                 </div>
             </div>
         </form>
+
         <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Tên đợt</th>
-                        <th>Khóa</th>
-                        <th>Ngày bắt đầu</th>
-                        <th>Ngày kết thúc</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+            <div class="table-scroll">
+                <table>
+                    <thead>
                         <tr>
-                            <td>@item.TenDot</td>
-                            <td>
-                                <div>@item.IdKhoaHocNavigation?.TenKhoa</div>
-                            </td>
-                            <td>
-                                <div>@(item.NgayBatDauDot.HasValue ? item.NgayBatDauDot.Value.ToString("dd/MM/yyyy") : "---")</div>
-                            </td>
-                            <td>
-                                <div>@(item.NgayKetThucDot.HasValue ? item.NgayKetThucDot.Value.ToString("dd/MM/yyyy") : "---")</div>
-                            </td>
-                            <td>
-                                @if (item.TrangThai == true) 
-                                {
-                                    <span class="status-badge status-running">Đang diễn ra</span>
-                                }
-                                else
-                                {
-                                    <span class="status-badge" style="background-color: #95a5a6; color: white;">Đã đóng</span>
-                                }
-                            </td>
-                            <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Sửa">
-                                    <i class="fa-regular fa-pen-to-square"></i>
-                                </a>
-                                <button type="button" class="action-btn btn-delete-icon btn-delete-confirm" data-id="@item.Id" title="Xóa" style="border:none; background:none; cursor:pointer;">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </td>
+                            <th>Tên đợt</th>
+                            <th>Khóa</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày kết thúc</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.TenDot</td>
+                                <td>@item.IdKhoaHocNavigation?.TenKhoa</td>
+                                <td>@(item.NgayBatDauDot.HasValue ? item.NgayBatDauDot.Value.ToString("dd/MM/yyyy") : "---")</td>
+                                <td>@(item.NgayKetThucDot.HasValue ? item.NgayKetThucDot.Value.ToString("dd/MM/yyyy") : "---")</td>
+                                <td>
+                                    @if (item.TrangThai == true)
+                                    {
+                                        <span class="status-badge status-running">Đang diễn ra</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge">Đã đóng</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Sửa">
+                                        <i class="fa-regular fa-pen-to-square"></i>
+                                    </a>
+                                    <button type="button" class="action-btn btn-delete-icon btn-delete-confirm" data-id="@item.Id" title="Xóa" style="border:none; background:none; cursor:pointer;">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
         
         <partial name="_CreateModal" />
 
         <div class="pagination-container">
-            @Html.PagedListPager(Model, page => Url.Action("Index", new { page = page, khoaId = ViewBag.CurrentKhoaId, searchString = ViewBag.CurrentFilter }),
-            new PagedListRenderOptions {
-                LiElementClasses = new string[] { "page-item" },
-                PageClasses = new string[] { "page-link" },
-                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
-                DisplayLinkToNextPage = PagedListDisplayMode.Always,
-                LinkToPreviousPageFormat = "«",
-                LinkToNextPageFormat = "»",
-                EllipsesFormat = "...",
-                MaximumPageNumbersToDisplay = 5
-            })
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page = page, khoaId = ViewBag.CurrentKhoaId, namHoc = ViewBag.CurrentNamHoc, searchString = ViewBag.CurrentFilter }),
+                new PagedListRenderOptions
+                {
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                    DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                    LinkToPreviousPageFormat = "«",
+                    LinkToNextPageFormat = "»",
+                    EllipsesFormat = "...",
+                    MaximumPageNumbersToDisplay = 5
+                })
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -233,6 +196,7 @@
         // TÌM KIẾM REAL-TIME
         const searchInput = document.getElementById('searchInput');
         const khoaSelect = document.getElementById('khoaSelect');
+        const namHocSelect = document.getElementById('namHocSelect');
         const tableContainer = document.querySelector('.table-responsive'); // Vùng chứa bảng
         let timeout = null; // Biến để lưu độ trễ
 
@@ -246,12 +210,14 @@
         }
 
         function performSearch() {
-            // Lấy giá trị từ ô tìm kiếm và dropdown khóa
+            // Lấy giá trị từ ô tìm kiếm và dropdown khóa/học kỳ/năm học
             const keyword = searchInput.value;
             const khoaId = khoaSelect ? khoaSelect.value : "";
+            const namHoc = namHocSelect ? namHocSelect.value : "";
+            const hocKiId = "";
 
             // Tạo URL request (Sử dụng URL hiện tại và thay đổi tham số)
-            const url = `@Url.Action("Index")?searchString=${encodeURIComponent(keyword)}&khoaId=${khoaId}`;
+            const url = `@Url.Action("Index")?searchString=${encodeURIComponent(keyword)}&khoaId=${khoaId}&namHoc=${namHoc}`;
 
             // Gọi AJAX (Fetch API)
             fetch(url)
