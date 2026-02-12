@@ -112,6 +112,34 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 .Select(svdt => svdt.IdSinhVienNavigation.IdNguoiDungNavigation.HoTen)
                 .ToListAsync();
 
+            // Kiểm tra người dùng hiện tại có phải thành viên hội đồng duyệt đề tài không
+            bool isCouncilMember = false;
+            var userEmail = HttpContext.Session.GetString("UserEmail");
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                var nguoiDung = await _context.NguoiDungs
+                    .FirstOrDefaultAsync(nd => nd.Email == userEmail);
+                
+                if (nguoiDung != null)
+                {
+                    // Lấy IdGiangVien từ bảng GiangViens
+                    var giangVien = await _context.GiangViens
+                        .FirstOrDefaultAsync(gv => gv.IdNguoiDung == nguoiDung.Id);
+                    
+                    if (giangVien != null)
+                    {
+                        // Kiểm tra giảng viên có trong hội đồng duyệt đề tài không
+                        isCouncilMember = await _context.ThanhVienHdBaoCaos
+                            .Include(tv => tv.IdHdBaocaoNavigation)
+                            .AnyAsync(tv => tv.IdGiangVien == giangVien.IdNguoiDung && 
+                                          tv.IdHdBaocaoNavigation != null &&
+                                          tv.IdHdBaocaoNavigation.LoaiHoiDong == "DUYET_DE_TAI");
+                    }
+                }
+            }
+
+            ViewBag.IsCouncilMember = isCouncilMember;
+
             var model = new ChiTietDeTaiViewModel
             {
                 Id = detai.Id,

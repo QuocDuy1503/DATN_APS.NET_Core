@@ -201,20 +201,36 @@
                     <label style="font-weight: 600; font-size: 13px; margin-bottom: 5px; display:block;">
                         Nhận xét của BCN Khoa:
                     </label>
-                    <textarea id="adminComment" class="feedback-input" placeholder="Nhập nhận xét (Bắt buộc nếu từ chối)...">@Model.NhanXet</textarea>
-                    <div id="feedbackError" class="feedback-required-msg">
-                        <i class="fa-solid fa-circle-exclamation"></i> Vui lòng nhập lý do từ chối!
-                    </div>
+                    @if (ViewBag.IsCouncilMember == true)
+                    {
+                        <textarea id="adminComment" class="feedback-input" placeholder="Nhập nhận xét (Bắt buộc nếu từ chối)...">@Model.NhanXet</textarea>
+                        <div id="feedbackError" class="feedback-required-msg">
+                            <i class="fa-solid fa-circle-exclamation"></i> Vui lòng nhập lý do từ chối!
+                        </div>
+                    }
+                    else
+                    {
+                        <textarea class="feedback-input" readonly style="background-color: #f5f5f5; cursor: not-allowed;">@Model.NhanXet</textarea>
+                    }
                 </div>
 
-                <div class="btn-row">
-                    <button class="btn-action btn-reject" onclick="tuChoiDeTai(@Model.Id)">
-                        <i class="fa-solid fa-xmark"></i> Từ chối
-                    </button>
-                    <button class="btn-action btn-approve" onclick="duyetDeTai(@Model.Id)">
-                        <i class="fa-solid fa-check"></i> Duyệt
-                    </button>
-                </div>
+                @if (ViewBag.IsCouncilMember == true)
+                {
+                    <div class="btn-row">
+                        <button class="btn-action btn-reject" onclick="tuChoiDeTai(@Model.Id)">
+                            <i class="fa-solid fa-xmark"></i> Từ chối
+                        </button>
+                        <button class="btn-action btn-approve" onclick="duyetDeTai(@Model.Id)">
+                            <i class="fa-solid fa-check"></i> Duyệt
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div style="padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; text-align: center; color: #856404; font-size: 13px;">
+                        <i class="fa-solid fa-info-circle"></i> Chỉ thành viên hội đồng duyệt đề tài mới có thể thực hiện duyệt
+                    </div>
+                }
             </div>
 
         </div>
