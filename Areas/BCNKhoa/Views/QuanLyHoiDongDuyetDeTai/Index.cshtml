@@ -7,59 +7,52 @@
 }
 
 <style>
-    /* --- Giữ nguyên các CSS cũ của bạn --- */
-    .content-card { background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; min-height: calc(100vh - 140px); }
-    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-    .filter-wrapper { display: flex; gap: 15px; flex-wrap: wrap; }
-    .toolbar-right { display: flex; align-items: center; gap: 10px; }
-    .toolbar-input { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; outline: none; height: 38px; font-size: 14px; }
-    .toolbar-input:focus { border-color: #484BE0; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1); }
-    .filter-label { font-weight: 500; margin-bottom: 5px; display: block; color: #333; font-size: 13px; }
-    .page-header-row { margin-bottom: 10px; }
+    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dotdoan-page .content-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; min-height: calc(100vh - 140px); font-family: inherit; }
+    .page-header-row { margin-bottom: 15px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
-    .table-responsive { width: 100%; margin-bottom: 20px; flex: 1; }
-    table { width: 100%; border-collapse: collapse; }
-    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; }
-    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
-    .btn { padding: 8px 16px; border-radius: 4px; font-weight: 500; cursor: pointer; border: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; }
-    .btn-primary { background-color: #484BE0; color: white; height: 38px; }
-    .btn-primary:hover { background-color: #3a3dc0; }
+
+    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
+    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+    .btn-primary { background-color: #0d6efd; border: none; color: white; padding: 9px 16px; border-radius: 4px; font-weight: 500; font-size: 13px; height: 38px; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary:hover { background-color: #0b5ed7; }
+
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody td { padding: 12px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody tr:hover { background: #f9f9f9; }
+
     .action-btn { border: none; background: none; cursor: pointer; padding: 0 5px; font-size: 16px; transition: color 0.2s; }
     .btn-edit-icon:hover { color: #0d6efd; }
-    .pagination-container { display: flex; justify-content: center; padding-top: 15px; border-top: 1px solid #eee; }
-    .pagination { display: flex; padding-left: 0; list-style: none; gap: 5px; margin: 0; }
-    .pagination li a, .pagination li span { padding: 8px 16px; border: 1px solid #dee2e6; border-radius: 4px; color: #333; text-decoration: none; background-color: #fff; transition: all 0.2s; }
-    .pagination li a:hover { background-color: #e9ecef; border-color: #dee2e6; }
-    .pagination li.active span { background-color: #0d6efd; color: white; border-color: #0d6efd; }
-    .pagination li.disabled span, .pagination li.disabled a { color: #6c757d; pointer-events: none; background-color: #fff; border-color: #dee2e6; }
 
-    /* --- CSS MỚI CHO MODAL --- */
-    .modal-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.5); z-index: 1000;
-        display: flex; justify-content: center; align-items: center;
-    }
-    .modal-dialog {
-        background: white; width: 500px; border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2); overflow: hidden;
-        animation: fadeIn 0.3s;
-    }
-    .modal-header {
-        background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee;
-        display: flex; justify-content: space-between; align-items: center;
-    }
+    .pagination-container { display: flex; justify-content: center; margin-top: 12px; margin-top: auto; padding-top: 8px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; }
+    .pagination li a:hover { border-color: #2563eb; color: #2563eb; }
+    .pagination li.active span { background: #0d6efd; border-color: #0d6efd; color: #fff; box-shadow: 0 6px 18px rgba(13,110,253,0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+    .modal-dialog { background: white; width: 500px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); overflow: hidden; animation: fadeIn 0.3s; }
+    .modal-header { background: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
     .modal-title { font-weight: 700; font-size: 16px; color: #333; }
     .btn-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; }
     .modal-body { padding: 20px; }
     .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
-    .form-control { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; outline: none; margin-top: 5px;}
+    .form-control { width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; outline: none; margin-top: 5px; }
     .form-control:focus { border-color: #484BE0; }
     .btn-secondary { background: #6c757d; color: white; }
     
     @@keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 
-<div class="content-body">
+<div class="content-body dotdoan-page">
     <div class="content-card">
         <div class="page-header-row">
             <h2 class="page-title">Quản lý hội đồng duyệt đề tài</h2>
@@ -69,69 +62,71 @@
             <form method="get" asp-action="Index" id="filterForm" class="filter-wrapper">
                 <div class="filter-item">
                     <span class="filter-label">Đợt đồ án</span>
-                    <select name="dotId" id="dotSelect" class="toolbar-input" asp-items="ViewBag.ListDot" onchange="performSearch()">
+                    <select name="dotId" id="dotSelect" class="form-control" asp-items="ViewBag.ListDot" onchange="performSearch()">
                         <option value="">-- Tất cả đợt --</option>
                     </select>
                 </div>
                 <div class="filter-item">
                     <span class="filter-label">Năm học</span>
-                    <select name="namHoc" id="namSelect" class="toolbar-input" asp-items="ViewBag.ListNamHoc" onchange="performSearch()">
+                    <select name="namHoc" id="namSelect" class="form-control" asp-items="ViewBag.ListNamHoc" onchange="performSearch()">
                         <option value="">-- Tất cả năm --</option>
                     </select>
                 </div>
             </form>
 
-            <div class="toolbar-right">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span class="filter-label" style="margin-bottom:0;">Tìm kiếm:</span>
-                    <input type="text" id="searchInput" name="searchString" value="@ViewBag.CurrentFilter" class="toolbar-input" placeholder="Nhập tên hội đồng..." style="width: 250px;">
+            <div class="toolbar-right" style="display:flex; align-items:flex-end; gap:10px;">
+                <div class="search-box" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                    <span class="filter-label">Tìm kiếm</span>
+                    <input type="text" id="searchInput" name="searchString" value="@ViewBag.CurrentFilter" class="toolbar-input search-input" placeholder="Nhập tên hội đồng..." style="width: 250px;" />
                 </div>
                 
-                <button type="button" class="btn btn-primary" onclick="openModal()">
+                <button type="button" class="btn-primary" onclick="openModal()">
                     <i class="fa-solid fa-plus"></i> Thêm hội đồng
                 </button>
             </div>
         </div>
 
         <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Mã HĐ</th>
-                        <th>Tên hội đồng</th>
-                        <th>Bộ môn</th>
-                        <th>Người tạo</th>
-                        <th>Ngày bắt đầu</th>               
-                        <th>Ngày kết thúc</th>
-                        <th class="text-center">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var item in Model)
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã HĐ</th>
+                            <th>Tên hội đồng</th>
+                            <th>Bộ môn</th>
+                            <th>Người tạo</th>
+                            <th>Ngày bắt đầu</th>               
+                            <th>Ngày kết thúc</th>
+                            <th style="text-align:center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
                         {
-                            <tr>
-                                <td>@item.MaHoiDong</td>
-                                <td>@item.TenHoiDong</td>
-                                <td>@item.TenBoMon</td>
-                                <td>@item.NguoiTao</td>
-                                <td>@(item.NgayBatDau.HasValue ? item.NgayBatDau.Value.ToString("dd/MM/yyyy") : "---")</td>
-                                <td>@(item.NgayKetThuc.HasValue ? item.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "---")</td>
-                                <td class="text-center">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Chi tiết/Sửa" style="text-decoration: none;">
-                                        <i class="fa-regular fa-pen-to-square" style="color:#0d6efd;"></i>
-                                    </a>
-                                </td>
-                            </tr>
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.MaHoiDong</td>
+                                    <td>@item.TenHoiDong</td>
+                                    <td>@item.TenBoMon</td>
+                                    <td>@item.NguoiTao</td>
+                                    <td>@(item.NgayBatDau.HasValue ? item.NgayBatDau.Value.ToString("dd/MM/yyyy") : "---")</td>
+                                    <td>@(item.NgayKetThuc.HasValue ? item.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "---")</td>
+                                    <td style="text-align:center;">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Chi tiết/Sửa" style="text-decoration: none;">
+                                            <i class="fa-regular fa-pen-to-square" style="color:#0d6efd;"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
                         }
-                    }
-                    else
-                    {
-                        <tr><td colspan="7" class="text-center text-muted p-4">Không tìm thấy hội đồng nào.</td></tr>
-                    }
-                </tbody>
-            </table>
+                        else
+                        {
+                            <tr><td colspan="7" class="text-center text-muted p-4">Không tìm thấy hội đồng nào.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="pagination-container">

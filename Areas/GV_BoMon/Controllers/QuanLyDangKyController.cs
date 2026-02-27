@@ -18,6 +18,55 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             _context = context;
         }
 
+        private static string ReplacePlaceholders(string input, string? studentName, DotDoAn? dot)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+
+            var result = input;
+            result = result.Replace("{Ten_Sinh_Vien}", studentName ?? "Sinh viên");
+            result = result.Replace("{Ten_Dot}", dot?.TenDot ?? "đợt đồ án");
+            result = result.Replace("{Ngay_Bat_Dau}", dot?.NgayBatDauDot?.ToString("dd/MM/yyyy") ?? "");
+            result = result.Replace("{Ngay_Ket_Thuc}", dot?.NgayKetThucDot?.ToString("dd/MM/yyyy") ?? "");
+            return result;
+        }
+
+        private async Task TaoThongBaoDuyet(DangKyNguyenVong dangKy)
+        {
+            if (dangKy.IdSinhVien == null)
+            {
+                return;
+            }
+
+            var sinhVien = await _context.SinhViens
+                .Include(sv => sv.IdNguoiDungNavigation)
+                .FirstOrDefaultAsync(sv => sv.IdNguoiDung == dangKy.IdSinhVien);
+
+            var dot = await _context.DotDoAns.FirstOrDefaultAsync(d => d.Id == dangKy.IdDot);
+
+            var template = await _context.CauHinhThongBaos
+                .Where(c => c.LoaiSuKien == "duyet_nguyenvong" && (c.IdDot == null || c.IdDot == dangKy.IdDot) && c.TrangThai == true)
+                .OrderByDescending(c => c.IdDot != null)
+                .FirstOrDefaultAsync();
+
+            var title = template?.TieuDeMau ?? "[VLU] Kết quả đăng ký đợt đồ án";
+            var content = template?.NoiDungMau ?? $"Bạn đã được duyệt tham gia đợt đồ án {(dot?.TenDot ?? string.Empty)}.";
+
+            title = ReplacePlaceholders(title, sinhVien?.IdNguoiDungNavigation?.HoTen, dot);
+            content = ReplacePlaceholders(content, sinhVien?.IdNguoiDungNavigation?.HoTen, dot);
+
+            var thongBao = new ThongBao
+            {
+                IdNguoiNhan = dangKy.IdSinhVien,
+                TieuDe = title,
+                NoiDung = content,
+                LinkLienKet = "/SinhVien/DangKyDeTai",
+                TrangThaiXem = false,
+                NgayTao = DateTime.Now
+            };
+
+            _context.ThongBaos.Add(thongBao);
+        }
+
         // GET: Danh sách đăng ký nguyện vọng
         public IActionResult Index(int? page, int? dotId, int? khoaId, string? chuyenNganhId, string? searchString)
         {
@@ -106,6 +155,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             try
             {
                 dangKy.TrangThai = 1;
+                await TaoThongBaoDuyet(dangKy);
                 await _context.SaveChangesAsync();
                 return Json(new { success = true, message = "Đã duyệt sinh viên vào đợt đồ án!" });
             }

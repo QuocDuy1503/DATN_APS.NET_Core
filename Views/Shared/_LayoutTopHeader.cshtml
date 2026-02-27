@@ -7,38 +7,19 @@
                 <div class="notification-container" id="notifDropdownBtn">
                     <div class="bell-icon-wrapper">
                         <i class="fa-regular fa-bell"></i>
-                        <span class="notif-badge">3</span> </div>
-                    
+                        <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                    </div>
+
                     <div class="notif-dropdown-menu" id="notifDropdown">
                         <div class="notif-header">
                             <span>Thông báo</span>
-                            <a href="#" class="mark-read">Đánh dấu đã đọc</a>
+                            <button type="button" class="mark-read" id="markAllNotif">Đánh dấu đã đọc</button>
                         </div>
-                        <div class="notif-body">
-                            <div class="notif-item unread">
-                                <div class="notif-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
-                                <div class="notif-content">
-                                    <p class="n-title">Nhắc nhở mở đợt đăng ký</p>
-                                    <p class="n-time">Vừa xong</p>
-                                </div>
-                            </div>
-                            <div class="notif-item">
-                                <div class="notif-icon"><i class="fa-solid fa-check-circle"></i></div>
-                                <div class="notif-content">
-                                    <p class="n-title">Hội đồng KTPM 01 đã được duyệt</p>
-                                    <p class="n-time">1 giờ trước</p>
-                                </div>
-                            </div>
-                            <div class="notif-item">
-                                <div class="notif-icon"><i class="fa-solid fa-file-lines"></i></div>
-                                <div class="notif-content">
-                                    <p class="n-title">Sinh viên nộp báo cáo tiến độ</p>
-                                    <p class="n-time">Yesterday</p>
-                                </div>
-                            </div>
+                        <div class="notif-body" id="notifList">
+                            <div class="notif-empty">Đang tải...</div>
                         </div>
                         <div class="notif-footer">
-                            <a href="#">Xem tất cả</a>
+                            <a asp-controller="ThongBao" asp-action="Index">Xem tất cả</a>
                         </div>
                     </div>
                 </div>
@@ -90,3 +71,104 @@
                     </ul>
                 </div>
             </header>
+
+<style>
+    .notification-container { position: relative; }
+    .bell-icon-wrapper { position: relative; cursor: pointer; }
+    .notif-badge { position: absolute; top: -6px; right: -8px; background: #d71920; color: #fff; border-radius: 50%; padding: 2px 6px; font-size: 11px; font-weight: 700; min-width: 18px; text-align: center; }
+    .notif-dropdown-menu { position: absolute; right: 0; top: 36px; background: #fff; width: 360px; max-width: 90vw; border: 1px solid #e6e6e6; border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); display: none; z-index: 999; }
+    .notif-dropdown-menu.active { display: block; }
+    .notif-header, .notif-footer { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
+    .notif-footer { border-top: 1px solid #f0f0f0; border-bottom: none; }
+    .notif-body { max-height: 320px; overflow-y: auto; padding: 6px 0; }
+    .notif-item { display: flex; gap: 10px; padding: 10px 12px; cursor: pointer; }
+    .notif-item:hover { background: #f8f8ff; }
+    .notif-item.unread { background: #f7f2ff; }
+    .notif-icon { width: 32px; height: 32px; border-radius: 50%; background: #f0ebff; display: flex; align-items: center; justify-content: center; color: #6a1b9a; flex-shrink: 0; }
+    .notif-content p { margin: 0; }
+    .notif-content .n-title { font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notif-content .n-time { font-size: 12px; color: #777; }
+    .notif-content .n-desc { color: #555; font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .notif-empty { padding: 12px; text-align: center; color: #777; font-size: 13px; }
+    .mark-read { border: none; background: transparent; color: #6a1b9a; font-weight: 700; cursor: pointer; font-size: 13px; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadNotifications();
+
+        const markAllBtn = document.getElementById('markAllNotif');
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await fetch('/ThongBao/MarkAllAsRead', { method: 'POST' });
+                await loadNotifications();
+            });
+        }
+    });
+
+    async function loadNotifications() {
+        const list = document.getElementById('notifList');
+        const badge = document.getElementById('notifBadge');
+        if (!list || !badge) return;
+
+        list.innerHTML = '<div class="notif-empty">Đang tải...</div>';
+
+        try {
+            const res = await fetch('/ThongBao/Latest');
+            if (!res.ok) return;
+            const data = await res.json();
+
+            const unread = data.unreadCount ?? 0;
+            if (unread > 0) {
+                badge.style.display = 'inline-block';
+                badge.textContent = unread > 9 ? '9+' : unread;
+            } else {
+                badge.style.display = 'none';
+            }
+
+            const items = data.items || [];
+            if (!items.length) {
+                list.innerHTML = '<div class="notif-empty">Không có thông báo mới</div>';
+                return;
+            }
+
+            list.innerHTML = '';
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `notif-item ${item.trangThaiXem ? '' : 'unread'}`;
+                div.innerHTML = `
+                    <div class="notif-icon"><i class="fa-regular fa-bell"></i></div>
+                    <div class="notif-content">
+                        <p class="n-title" title="${item.tieuDe ?? ''}">${item.tieuDe ?? ''}</p>
+                        <p class="n-desc">${item.noiDung ?? ''}</p>
+                        <p class="n-time">${formatTime(item.ngayTao)}</p>
+                    </div>`;
+
+                div.addEventListener('click', async () => {
+                    await fetch('/ThongBao/MarkAsRead', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: item.id })
+                    });
+                    const link = item.link;
+                    if (link && link.length > 0) {
+                        window.location.href = link;
+                    } else {
+                        await loadNotifications();
+                    }
+                });
+
+                list.appendChild(div);
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function formatTime(value) {
+        if (!value) return '';
+        const dt = new Date(value);
+        return dt.toLocaleString('vi-VN', { hour12: false });
+    }
+</script>
