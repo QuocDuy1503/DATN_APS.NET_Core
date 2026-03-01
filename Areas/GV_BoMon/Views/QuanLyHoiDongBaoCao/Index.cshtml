@@ -1,0 +1,266 @@
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongBaoCaoViewModel>
+
+@{
+    ViewData["Title"] = "Qu?n lý H?i ??ng báo cáo";
+}
+
+<style>
+    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dotdoan-page .content-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+        font-family: inherit;
+    }
+    .page-header-row { margin-bottom: 15px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-select, .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; min-width: 150px; }
+    .toolbar-select:focus, .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+    .btn-primary { background-color: #0d6efd; border: none; color: #fff; padding: 9px 16px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; height: 38px; }
+    .btn-primary:hover { background-color: #0b5ed7; }
+
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody td { padding: 12px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody tr:hover { background: #f9f9f9; }
+
+    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; white-space: nowrap; }
+    .status-midterm { background: #0d6efd; }
+    .status-final { background: #f59e0b; }
+    .status-approved { background: #16a34a; }
+    .status-pending { background: #6b7280; }
+
+    .action-btn { background: none; border: none; cursor: pointer; padding: 5px 8px; font-size: 14px; }
+    .btn-edit-icon { color: #484BE0; }
+    .btn-edit-icon:hover { color: #3a3dc0; }
+    .btn-delete-icon { color: #dc3545; }
+    .btn-delete-icon:hover { color: #c82333; }
+
+    .pagination-container { display: flex; justify-content: center; margin-top: 12px; margin-top: auto; padding-top: 8px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; }
+    .pagination li a:hover { border-color: #2563eb; color: #2563eb; }
+    .pagination li.active span { background: #0d6efd; border-color: #0d6efd; color: #fff; box-shadow: 0 6px 18px rgba(13,110,253,0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
+</style>
+
+<div class="content-body dotdoan-page">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Qu?n lý H?i ??ng báo cáo</h2>
+        </div>
+
+        <div class="toolbar-row">
+            <form method="get" class="filter-wrapper" id="filterForm">
+                <div class="filter-item">
+                    <span class="filter-label">??t ?? án:</span>
+                    <select name="dotId" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- T?t c? --</option>
+                        @if (ViewBag.ListDot != null)
+                        {
+                            foreach (SelectListItem item in ViewBag.ListDot)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == ViewBag.CurrentDotId?.ToString())">@item.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">N?m h?c:</span>
+                    <select name="namHoc" class="form-control" onchange="this.form.submit()">
+                        <option value="">-- T?t c? --</option>
+                        @if (ViewBag.ListNamHoc != null)
+                        {
+                            foreach (SelectListItem item in ViewBag.ListNamHoc)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == ViewBag.CurrentNamHoc?.ToString())">@item.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </form>
+
+            <div class="toolbar-right" style="display:flex; align-items:flex-end; gap:10px;">
+                <div class="search-box" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                    <span class="filter-label">Tìm ki?m</span>
+                    <input type="text" id="searchInput" class="toolbar-input search-input" 
+                           value="@ViewBag.CurrentFilter" 
+                           placeholder="Nh?p mã ho?c tên h?i ??ng..." 
+                           style="width: 280px;" />
+                </div>
+                
+                <button type="button" class="btn-primary" id="btnOpenModal">
+                    <i class="fa-solid fa-plus"></i> Thêm h?i ??ng
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">Mã H?</th>
+                            <th>Tên h?i ??ng</th>
+                            <th>B? môn</th>
+                            <th style="width: 100px;">Lo?i</th>
+                            <th>Ng??i t?o</th>
+                            <th style="width: 130px;">Ngày báo cáo</th>
+                            <th>??a ?i?m</th>
+                            <th style="width: 100px;">Tr?ng thái</th>
+                            <th style="text-align:center; width: 100px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                var isGiuaKy = item.LoaiHoiDong?.ToLower().Contains("gi?a") == true || 
+                                              item.LoaiHoiDong?.ToUpper() == "GIUA_KY";
+                                <tr>
+                                    <td>@item.MaHoiDong</td>
+                                    <td>@item.TenHoiDong</td>
+                                    <td>@item.TenBoMon</td>
+                                    <td>
+                                        @if (isGiuaKy)
+                                        {
+                                            <span class="status-badge status-midterm">Gi?a kì</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-final">Cu?i kì</span>
+                                        }
+                                    </td>
+                                    <td>@item.NguoiTao</td>
+                                    <td>
+                                        @if (item.NgayBaoCao.HasValue)
+                                        {
+                                            <span>@item.NgayBaoCao.Value.ToString("dd/MM/yyyy")</span>
+                                            @if (item.ThoiGianDuKien.HasValue)
+                                            {
+                                                <br /><small style="color:#666;">@item.ThoiGianDuKien.Value.ToString("HH:mm")</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+                                    <td>@(string.IsNullOrEmpty(item.DiaDiem) ? "-" : item.DiaDiem)</td>
+                                    <td>
+                                        @if (item.TrangThai)
+                                        {
+                                            <span class="status-badge status-approved">?ã duy?t</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-pending">Ch? duy?t</span>
+                                        }
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Chi ti?t">
+                                            <i class="fa-regular fa-pen-to-square"></i>
+                                        </a>
+                                        @if (!item.TrangThai)
+                                        {
+                                            <button class="action-btn btn-delete-icon btn-delete-confirm" data-id="@item.Id" data-name="@item.TenHoiDong" title="Xóa">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="9" class="text-center" style="padding: 30px; color: #999;">Không tìm th?y d? li?u h?i ??ng nào.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <partial name="_CreateModal" />
+
+        <div class="pagination-container">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page, dotId = ViewBag.CurrentDotId, namHoc = ViewBag.CurrentNamHoc, searchString = ViewBag.CurrentFilter }),
+            new PagedListRenderOptions {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                LinkToPreviousPageFormat = "«",
+                LinkToNextPageFormat = "»"
+            })
+        </div>
+    </div>
+
+    <form id="deleteForm" asp-action="Delete" method="post" style="display:none;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" id="deleteId" />
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var successMsg = '@Html.Raw(TempData["SuccessMessage"])';
+    var errorMsg = '@Html.Raw(TempData["ErrorMessage"])';
+
+    if (successMsg && successMsg.length > 0) {
+        Swal.fire({ icon: 'success', title: 'Thành công!', text: successMsg, timer: 3000, confirmButtonColor: '#484BE0' });
+    }
+    if (errorMsg && errorMsg.length > 0) {
+        Swal.fire({ icon: 'error', title: 'Có l?i x?y ra', text: errorMsg, confirmButtonColor: '#d33' });
+    }
+
+    // Delete confirm
+    document.querySelectorAll('.btn-delete-confirm').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            Swal.fire({
+                title: 'Xác nh?n xóa?',
+                html: `B?n có ch?c mu?n xóa h?i ??ng <strong>"${name}"</strong>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonText: 'H?y',
+                confirmButtonText: 'Xóa'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    document.getElementById('deleteId').value = id;
+                    document.getElementById('deleteForm').submit();
+                }
+            });
+        });
+    });
+
+    // Search realtime
+    const searchInput = document.getElementById('searchInput');
+    let timeout = null;
+    searchInput?.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('searchString', this.value);
+            url.searchParams.delete('page');
+            window.location.href = url.toString();
+        }, 800);
+    });
+});
+</script>

@@ -194,7 +194,7 @@ CREATE TABLE DotDoAn (
 
 CREATE TABLE DeTai (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    ma_de_tai VARCHAR(20),
+    ma_de_tai NVARCHAR(20),
     ten_de_tai NVARCHAR(255),
     muc_tieu_chinh NVARCHAR(MAX),
     yeu_cau_tinh_moi NVARCHAR(MAX),
@@ -208,7 +208,7 @@ CREATE TABLE DeTai (
     id_dot INT,
     id_chuyen_nganh INT,
 
-    trang_thai VARCHAR(20) DEFAULT 'CHO_DUYET', -- tính từ bảng NhanXetHoiDongDeTai theo đủ nhận xét hội đồng
+    trang_thai NVARCHAR(20) DEFAULT N'CHO_DUYET', -- tính từ bảng NhanXetHoiDongDeTai theo đủ nhận xét hội đồng
     nhan_xet_duyet NVARCHAR(MAX), -- giữ cho tương thích, nhưng nhận xét chính nằm ở bảng NhanXetHoiDongDeTai
     nguoi_duyet INT
 );
@@ -283,9 +283,9 @@ CREATE TABLE CauHinhPhieuCham_Dot (
 -- 5. NHÓM HỘI ĐỒNG & CHẤM ĐIỂM
 CREATE TABLE HoiDongBaoCao (
     id INT IDENTITY(1,1) PRIMARY KEY,
-    ma_hoi_dong VARCHAR(20),
+    ma_hoi_dong NVARCHAR(20),
     ten_hoi_dong NVARCHAR(100),
-    loai_hoi_dong VARCHAR(20), 
+    loai_hoi_dong NVARCHAR(20), 
     id_dot INT,
     id_nguoi_tao INT,
     id_bo_mon INT,
@@ -304,7 +304,7 @@ CREATE TABLE ThanhVien_HD_BaoCao (
     id INT IDENTITY(1,1) PRIMARY KEY,
     id_hd_baocao INT,
     id_giang_vien INT,
-    vai_tro VARCHAR(50) 
+    vai_tro NVARCHAR(50) 
 );
 
 CREATE TABLE PhienBaoVe (
@@ -349,7 +349,7 @@ CREATE TABLE CauHinhThongBao (
     loai_su_kien VARCHAR(50),
     moc_thoi_gian VARCHAR(20),
     so_ngay_chenh_lech INT,
-    doi_tuong_nhan VARCHAR(50),
+    doi_tuong_nhan NVARCHAR(50),
     tieu_de_mau NVARCHAR(200),
     noi_dung_mau NVARCHAR(MAX),
     trang_thai BIT DEFAULT 1
@@ -358,7 +358,7 @@ CREATE TABLE CauHinhThongBao (
 CREATE TABLE LichSuGuiEmail (
     id INT IDENTITY(1,1) PRIMARY KEY,
     id_cau_hinh INT,
-    nguoi_nhan VARCHAR(100),
+    nguoi_nhan NVARCHAR(100),
     thoi_gian_gui DATETIME,
     trang_thai VARCHAR(20)
 );
@@ -399,7 +399,7 @@ CREATE TABLE KeHoachCongViec (
     gio_ket_thuc_thuc_te TIME NULL,
     ten_cong_viec NVARCHAR(200),
     mo_ta_cong_viec NVARCHAR(MAX),
-    trang_thai VARCHAR(20),
+    trang_thai NVARCHAR(20),
     id_file_minh_chung INT NULL,
     FOREIGN KEY (id_sinh_vien) REFERENCES SinhVien(id_nguoi_dung),
     FOREIGN KEY (id_dot) REFERENCES DotDoAn(id)

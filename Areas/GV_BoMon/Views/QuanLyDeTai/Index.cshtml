@@ -1,0 +1,201 @@
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyDeTaiViewModel>
+
+@{
+    ViewData["Title"] = "Qu?n lý danh sách ?? tài";
+}
+
+<style>
+    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dotdoan-page .content-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+        font-family: inherit;
+    }
+    .page-header-row { margin-bottom: 15px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
+    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody td { padding:17px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody tr:hover { background: #f9f9f9; }
+
+    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
+    .status-approved { background: #16a34a; }
+    .status-rejected { background: #dc3545; }
+    .status-waiting { background: #6b7280; }
+
+    .pagination-container { display: flex; justify-content: center; margin-top: 12px; margin-top: auto; padding-top: 8px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; }
+    .pagination li a:hover { border-color: #2563eb; color: #2563eb; }
+    .pagination li.active span { background: #0d6efd; border-color: #0d6efd; color: #fff; box-shadow: 0 6px 18px rgba(13,110,253,0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
+</style>
+
+<div class="content-body dotdoan-page">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Qu?n lý danh sách ?? tài</h2>
+        </div>
+
+        <div class="toolbar-row">
+            <form method="get" asp-action="Index" id="filterForm" class="filter-wrapper">
+                <div class="filter-item">
+                    <span class="filter-label">??t ?? án</span>
+                    <select name="dotId" id="dotSelect" class="form-control" asp-items="ViewBag.ListDot" onchange="performSearch()">
+                        <option value="">-- T?t c? ??t --</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <span class="filter-label">N?m h?c</span>
+                    <select name="namHoc" id="namSelect" class="form-control" asp-items="ViewBag.ListNamHoc" onchange="performSearch()">
+                        <option value="">-- T?t c? n?m --</option>
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <span class="filter-label">Chuyên ngành</span>
+                    <select name="chuyenNganhId" id="nganhSelect" class="form-control" asp-items="ViewBag.ListChuyenNganh" onchange="performSearch()">
+                        <option value="">-- T?t c? --</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="toolbar-right" style="display:flex; align-items:flex-end; gap:10px;">
+                <div class="search-box" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                    <span class="filter-label">Tìm ki?m</span>
+                    <input type="text" id="searchInput" name="searchString"
+                           value="@ViewBag.CurrentFilter"
+                           class="toolbar-input search-input"
+                           placeholder="Mã ?? tài, Tên ?? tài..." style="width: 250px;" />
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã ?T</th>
+                            <th>Tên ?? tài</th>
+                            <th>Ng??i ?? xu?t</th>
+                            <th>GVHD</th>
+                            <th style="text-align:center; width:150px;">Chuyên ngành</th>
+                            <th style="text-align:center; width:120px;">Tr?ng thái</th>
+                            <th style="text-align:center; width:80px;">Chi ti?t</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.MaDeTai</td>
+                                    <td style="max-width: 300px;">@item.TenDeTai</td>
+                                    <td>@item.NguoiDeXuat</td>
+                                    <td>@item.GVHD</td>
+                                    <td style="text-align:center;">@item.TenChuyenNganh</td>
+                                    <td style="text-align:center;">
+                                        @if (item.TrangThai == "DA_DUYET")
+                                        {
+                                            <span class="status-badge status-approved">?ã duy?t</span>
+                                        }
+                                        else if (item.TrangThai == "TU_CHOI")
+                                        {
+                                            <span class="status-badge status-rejected">T? ch?i</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-waiting">Ch? duy?t</span>
+                                        }
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="action-btn btn-view" title="Xem chi ti?t" style="color: #2980b9;">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="7" class="text-center text-muted p-4">Không tìm th?y ?? tài phù h?p.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="pagination-container">
+             @Html.PagedListPager(Model, page => Url.Action("Index", new { page, dotId = ViewBag.CurrentDotId, namHoc = ViewBag.CurrentNamHoc, chuyenNganhId = ViewBag.CurrentChuyenNganh, searchString = ViewBag.CurrentFilter }),
+            new PagedListRenderOptions {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                LinkToPreviousPageFormat = "«",
+                LinkToNextPageFormat = "»",
+                EllipsesFormat = "...",
+                MaximumPageNumbersToDisplay = 5
+            })
+        </div>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+    const tableContainer = document.querySelector('.table-responsive');
+    const paginationContainer = document.querySelector('.pagination-container');
+    let timeout = null;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(function () {
+                performSearch();
+            }, 500); 
+        });
+    }
+
+    function performSearch() {
+        const keyword = document.getElementById('searchInput').value;
+        const dotId = document.getElementById('dotSelect').value;
+        const namHoc = document.getElementById('namSelect').value;
+        const nganhId = document.getElementById('nganhSelect').value;
+
+        const url = `@Url.Action("Index")?searchString=${encodeURIComponent(keyword)}&dotId=${dotId}&namHoc=${namHoc}&chuyenNganhId=${nganhId}`;
+
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const newTable = doc.querySelector('.table-responsive').innerHTML;
+                if (tableContainer) tableContainer.innerHTML = newTable;
+
+                const newPagination = doc.querySelector('.pagination-container').innerHTML;
+                if (paginationContainer) paginationContainer.innerHTML = newPagination;
+            })
+            .catch(err => console.error('L?i tìm ki?m:', err));
+    }
+</script>

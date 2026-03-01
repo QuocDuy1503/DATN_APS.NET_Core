@@ -100,7 +100,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.FileBaocao)
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("file_baocao");
             entity.Property(e => e.IdDeTai).HasColumnName("id_de_tai");
             entity.Property(e => e.IdDot).HasColumnName("id_dot");
@@ -115,7 +114,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("ten_bao_cao");
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("trang_thai");
 
             entity.HasOne(d => d.IdDeTaiNavigation).WithMany(p => p.BaoCaoNops)
@@ -184,7 +182,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdLoaiPhieu).HasColumnName("id_loai_phieu");
             entity.Property(e => e.VaiTroCham)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("vai_tro_cham");
 
             entity.HasOne(d => d.IdDotNavigation).WithMany(p => p.CauHinhPhieuChamDots)
@@ -205,17 +202,14 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.DoiTuongNhan)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("doi_tuong_nhan");
             entity.Property(e => e.IdDot).HasColumnName("id_dot");
             entity.Property(e => e.IdMau).HasColumnName("id_mau");
             entity.Property(e => e.LoaiSuKien)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("loai_su_kien");
             entity.Property(e => e.MocThoiGian)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("moc_thoi_gian");
             entity.Property(e => e.NoiDungMau).HasColumnName("noi_dung_mau");
             entity.Property(e => e.SoNgayChenhLech).HasColumnName("so_ngay_chenh_lech");
@@ -252,7 +246,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("loai_hoc_phan");
             entity.Property(e => e.MaHocPhan)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("ma_hoc_phan");
             entity.Property(e => e.SoTinChi).HasColumnName("so_tin_chi");
             entity.Property(e => e.Stt).HasColumnName("stt");
@@ -278,7 +271,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdNganh).HasColumnName("id_nganh");
             entity.Property(e => e.MaCtdt)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("ma_ctdt");
             entity.Property(e => e.NgayTao)
                 .HasDefaultValueSql("(getdate())")
@@ -347,7 +339,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("ngay_dang_ky");
             entity.Property(e => e.SoTinChiTichLuyHienTai).HasColumnName("so_tin_chi_tich_luy_hien_tai");
             entity.Property(e => e.TrangThai)
-                .IsUnicode(false)
                 .HasDefaultValue(0)
                 .HasColumnName("trang_thai");
 
@@ -381,7 +372,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.PhuongPhapNghienCuu).HasColumnName("phuong_phap_nghien_cuu");
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("trang_thai");
 
             entity.HasOne(d => d.IdDeTaiNavigation).WithOne(p => p.DeCuong)
@@ -403,7 +393,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdNguoiDeXuat).HasColumnName("id_nguoi_de_xuat");
             entity.Property(e => e.MaDeTai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("ma_de_tai");
             entity.Property(e => e.MucTieuChinh).HasColumnName("muc_tieu_chinh");
             entity.Property(e => e.NguoiDuyet).HasColumnName("nguoi_duyet");
@@ -415,7 +404,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("ten_de_tai");
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasDefaultValue("CHO_DUYET")
                 .HasColumnName("trang_thai");
             entity.Property(e => e.YeuCauTinhMoi).HasColumnName("yeu_cau_tinh_moi");
@@ -483,7 +471,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdSinhVien).HasColumnName("id_sinh_vien");
             entity.Property(e => e.MinhChungLink)
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("minh_chung_link");
             entity.Property(e => e.NgayGui)
                 .HasDefaultValueSql("(getdate())")
@@ -499,7 +486,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("tieu_de_khieu_nai");
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasDefaultValue("CHO_XU_LY")
                 .HasColumnName("trang_thai");
 
@@ -575,7 +561,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdBoMon).HasColumnName("id_bo_mon");
             entity.Property(e => e.MaGv)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("ma_gv");
 
             entity.HasOne(d => d.IdBoMonNavigation).WithMany(p => p.GiangViens)
@@ -597,7 +582,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.MaHocKi)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("ma_hoc_ki");
             entity.Property(e => e.NamBatDau).HasColumnName("nam_bat_dau");
             entity.Property(e => e.NamKetThuc).HasColumnName("nam_ket_thuc");
@@ -623,11 +607,9 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdNguoiTao).HasColumnName("id_nguoi_tao");
             entity.Property(e => e.LoaiHoiDong)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("loai_hoi_dong");
             entity.Property(e => e.MaHoiDong)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("ma_hoi_dong");
             entity.Property(e => e.NgayBaoCao).HasColumnName("ngay_bao_cao");
             entity.Property(e => e.TenHoiDong)
@@ -668,7 +650,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("ten_cong_viec");
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("trang_thai");
 
             entity.HasOne(d => d.IdDotNavigation).WithMany(p => p.KeHoachCongViecs)
@@ -693,14 +674,12 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.DiemChu)
                 .HasMaxLength(5)
-                .IsUnicode(false)
                 .HasColumnName("diem_chu");
             entity.Property(e => e.DiemTongKet).HasColumnName("diem_tong_ket");
             entity.Property(e => e.IdPhienBaoVe).HasColumnName("id_phien_bao_ve");
             entity.Property(e => e.IdSinhVien).HasColumnName("id_sinh_vien");
             entity.Property(e => e.KetQua)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("ket_qua");
 
             entity.HasOne(d => d.IdPhienBaoVeNavigation).WithMany(p => p.KetQuaBaoVeSinhViens)
@@ -721,7 +700,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.DiemChu)
                 .HasMaxLength(2)
-                .IsUnicode(false)
                 .HasColumnName("diem_chu");
             entity.Property(e => e.DiemSo).HasColumnName("diem_so");
             entity.Property(e => e.Gpa).HasColumnName("GPA");
@@ -729,7 +707,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.KetQua).HasColumnName("ket_qua");
             entity.Property(e => e.MaHocPhan)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("ma_hoc_phan");
             entity.Property(e => e.SoTc).HasColumnName("so_tc");
             entity.Property(e => e.Stt).HasColumnName("stt");
@@ -752,7 +729,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.MaKhoa)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("ma_khoa");
             entity.Property(e => e.NamNhapHoc).HasColumnName("nam_nhap_hoc");
             entity.Property(e => e.NamTotNghiep).HasColumnName("nam_tot_nghiep");
@@ -774,14 +750,12 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdCauHinh).HasColumnName("id_cau_hinh");
             entity.Property(e => e.NguoiNhan)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("nguoi_nhan");
             entity.Property(e => e.ThoiGianGui)
                 .HasColumnType("datetime")
                 .HasColumnName("thoi_gian_gui");
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("trang_thai");
 
             entity.HasOne(d => d.IdCauHinhNavigation).WithMany(p => p.LichSuGuiEmails)
@@ -817,7 +791,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.MaMau)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("ma_mau");
             entity.Property(e => e.NoiDungThongBao).HasColumnName("noi_dung_thong_bao");
             entity.Property(e => e.TieuDe)
@@ -837,7 +810,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdNguoiTao).HasColumnName("id_nguoi_tao");
             entity.Property(e => e.MaNganh)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("ma_nganh");
             entity.Property(e => e.NgaySua).HasColumnName("ngay_sua");
             entity.Property(e => e.NgayTao).HasColumnName("ngay_tao");
@@ -867,22 +839,18 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("avatar_url");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("email");
             entity.Property(e => e.HoTen)
                 .HasMaxLength(100)
                 .HasColumnName("ho_ten");
             entity.Property(e => e.MatKhau)
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("mat_khau");
             entity.Property(e => e.MicrosoftId)
                 .HasMaxLength(100)
-                .IsUnicode(false)
                 .HasColumnName("microsoft_id");
             entity.Property(e => e.Sdt)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("sdt");
             entity.Property(e => e.TrangThai)
                 .HasDefaultValue(1)
@@ -948,7 +916,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdGiangVien).HasColumnName("id_giang_vien");
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("trang_thai");
             entity.Property(e => e.NhanXet).HasColumnName("nhan_xet");
             entity.Property(e => e.NgayTao)
@@ -975,7 +942,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdSinhVienDeTai).HasColumnName("id_sinh_vien_de_tai");
             entity.Property(e => e.LinkTaiLieu)
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("link_tai_lieu");
             entity.Property(e => e.SttBaoCao).HasColumnName("stt_bao_cao");
 
@@ -1003,7 +969,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdKhoaHoc).HasColumnName("id_khoa_hoc");
             entity.Property(e => e.Mssv)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("mssv");
             entity.Property(e => e.TinChiTichLuy)
                 .HasDefaultValue(0.0)
@@ -1039,7 +1004,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.NhanXet).HasColumnName("nhan_xet");
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
-                .IsUnicode(false)
                 .HasColumnName("trang_thai");
 
             entity.HasOne(d => d.IdDeTaiNavigation).WithMany(p => p.SinhVienDeTais)
@@ -1062,7 +1026,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdHdBaocao).HasColumnName("id_hd_baocao");
             entity.Property(e => e.VaiTro)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("vai_tro");
 
             entity.HasOne(d => d.IdGiangVienNavigation).WithMany(p => p.ThanhVienHdBaoCaos)
@@ -1084,7 +1047,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdNguoiNhan).HasColumnName("id_nguoi_nhan");
             entity.Property(e => e.LinkLienKet)
                 .HasMaxLength(255)
-                .IsUnicode(false)
                 .HasColumnName("link_lien_ket");
             entity.Property(e => e.NgayTao)
                 .HasDefaultValueSql("(getdate())")
@@ -1135,7 +1097,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.MaVaiTro)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("ma_vai_tro");
             entity.Property(e => e.TenVaiTro)
                 .HasMaxLength(100)

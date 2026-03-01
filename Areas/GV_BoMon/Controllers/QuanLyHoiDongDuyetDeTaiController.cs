@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using DATN_TMS.Areas.GV_BoMon.Models;
 using DATN_TMS.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,6 +17,21 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
         public QuanLyHoiDongDuyetDeTaiController(QuanLyDoAnTotNghiepContext context)
         {
             _context = context;
+        }
+
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            var sessionRole = HttpContext.Session.GetString("Role");
+            var isBoMonByClaim = User?.Identity?.IsAuthenticated == true && (User.IsInRole("BO_MON") || User.IsInRole("BCN_KHOA"));
+            var isBoMonBySession = sessionRole == "BO_MON" || sessionRole == "BCN_KHOA";
+
+            if (!isBoMonByClaim && !isBoMonBySession)
+            {
+                context.Result = RedirectToAction("Login", "Account", new { area = "" });
+                return;
+            }
+
+            base.OnActionExecuting(context);
         }
 
         // --- DANH SÁCH HỘI ĐỒNG ---

@@ -19,8 +19,11 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
         // Kiểm tra đăng nhập
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            if (HttpContext.Session.GetString("UserEmail") == null ||
-                HttpContext.Session.GetString("Role") != "SV")
+            var sessionRole = HttpContext.Session.GetString("Role");
+            var isStudentByClaim = User?.Identity?.IsAuthenticated == true && (User.IsInRole("SINH_VIEN") || User.IsInRole("SV"));
+            var isStudentBySession = sessionRole == "SINH_VIEN" || sessionRole == "SV";
+
+            if (!isStudentByClaim && !isStudentBySession)
             {
                 context.Result = RedirectToAction("Login", "Account", new { area = "" });
                 return;

@@ -1,0 +1,190 @@
+@* Modal thêm h?i ??ng báo cáo cho B? môn *@
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show { display: flex; opacity: 1; }
+
+    .modal-dialog {
+        background-color: white;
+        width: 100%;
+        max-width: 550px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        overflow: hidden;
+        transform: translateY(-20px);
+        transition: transform 0.3s ease;
+    }
+    .modal-overlay.show .modal-dialog { transform: translateY(0); }
+
+    .modal-header {
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .modal-title { font-weight: 700; font-size: 18px; color: #333; }
+    .btn-close-custom {
+        background: transparent;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        color: #999;
+        font-size: 20px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .btn-close-custom:hover { background-color: #f5f5f5; color: #333; }
+
+    .modal-body { padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { font-weight: 600; font-size: 13px; margin-bottom: 8px; display: block; color: #555; }
+    .form-group label .required { color: #dc3545; }
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 13px;
+        box-sizing: border-box;
+    }
+    .form-control:focus { border-color: #484BE0; outline: none; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+    .btn-secondary {
+        background-color: #fff;
+        color: #333;
+        border: 1px solid #ddd;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .btn-secondary:hover { background-color: #f9f9f9; }
+    .btn-save {
+        background-color: #484BE0;
+        color: white;
+        border: none;
+        padding: 8px 25px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .btn-save:hover { background-color: #3a3dc7; }
+</style>
+
+<div class="modal-overlay" id="addModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Thêm h?i ??ng báo cáo m?i</div>
+            <button type="button" class="btn-close-custom close-modal">&times;</button>
+        </div>
+        
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Tên h?i ??ng <span class="required">*</span></label>
+                    <input type="text" name="TenHoiDong" class="form-control" placeholder="VD: H?i ??ng b?o v? ?? án" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Lo?i h?i ??ng <span class="required">*</span></label>
+                        <select name="LoaiHoiDong" class="form-control" required>
+                            <option value="">-- Ch?n lo?i --</option>
+                            <option value="GIUA_KY">Gi?a kì</option>
+                            <option value="CUOI_KY">Cu?i kì</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>B? môn</label>
+                        <select name="IdBoMon" class="form-control">
+                            <option value="">-- Ch?n b? môn --</option>
+                            @if (ViewBag.ListBoMon != null)
+                            {
+                                foreach (SelectListItem item in ViewBag.ListBoMon)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>??t ?? án</label>
+                    <select name="IdDot" class="form-control">
+                        <option value="">-- Ch?n ??t --</option>
+                        @if (ViewBag.ListDot != null)
+                        {
+                            foreach (SelectListItem item in ViewBag.ListDot)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ngày báo cáo</label>
+                        <input type="date" name="NgayBaoCao" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Gi? b?t ??u</label>
+                        <input type="time" name="GioBatDau" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>??a ?i?m</label>
+                    <input type="text" name="DiaDiem" class="form-control" placeholder="VD: Phòng A101">
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-modal">H?y</button>
+                <button type="submit" class="btn btn-save">L?u</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var modal = document.getElementById('addModal');
+    var btnOpen = document.getElementById('btnOpenModal');
+    var btnCloses = document.querySelectorAll('#addModal .close-modal');
+
+    btnOpen?.addEventListener('click', function (e) {
+        e.preventDefault();
+        modal.classList.add('show');
+    });
+
+    btnCloses.forEach(btn => btn.addEventListener('click', () => modal.classList.remove('show')));
+    window.addEventListener('click', e => { if (e.target == modal) modal.classList.remove('show'); });
+});
+</script>
