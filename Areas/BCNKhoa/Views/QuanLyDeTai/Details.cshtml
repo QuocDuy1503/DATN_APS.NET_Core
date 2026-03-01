@@ -94,10 +94,10 @@
     .current-status { margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; text-align: center; }
     .status-label { font-size: 13px; color: #666; margin-bottom: 5px; display: block; }
     .status-value { font-weight: 700; font-size: 16px; }
-    
-    .status-waiting { color: #d97706; }
-    .status-approved { color: #059669; }
-    .status-rejected { color: #dc3545; }
+    .status-badge { padding: 6px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; display: inline-block; }
+    .status-waiting { color: #d97706; background: #fff7ed; border: 1px solid #fb923c; }
+    .status-approved { color: #059669; background: #ecfdf3; border: 1px solid #22c55e; }
+    .status-rejected { color: #dc3545; background: #fef2f2; border: 1px solid #ef4444; }
 
     .feedback-area { margin-bottom: 20px; }
     .feedback-input { width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; resize: vertical; }
@@ -110,6 +110,11 @@
     .btn-approve:hover { background-color: #047857; }
     .btn-reject { background-color: #dc3545; color: white; }
     .btn-reject:hover { background-color: #b02a37; }
+
+    .review-list { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+    .review-item { padding: 10px; border: 1px solid #eee; border-radius: 6px; background: #fafafa; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-weight: 600; }
+    .review-comment { font-size: 13px; color: #333; white-space: pre-wrap; }
 </style>
 
 <div class="content-body">
@@ -189,31 +194,72 @@
 
                 <div class="current-status">
                     <span class="status-label">Trạng thái hiện tại:</span>
-                    <div id="statusDisplay" class="status-value 
+                    <div id="statusDisplay" class="status-badge 
                         @(Model.TrangThai == "DA_DUYET" ? "status-approved" : 
                           Model.TrangThai == "TU_CHOI" ? "status-rejected" : "status-waiting")">
                         @(Model.TrangThai == "DA_DUYET" ? "Đã duyệt" : 
-                          Model.TrangThai == "TU_CHOI" ? "Đã từ chối" : "Đang chờ duyệt")
+                          Model.TrangThai == "TU_CHOI" ? "Từ chối" : "Chờ duyệt")
+                    </div>
+                    <div style="margin-top:6px; font-size:12px; color:#555;">
+                        Đã nhận @Model.Reviews.Count/@Model.CouncilMemberCount nhận xét
                     </div>
                 </div>
 
-                <div class="feedback-area">
-                    <label style="font-weight: 600; font-size: 13px; margin-bottom: 5px; display:block;">
-                        Nhận xét của BCN Khoa:
-                    </label>
-                    <textarea id="adminComment" class="feedback-input" placeholder="Nhập nhận xét (Bắt buộc nếu từ chối)...">@Model.NhanXet</textarea>
-                    <div id="feedbackError" class="feedback-required-msg">
-                        <i class="fa-solid fa-circle-exclamation"></i> Vui lòng nhập lý do từ chối!
+                @if (Model.CanReview)
+                {
+                    <div class="feedback-area">
+                        <label style="font-weight: 600; font-size: 13px; margin-bottom: 5px; display:block;">
+                            Nhận xét của bạn:
+                        </label>
+                        <textarea id="adminComment" class="feedback-input" placeholder="Nhập nhận xét (Bắt buộc nếu từ chối)...">@Model.NhanXet</textarea>
+                        <div id="feedbackError" class="feedback-required-msg">
+                            <i class="fa-solid fa-circle-exclamation"></i> Vui lòng nhập lý do từ chối!
+                        </div>
                     </div>
-                </div>
 
-                <div class="btn-row">
-                    <button class="btn-action btn-reject" onclick="tuChoiDeTai(@Model.Id)">
-                        <i class="fa-solid fa-xmark"></i> Từ chối
-                    </button>
-                    <button class="btn-action btn-approve" onclick="duyetDeTai(@Model.Id)">
-                        <i class="fa-solid fa-check"></i> Duyệt
-                    </button>
+                    <div class="btn-row">
+                        <button class="btn-action btn-reject" onclick="tuChoiDeTai(@Model.Id)">
+                            <i class="fa-solid fa-xmark"></i> Từ chối
+                        </button>
+                        <button class="btn-action btn-approve" onclick="duyetDeTai(@Model.Id)">
+                            <i class="fa-solid fa-check"></i> Duyệt
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="feedback-area">
+                        <div style="font-size:13px; color:#555; line-height:1.5;">
+                            @(Model.IsProposer ? "Bạn là người đề xuất, chỉ xem được nhận xét." : "Chỉ thành viên hội đồng mới được duyệt/từ chối.")
+                        </div>
+                    </div>
+                }
+
+                <div class="review-list">
+                    <div style="font-weight:700; font-size:14px;">Nhận xét hội đồng</div>
+                    @if (Model.Reviews.Any())
+                    {
+                        foreach (var rv in Model.Reviews)
+                        {
+                            <div class="review-item">
+                                <div class="review-header">
+                                    <span>@rv.ReviewerName</span>
+                                    <span class="status-badge @(rv.Status == "DA_DUYET" ? "status-approved" : rv.Status == "TU_CHOI" ? "status-rejected" : "status-waiting")">
+                                        @(rv.Status == "DA_DUYET" ? "Đã duyệt" : rv.Status == "TU_CHOI" ? "Từ chối" : "Chờ duyệt")
+                                    </span>
+                                </div>
+                                <div class="review-comment">@(!string.IsNullOrWhiteSpace(rv.Comment) ? rv.Comment : "(Chưa có nội dung)")</div>
+                                @if (rv.CreatedAt.HasValue)
+                                {
+                                    <div style="font-size:12px; color:#666; margin-top:4px;">@rv.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-muted" style="font-size:13px;">Chưa có nhận xét nào từ hội đồng.</div>
+                    }
                 </div>
             </div>
 
@@ -225,7 +271,7 @@
 <script>
     // 1. Hàm Duyệt
     function duyetDeTai(id) {
-        var comment = document.getElementById('adminComment').value;
+        var comment = document.getElementById('adminComment') ? document.getElementById('adminComment').value : '';
         
         Swal.fire({
             title: 'Xác nhận duyệt?',
@@ -244,16 +290,18 @@
 
     // 2. Hàm Từ chối
     function tuChoiDeTai(id) {
-        var comment = document.getElementById('adminComment').value;
+        var comment = document.getElementById('adminComment') ? document.getElementById('adminComment').value : '';
         var errorMsg = document.getElementById('feedbackError');
 
         // Validate: Bắt buộc nhập lý do
-        if (!comment.trim()) {
+        if (errorMsg && (!comment || !comment.trim())) {
             errorMsg.style.display = 'block';
-            document.getElementById('adminComment').focus();
+            if (document.getElementById('adminComment')) {
+                document.getElementById('adminComment').focus();
+            }
             return;
         }
-        errorMsg.style.display = 'none';
+        if (errorMsg) errorMsg.style.display = 'none';
 
         Swal.fire({
             title: 'Xác nhận từ chối?',
@@ -274,7 +322,7 @@
     function callApi(id, url, comment, newStatus) {
         let formData = new FormData();
         formData.append('id', id);
-        formData.append('nhanXet', comment);
+        formData.append('nhanXet', comment || '');
 
         fetch(url, {
             method: 'POST',

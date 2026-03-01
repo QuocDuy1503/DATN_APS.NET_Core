@@ -73,6 +73,8 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
 
     public virtual DbSet<SinhVien> SinhViens { get; set; }
 
+    public virtual DbSet<NhanXetHoiDongDeTai> NhanXetHoiDongDeTais { get; set; }
+
     public virtual DbSet<SinhVienDeTai> SinhVienDeTais { get; set; }
 
     public virtual DbSet<ThanhVienHdBaoCao> ThanhVienHdBaoCaos { get; set; }
@@ -136,14 +138,15 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.ToTable("BaoCaoThongKe");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.DuLieuJson).HasColumnName("du_lieu_json");
             entity.Property(e => e.IdDot).HasColumnName("id_dot");
-            entity.Property(e => e.NgayTao)
+            entity.Property(e => e.SoLuongSinhVien).HasColumnName("so_luong_sinh_vien");
+            entity.Property(e => e.SoLuongDeTai).HasColumnName("so_luong_de_tai");
+            entity.Property(e => e.SoLuongTaskTuan).HasColumnName("so_luong_task_tuan");
+            entity.Property(e => e.TiLeHoanThanh).HasColumnName("ti_le_hoan_thanh");
+            entity.Property(e => e.NgayTinh)
                 .HasColumnType("datetime")
-                .HasColumnName("ngay_tao");
-            entity.Property(e => e.TenBaoCao)
-                .HasMaxLength(200)
-                .HasColumnName("ten_bao_cao");
+                .HasColumnName("ngay_tinh");
+            entity.Property(e => e.ChiTietTuan).HasColumnName("chi_tiet_tuan");
 
             entity.HasOne(d => d.IdDotNavigation).WithMany(p => p.BaoCaoThongKes)
                 .HasForeignKey(d => d.IdDot)
@@ -649,21 +652,16 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.ToTable("KeHoachCongViec");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.IdDot).HasColumnName("id_dot");
             entity.Property(e => e.IdFileMinhChung).HasColumnName("id_file_minh_chung");
             entity.Property(e => e.IdSinhVien).HasColumnName("id_sinh_vien");
+            entity.Property(e => e.Tuan).HasColumnName("tuan");
+            entity.Property(e => e.ThuTrongTuan).HasColumnName("thu_trong_tuan");
+            entity.Property(e => e.GioBatDau).HasColumnName("gio_bat_dau");
+            entity.Property(e => e.GioKetThuc).HasColumnName("gio_ket_thuc");
+            entity.Property(e => e.GioBatDauThucTe).HasColumnName("gio_bat_dau_thuc_te");
+            entity.Property(e => e.GioKetThucThucTe).HasColumnName("gio_ket_thuc_thuc_te");
             entity.Property(e => e.MoTaCongViec).HasColumnName("mo_ta_cong_viec");
-            entity.Property(e => e.NgayBatDau)
-                .HasColumnType("datetime")
-                .HasColumnName("ngay_bat_dau");
-            entity.Property(e => e.NgayBatDauThucTe)
-                .HasColumnType("datetime")
-                .HasColumnName("ngay_bat_dau_thuc_te");
-            entity.Property(e => e.NgayKetThuc)
-                .HasColumnType("datetime")
-                .HasColumnName("ngay_ket_thuc");
-            entity.Property(e => e.NgayKetThucThucTe)
-                .HasColumnType("datetime")
-                .HasColumnName("ngay_ket_thuc_thuc_te");
             entity.Property(e => e.Stt).HasColumnName("stt");
             entity.Property(e => e.TenCongViec)
                 .HasMaxLength(200)
@@ -672,6 +670,10 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("trang_thai");
+
+            entity.HasOne(d => d.IdDotNavigation).WithMany(p => p.KeHoachCongViecs)
+                .HasForeignKey(d => d.IdDot)
+                .HasConstraintName("FK_KHCV_Dot");
 
             entity.HasOne(d => d.IdFileMinhChungNavigation).WithMany(p => p.KeHoachCongViecs)
                 .HasForeignKey(d => d.IdFileMinhChung)
@@ -914,23 +916,52 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.DiaDiemHop)
-                .HasMaxLength(20)
+                .HasMaxLength(200)
                 .HasColumnName("dia_diem_hop");
             entity.Property(e => e.HinhThucHop)
-                .HasDefaultValue(true)
+                .HasMaxLength(50)
                 .HasColumnName("hinh_thuc_hop");
             entity.Property(e => e.IdDot).HasColumnName("id_dot");
-            entity.Property(e => e.IdKeHoachCongViec).HasColumnName("id_ke_hoach_cong_viec");
+            entity.Property(e => e.ThanhVienThamDu).HasColumnName("thanh_vien_tham_du");
+            entity.Property(e => e.TenGvhd)
+                .HasMaxLength(200)
+                .HasColumnName("ten_gvhd");
+            entity.Property(e => e.MucTieuBuoiHop).HasColumnName("muc_tieu_buoi_hop");
+            entity.Property(e => e.NoiDungHop).HasColumnName("noi_dung_hop");
+            entity.Property(e => e.ActionList).HasColumnName("action_list");
             entity.Property(e => e.NgayHop).HasColumnName("ngay_hop");
             entity.Property(e => e.ThoiGianHop).HasColumnName("thoi_gian_hop");
 
             entity.HasOne(d => d.IdDotNavigation).WithMany(p => p.NhatKyHuongDans)
                 .HasForeignKey(d => d.IdDot)
                 .HasConstraintName("FK_NKHD_Dot");
+        });
 
-            entity.HasOne(d => d.IdKeHoachCongViecNavigation).WithMany(p => p.NhatKyHuongDans)
-                .HasForeignKey(d => d.IdKeHoachCongViec)
-                .HasConstraintName("FK_NKHD_KHCV");
+        modelBuilder.Entity<NhanXetHoiDongDeTai>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("NhanXetHoiDongDeTai");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.IdDeTai).HasColumnName("id_de_tai");
+            entity.Property(e => e.IdGiangVien).HasColumnName("id_giang_vien");
+            entity.Property(e => e.TrangThai)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("trang_thai");
+            entity.Property(e => e.NhanXet).HasColumnName("nhan_xet");
+            entity.Property(e => e.NgayTao)
+                .HasColumnType("datetime")
+                .HasColumnName("ngay_tao");
+
+            entity.HasOne(d => d.DeTai).WithMany()
+                .HasForeignKey(d => d.IdDeTai)
+                .HasConstraintName("FK_NXHD_DeTai");
+
+            entity.HasOne(d => d.GiangVien).WithMany()
+                .HasForeignKey(d => d.IdGiangVien)
+                .HasConstraintName("FK_NXHD_GiangVien");
         });
 
         modelBuilder.Entity<PhienBaoVe>(entity =>

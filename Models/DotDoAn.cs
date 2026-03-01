@@ -76,6 +76,8 @@ public partial class DotDoAn
 
     public virtual ICollection<HoiDongBaoCao> HoiDongBaoCaos { get; set; } = new List<HoiDongBaoCao>();
 
+    public virtual ICollection<KeHoachCongViec> KeHoachCongViecs { get; set; } = new List<KeHoachCongViec>();
+
     public virtual HocKi? IdHocKiNavigation { get; set; }
 
     public virtual KhoaHoc? IdKhoaHocNavigation { get; set; }

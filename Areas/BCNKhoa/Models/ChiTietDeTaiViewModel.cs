@@ -1,4 +1,7 @@
-﻿namespace DATN_TMS.Areas.BCNKhoa.Models
+﻿using System;
+using System.Collections.Generic;
+
+namespace DATN_TMS.Areas.BCNKhoa.Models
 {
     public class ChiTietDeTaiViewModel
     {
@@ -21,5 +24,20 @@
 
         public string TrangThai { get; set; }
         public string NhanXet { get; set; }
+
+        public bool CanReview { get; set; }
+        public bool IsProposer { get; set; }
+        public string CurrentUserStatus { get; set; }
+        public int CouncilMemberCount { get; set; }
+        public List<ReviewItem> Reviews { get; set; } = new();
+    }
+
+    public class ReviewItem
+    {
+        public string ReviewerName { get; set; }
+        public string? Comment { get; set; }
+        public string Status { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public bool IsCurrentUser { get; set; }
     }
 }

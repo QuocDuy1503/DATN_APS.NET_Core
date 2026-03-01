@@ -1,0 +1,768 @@
+﻿<div class="content-body">
+  <div class="content-card">
+    <h2 class="page-title" style="margin-bottom:20px;">Bảng kế hoạch</h2>
+    <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);
+      background: linear-gradient(90deg, var(--bg1), #e9edf6 40%, var(--bg2));
+      height:100vh;
+      overflow:hidden;
+    }
+      /* CALENDAR CARD */
+    .calendar-card{
+      background: rgba(255,255,255,.35);
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-width:860px;
+    }
+    /* GRID */
+    .week-grid{
+      min-width: 980px;
+      border-collapse:collapse;
+      width:100%;
+      table-layout:fixed;
+    }
+    .week-grid th,
+    .week-grid td{
+      border:1px solid rgba(0,0,0,.18);
+    }
+
+    .week-grid thead th{
+      height:54px;
+      background: rgba(255,255,255,.35);
+      font-weight:800;
+      font-size:18px;
+      color:#223a60;
+      text-align:center;
+    }
+    .corner{
+      width:86px;
+      background: rgba(255,255,255,.35);
+    }
+
+    .time{
+      width:86px;
+      padding:10px 8px;
+      text-align:center;
+      font-family:Montserrat,Inter,sans-serif;
+      font-weight:800;
+      color:#2a3e63;
+      background: rgba(255,255,255,.30);
+    }
+    .time small{
+      display:block;
+      font-family:Montserrat,Inter,sans-serif;
+      font-weight:800;
+      color:#2a3e63;
+      opacity:.95;
+      margin-top:2px;
+    }
+
+    .slot{
+      height:78px; /* mỗi giờ */
+      background: rgba(255,255,255,.15);
+      position:relative;
+    }
+    .calendar-head{
+      background: rgba(255,255,255,.4);
+      border-bottom:1px solid rgba(0,0,0,.10);
+      padding:14px 16px;
+      font-family:Montserrat,Inter,sans-serif;
+      font-weight:800;
+      color:#1b2f4c;
+    }
+
+    /* Grid wrapper with its own scroll (like screenshot) */
+    .calendar-scroll{
+      position:relative;
+      flex:1;
+      overflow:auto;
+      background: rgba(255,255,255,.25);
+    }
+
+    /* CUSTOM SCROLLBAR (optional) */
+    .calendar-scroll::-webkit-scrollbar{width:10px;height:10px}
+    .calendar-scroll::-webkit-scrollbar-thumb{background:rgba(43,107,187,.35);border-radius:999px}
+    .calendar-scroll::-webkit-scrollbar-track{background:rgba(255,255,255,.25)}
+    /* ===== POPUP "THÊM SỰ KIỆN" ===== */
+.modal-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: none;          /* mở modal thì đổi thành flex bằng JS */
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 9999;
+}
+.modal-overlay.is-open{ display:flex; }
+
+.event-modal{
+  width: min(720px, 92vw);
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid rgba(40,40,40,.18);
+  box-shadow: 0 18px 60px rgba(0,0,0,.22);
+  overflow: hidden;
+  font-family: "Montserrat", "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #1f2a44;
+}
+
+.event-modal__header{
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(40,40,40,.18);
+  background: #ffffff;
+}
+
+.event-modal__title{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: .2px;
+  color: #2f2a78; /* tím giống ảnh */
+}
+
+.event-modal__titleIcon{
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(47,42,120,.25);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #2f2a78;
+}
+
+.event-modal__close{
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(40,40,40,.2);
+  background: #fff;
+  color: #2f2a78;
+  cursor: pointer;
+}
+.event-modal__close:hover{ background:#f4f5ff; }
+
+.event-modal__body{
+  padding: 18px;
+}
+
+.event-row{ margin-bottom: 14px; }
+
+.event-label{
+  display:block;
+  font-weight: 700;
+  color: #2f2a78;
+  margin: 0 0 8px 2px;
+  font-size: 18px;
+}
+
+.event-control{
+  display:flex;
+  align-items: stretch;
+  border: 1px solid rgba(40,40,40,.22);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.event-leading{
+  width: 44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-right: 1px solid rgba(40,40,40,.22);
+  color:#2f2a78;
+  background:#fff;
+}
+.event-leading--top{ align-items: flex-start; padding-top: 10px; }
+
+.event-input{
+  flex: 1;
+  border: 0;
+  outline: 0;
+  padding: 12px 12px;
+  font-size: 16px;
+  color:#1f2a44;
+  background:#fff;
+}
+
+.event-trailing{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-left: 1px solid rgba(40,40,40,.22);
+  background:#fff;
+}
+
+.event-miniBtn{
+  height: 34px;
+  min-width: 46px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(47,42,120,.25);
+  background: #fff;
+  color: #2f2a78;
+  font-weight: 800;
+  cursor: pointer;
+}
+.event-miniBtn:hover{ background:#f4f5ff; }
+
+.event-days{
+  display:flex;
+  width: 100%;
+}
+.event-dayBtn{
+  flex: 1;
+  border: 0;
+  border-right: 1px solid rgba(40,40,40,.22);
+  background:#fff;
+  padding: 12px 0;
+  font-weight: 800;
+  color:#2f2a78;
+  cursor:pointer;
+}
+.event-dayBtn:last-child{ border-right:0; }
+.event-dayBtn.is-active{ background:#f4f5ff; }
+
+.event-timeRange{
+  display:flex;
+  width: 100%;
+}
+.event-time{
+  flex: 1;
+  display:flex;
+  align-items:center;
+  border-right: 1px solid rgba(40,40,40,.22);
+}
+.event-time:last-child{ border-right:0; }
+
+.event-input--time{
+  padding-right: 6px;
+  font-weight: 800;
+  color:#2f2a78;
+}
+
+.event-clockBtn{
+  width: 44px;
+  height: 100%;
+  border: 0;
+  border-left: 1px solid rgba(40,40,40,.22);
+  background:#fff;
+  color:#2f2a78;
+  cursor:pointer;
+}
+.event-clockBtn:hover{ background:#f4f5ff; }
+
+.event-control--textarea{ align-items: stretch; }
+
+.event-textarea{
+  flex:1;
+  border:0;
+  outline:0;
+  padding: 12px;
+  font-size: 16px;
+  resize: vertical;
+  min-height: 96px;
+  font-family: inherit;
+}
+
+.event-submit{
+  width: 100%;
+  height: 52px;
+  border-radius: 10px;
+  border: 1px solid rgba(40,40,40,.22);
+  background:#fff;
+  color:#2f2a78;
+  font-weight: 900;
+  font-size: 20px;
+  cursor:pointer;
+  margin-top: 8px;
+}
+.event-submit:hover{ background:#f4f5ff; }
+
+/* ===== EVENT BLOCK ON GRID ===== */
+.slot { position: relative; }
+.task-block{
+  position: absolute;
+  inset: 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(47,42,120,.25);
+  background: rgba(244,245,255,.95);
+  color: #2f2a78;
+  padding: 10px 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.10);
+  overflow: hidden;
+}
+.task-block__title{
+  font-weight: 900;
+  font-size: 14px;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.task-block__meta{
+  font-weight: 700;
+  font-size: 12px;
+  opacity: .95;
+}
+.task-block__status{
+  display:inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(47,42,120,.25);
+}
+.event-fileInput{
+  display:none; /* ẩn input file mặc định */
+}
+
+.event-fileUi{
+  flex: 1;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+}
+
+.event-fileName{
+  flex: 1;
+  font-size: 14px;
+  font-weight: 800;
+  color:#2f2a78;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-hint{
+  display:block;
+  margin-top: 6px;
+  margin-left: 4px;
+  font-size: 12px;
+  opacity: .75;
+}
+</style>
+    <div class="toolbar-row">
+      <div class="toolbar-left">
+        <div class="filter-item">
+          <span class="filter-label">Học kỳ</span>
+          <select class="toolbar-input" style="width:150px;" id="semesterSelect">
+            <option value="">-- Tất cả --</option>
+            <option value="K26">2023-2024</option>
+            <option value="K27">2024-2025</option>
+            <option value="K28">2025-2026</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <span class="filter-label">Tuần</span>
+          <select class="toolbar-input" style="width:150px;" id="weekSelect">
+            <option value="">-- Tất cả --</option>
+            <option value="101">101</option>
+            <option value="102">102</option>
+            <option value="103">103</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <button class="btn btn-primary" id="btnOpenModal" type="button">
+          <i class="fa-solid fa-plus"></i> Thêm công việc
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <div class="calendar-scroll">
+        <table class="week-grid" aria-label="Lịch tuần">
+          <thead>
+            <tr>
+              <th class="corner"></th>
+              <th>Thứ Hai</th>
+              <th>Thứ Ba</th>
+              <th>Thứ Tư</th>
+              <th>Thứ Năm</th>
+              <th>Thứ Sáu</th>
+              <th>Thứ Bảy</th>
+              <th>Chủ Nhật</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="time">08<small>AM</small></td>
+              <td class="slot" data-day="0" data-hour="08"></td>
+              <td class="slot" data-day="1" data-hour="08"></td>
+              <td class="slot" data-day="2" data-hour="08"></td>
+              <td class="slot" data-day="3" data-hour="08"></td>
+              <td class="slot" data-day="4" data-hour="08"></td>
+              <td class="slot" data-day="5" data-hour="08"></td>
+              <td class="slot" data-day="6" data-hour="08"></td>
+            </tr>
+
+            <tr>
+              <td class="time">09<small>AM</small></td>
+              <td class="slot" data-day="0" data-hour="09"></td>
+              <td class="slot" data-day="1" data-hour="09"></td>
+              <td class="slot" data-day="2" data-hour="09"></td>
+              <td class="slot" data-day="3" data-hour="09"></td>
+              <td class="slot" data-day="4" data-hour="09"></td>
+              <td class="slot" data-day="5" data-hour="09"></td>
+              <td class="slot" data-day="6" data-hour="09"></td>
+            </tr>
+
+            <tr>
+              <td class="time">10<small>AM</small></td>
+              <td class="slot" data-day="0" data-hour="10"></td>
+              <td class="slot" data-day="1" data-hour="10"></td>
+              <td class="slot" data-day="2" data-hour="10"></td>
+              <td class="slot" data-day="3" data-hour="10"></td>
+              <td class="slot" data-day="4" data-hour="10"></td>
+              <td class="slot" data-day="5" data-hour="10"></td>
+              <td class="slot" data-day="6" data-hour="10"></td>
+            </tr>
+
+            <tr>
+              <td class="time">11<small>AM</small></td>
+              <td class="slot" data-day="0" data-hour="11"></td>
+              <td class="slot" data-day="1" data-hour="11"></td>
+              <td class="slot" data-day="2" data-hour="11"></td>
+              <td class="slot" data-day="3" data-hour="11"></td>
+              <td class="slot" data-day="4" data-hour="11"></td>
+              <td class="slot" data-day="5" data-hour="11"></td>
+              <td class="slot" data-day="6" data-hour="11"></td>
+            </tr>
+
+            <tr>
+              <td class="time">12<small>PM</small></td>
+              <td class="slot" data-day="0" data-hour="12"></td>
+              <td class="slot" data-day="1" data-hour="12"></td>
+              <td class="slot" data-day="2" data-hour="12"></td>
+              <td class="slot" data-day="3" data-hour="12"></td>
+              <td class="slot" data-day="4" data-hour="12"></td>
+              <td class="slot" data-day="5" data-hour="12"></td>
+              <td class="slot" data-day="6" data-hour="12"></td>
+            </tr>
+
+            <tr>
+              <td class="time">01<small>PM</small></td>
+              <td class="slot" data-day="0" data-hour="13"></td>
+              <td class="slot" data-day="1" data-hour="13"></td>
+              <td class="slot" data-day="2" data-hour="13"></td>
+              <td class="slot" data-day="3" data-hour="13"></td>
+              <td class="slot" data-day="4" data-hour="13"></td>
+              <td class="slot" data-day="5" data-hour="13"></td>
+              <td class="slot" data-day="6" data-hour="13"></td>
+            </tr>
+
+            <tr>
+              <td class="time">02<small>PM</small></td>
+              <td class="slot" data-day="0" data-hour="14"></td>
+              <td class="slot" data-day="1" data-hour="14"></td>
+              <td class="slot" data-day="2" data-hour="14"></td>
+              <td class="slot" data-day="3" data-hour="14"></td>
+              <td class="slot" data-day="4" data-hour="14"></td>
+              <td class="slot" data-day="5" data-hour="14"></td>
+              <td class="slot" data-day="6" data-hour="14"></td>
+            </tr>
+
+            <tr>
+              <td class="time">03<small>PM</small></td>
+              <td class="slot" data-day="0" data-hour="15"></td>
+              <td class="slot" data-day="1" data-hour="15"></td>
+              <td class="slot" data-day="2" data-hour="15"></td>
+              <td class="slot" data-day="3" data-hour="15"></td>
+              <td class="slot" data-day="4" data-hour="15"></td>
+              <td class="slot" data-day="5" data-hour="15"></td>
+              <td class="slot" data-day="6" data-hour="15"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nên đặt ngoài content-card để overlay phủ đúng -->
+<div class="modal-overlay" id="addModal" aria-hidden="true">
+  <div class="event-modal" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+    <div class="event-modal__header">
+      <div class="event-modal__title" id="eventModalTitle">
+        <span class="event-modal__titleIcon"><i class="fa-regular fa-square-plus"></i></span>
+        Thêm công việc
+      </div>
+
+      <button class="event-modal__close close-modal" type="button" aria-label="Đóng">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="event-modal__body">
+      <div class="event-row">
+        <label class="event-label">Tên công việc</label>
+        <div class="event-control">
+          <span class="event-leading"><i class="fa-solid fa-tag"></i></span>
+          <input class="event-input" id="taskTitle" type="text" />
+        </div>
+      </div>
+
+      <div class="event-row">
+        <label class="event-label">Người phụ trách</label>
+        <div class="event-control">
+          <span class="event-leading"><i class="fa-solid fa-user"></i></span>
+          <input class="event-input" id="taskOwner" type="text" />
+        </div>
+      </div>
+
+      <div class="event-row">
+        <label class="event-label">Ngày</label>
+        <div class="event-control">
+          <span class="event-leading"><i class="fa-regular fa-calendar"></i></span>
+          <div class="event-days" role="group" aria-label="Chọn ngày">
+            <button class="event-dayBtn is-active" data-day="0" type="button">T2</button>
+            <button class="event-dayBtn" data-day="1" type="button">T3</button>
+            <button class="event-dayBtn" data-day="2" type="button">T4</button>
+            <button class="event-dayBtn" data-day="3" type="button">T5</button>
+            <button class="event-dayBtn" data-day="4" type="button">T6</button>
+            <button class="event-dayBtn" data-day="5" type="button">T7</button>
+            <button class="event-dayBtn" data-day="6" type="button">CN</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-row">
+        <label class="event-label">Bắt đầu - Kết thúc ước tính</label>
+        <div class="event-control">
+          <span class="event-leading"><i class="fa-solid fa-hourglass-start"></i></span>
+          <div class="event-timeRange">
+            <input class="event-input event-input--time" id="planStart" type="time" step="900" />
+            <input class="event-input event-input--time" id="planEnd" type="time" step="900" />
+          </div>
+        </div>
+      </div>
+
+      <div class="event-row">
+        <label class="event-label">Bắt đầu - Kết thúc thực tế</label>
+        <div class="event-control">
+          <span class="event-leading"><i class="fa-solid fa-hourglass-start"></i></span>
+          <div class="event-timeRange">
+            <input class="event-input event-input--time" id="actualStart" type="time" step="900" />
+            <input class="event-input event-input--time" id="actualEnd" type="time" step="900" />
+          </div>
+        </div>
+      </div>
+
+      <div class="event-row">
+        <label class="event-label">Trạng thái công việc</label>
+        <div class="event-control">
+          <span class="event-leading"><i class="fa-solid fa-list-check"></i></span>
+          <select id="taskStatus" class="event-input event-select">
+            <option value="">-- Trạng thái --</option>
+            <option value="cho-duyet">Đợi duyệt</option>
+            <option value="chua-thuc-hien">Chưa thực hiện</option>
+            <option value="dang-thuc-hien">Đang thực hiện</option>
+            <option value="hoan-thanh">Hoàn thành</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="event-row">
+        <label class="event-label">Mô tả</label>
+        <div class="event-control event-control--textarea">
+          <span class="event-leading event-leading--top"><i class="fa-solid fa-circle-info"></i></span>
+          <textarea id="taskDesc" class="event-textarea" rows="4"></textarea>
+        </div>
+      </div>
+
+      <div class="event-row">
+        <label class="event-label">Nộp minh chứng</label>
+        <div class="event-control">
+          <span class="event-leading"><i class="fa-solid fa-paperclip"></i></span>
+
+          <input type="file" id="taskProof" class="event-fileInput"
+                 accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" />
+
+          <div class="event-fileUi">
+            <span id="proofName" class="event-fileName">Chưa chọn file</span>
+            <button type="button" id="btnPickProof" class="event-miniBtn">Chọn file</button>
+            <button type="button" id="btnClearProof" class="event-miniBtn">Xóa</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="event-submit" id="btnAddTask" type="button">Thêm</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const modal = document.getElementById('addModal');
+  const openBtn = document.getElementById('btnOpenModal');
+  const closeBtns = modal ? modal.querySelectorAll('.close-modal') : [];
+  const dayBtns = modal ? modal.querySelectorAll('.event-dayBtn') : [];
+
+  function openModal(){
+    if(!modal) return;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden','false');
+  }
+  function closeModal(){
+    if(!modal) return;
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden','true');
+  }
+
+  if(openBtn) openBtn.addEventListener('click', openModal);
+  closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
+  if(modal){
+    modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+    document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && modal.classList.contains('is-open')) closeModal(); });
+  }
+
+  dayBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      dayBtns.forEach(b => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+    });
+  });
+
+  function parseTimeToHour(timeStr){
+    if(!timeStr) return null;
+    const s = timeStr.trim().toUpperCase();
+    const m24 = s.match(/^(\d{1,2}):(\d{2})$/);
+    if(m24){
+      const hh = parseInt(m24[1],10);
+      return isNaN(hh) ? null : hh;
+    }
+    const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+    if(m12){
+      let hh = parseInt(m12[1],10);
+      const mer = m12[3];
+      if(mer === 'PM' && hh !== 12) hh += 12;
+      if(mer === 'AM' && hh === 12) hh = 0;
+      return isNaN(hh) ? null : hh;
+    }
+    return null;
+  }
+
+  function findRowByHour(targetHour){
+    const rows = document.querySelectorAll('.week-grid tbody tr');
+    for(const r of rows){
+      const timeCell = r.querySelector('td.time');
+      if(!timeCell) continue;
+      const txt = timeCell.textContent.trim();
+      const m = txt.match(/^(\d{1,2})/);
+      if(!m) continue;
+      const displayHour = parseInt(m[1],10);
+      const hasAM = /AM/i.test(txt);
+      const hasPM = /PM/i.test(txt);
+      let hour24 = displayHour;
+      if(hasPM && displayHour !== 12) hour24 = displayHour + 12;
+      if(hasAM && displayHour === 12) hour24 = 0;
+      if(!hasAM && !hasPM && displayHour === 3) hour24 = 15;
+      if(hour24 === targetHour) return r;
+    }
+    return null;
+  }
+
+  function escapeHtml(str){
+    return String(str || '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#039;');
+  }
+
+  function addTaskToGrid(data){
+    const row = findRowByHour(data.startHour);
+    if(!row) return {ok:false, message:'Không tìm thấy dòng giờ phù hợp trong bảng.'};
+
+    const cells = row.querySelectorAll('td');
+    const cell = cells[data.dayIndex + 1];
+    if(!cell) return {ok:false, message:'Không tìm thấy cột ngày phù hợp.'};
+
+    const existing = cell.querySelector('.task-block');
+    if(existing) existing.remove();
+
+    const block = document.createElement('div');
+    block.className = 'task-block';
+    block.innerHTML = `
+      <div class="task-block__title">${escapeHtml(data.title || '(Chưa có tên)')}</div>
+      <div class="task-block__meta">Owner: ${escapeHtml(data.owner || '-')}</div>
+      <div class="task-block__meta">${escapeHtml(data.timeLabel || '')}</div>
+      <span class="task-block__status">${escapeHtml(data.statusText || '')}</span>
+    `;
+    cell.appendChild(block);
+    return {ok:true};
+  }
+
+  const btnAdd = document.getElementById('btnAddTask');
+  if(btnAdd){
+    btnAdd.addEventListener('click', () => {
+      const title = document.getElementById('taskTitle')?.value?.trim();
+      const owner = document.getElementById('taskOwner')?.value?.trim();
+      const statusSel = document.getElementById('taskStatus');
+      const statusText = statusSel ? statusSel.options[statusSel.selectedIndex].text : '';
+      const startStr = document.getElementById('planStart')?.value?.trim();
+      const endStr = document.getElementById('planEnd')?.value?.trim();
+
+      const activeDayBtn = modal ? modal.querySelector('.event-dayBtn.is-active') : null;
+      const dayIndex = activeDayBtn ? parseInt(activeDayBtn.getAttribute('data-day'),10) : NaN;
+
+      const startHour = parseTimeToHour(startStr);
+
+      if(!title){ alert('Vui lòng nhập Tên công việc.'); return; }
+      if(Number.isNaN(dayIndex)){ alert('Vui lòng chọn Ngày (T2..CN).'); return; }
+      if(startHour === null){ alert('Giờ bắt đầu không hợp lệ. VD: 08:00 hoặc 15:30.'); return; }
+
+      const timeLabel = (startStr && endStr) ? `${startStr} - ${endStr}` : (startStr || '');
+
+      const res = addTaskToGrid({title, owner, statusText, startHour, dayIndex, timeLabel});
+      if(!res.ok){ alert(res.message || 'Không thêm được công việc.'); return; }
+
+      closeModal();
+    });
+
+  }
+  // ===== Proof (file) =====
+const proofInput = document.getElementById('taskProof');
+const proofName = document.getElementById('proofName');
+const btnPickProof = document.getElementById('btnPickProof');
+const btnClearProof = document.getElementById('btnClearProof');
+
+if(btnPickProof && proofInput){
+  btnPickProof.addEventListener('click', () => proofInput.click());
+}
+
+if(proofInput && proofName){
+  proofInput.addEventListener('change', () => {
+    const f = proofInput.files && proofInput.files[0];
+    proofName.textContent = f ? f.name : 'Chưa chọn file';
+  });
+}
+
+if(btnClearProof && proofInput && proofName){
+  btnClearProof.addEventListener('click', () => {
+    proofInput.value = '';
+    proofName.textContent = 'Chưa chọn file';
+  });
+}
+})();
+</script>
