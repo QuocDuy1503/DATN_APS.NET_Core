@@ -1,9 +1,9 @@
-@using X.PagedList.Mvc.Core;
+﻿@using X.PagedList.Mvc.Core;
 @using X.PagedList;
 @model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyDeTaiViewModel>
 
 @{
-    ViewData["Title"] = "Qu?n l� danh s�ch ?? t�i";
+    ViewData["Title"] = "Quản lý danh sách đề tài";
 }
 
 <style>
@@ -51,40 +51,40 @@
 <div class="content-body dotdoan-page">
     <div class="content-card">
         <div class="page-header-row">
-            <h2 class="page-title">Qu?n l� danh s�ch ?? t�i</h2>
+            <h2 class="page-title">Quản lý danh sách đề tài</h2>
         </div>
 
         <div class="toolbar-row">
             <form method="get" asp-action="Index" id="filterForm" class="filter-wrapper">
                 <div class="filter-item">
-                    <span class="filter-label">??t ?? �n</span>
+                    <span class="filter-label">Đợt đồ án</span>
                     <select name="dotId" id="dotSelect" class="form-control" asp-items="ViewBag.ListDot" onchange="performSearch()">
-                        <option value="">-- T?t c? ??t --</option>
+                        <option value="">-- Tất cả đợt --</option>
                     </select>
                 </div>
                 
                 <div class="filter-item">
-                    <span class="filter-label">N?m h?c</span>
+                    <span class="filter-label">Năm học</span>
                     <select name="namHoc" id="namSelect" class="form-control" asp-items="ViewBag.ListNamHoc" onchange="performSearch()">
-                        <option value="">-- T?t c? n?m --</option>
+                        <option value="">-- Tất cả năm --</option>
                     </select>
                 </div>
 
                 <div class="filter-item">
-                    <span class="filter-label">Chuy�n ng�nh</span>
+                    <span class="filter-label">Chuyên ngành</span>
                     <select name="chuyenNganhId" id="nganhSelect" class="form-control" asp-items="ViewBag.ListChuyenNganh" onchange="performSearch()">
-                        <option value="">-- T?t c? --</option>
+                        <option value="">-- Tất cả --</option>
                     </select>
                 </div>
             </form>
 
             <div class="toolbar-right" style="display:flex; align-items:flex-end; gap:10px;">
                 <div class="search-box" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                    <span class="filter-label">T�m ki?m</span>
+                    <span class="filter-label">Tìm kiếm</span>
                     <input type="text" id="searchInput" name="searchString"
                            value="@ViewBag.CurrentFilter"
                            class="toolbar-input search-input"
-                           placeholder="M� ?? t�i, T�n ?? t�i..." style="width: 250px;" />
+                           placeholder="Mã đề tài, Tên đề tài..." style="width: 250px;" />
                 </div>
             </div>
         </div>
@@ -94,13 +94,13 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>M� ?T</th>
-                            <th>T�n ?? t�i</th>
-                            <th>Ng??i ?? xu?t</th>
+                            <th>Mã ĐT</th>
+                            <th>Tên đề tài</th>
+                            <th>Người đề xuất</th>
                             <th>GVHD</th>
-                            <th style="text-align:center; width:150px;">Chuy�n ng�nh</th>
-                            <th style="text-align:center; width:120px;">Tr?ng th�i</th>
-                            <th style="text-align:center; width:80px;">Chi ti?t</th>
+                            <th style="text-align:center; width:150px;">Chuyên ngành</th>
+                            <th style="text-align:center; width:120px;">Trạng thái</th>
+                            <th style="text-align:center; width:80px;">Chi tiết</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -117,19 +117,19 @@
                                     <td style="text-align:center;">
                                         @if (item.TrangThai == "DA_DUYET")
                                         {
-                                            <span class="status-badge status-approved">?� duy?t</span>
+                                            <span class="status-badge status-approved">Đã duyệt</span>
                                         }
                                         else if (item.TrangThai == "TU_CHOI")
                                         {
-                                            <span class="status-badge status-rejected">T? ch?i</span>
+                                            <span class="status-badge status-rejected">Từ chối</span>
                                         }
                                         else
                                         {
-                                            <span class="status-badge status-waiting">Ch? duy?t</span>
+                                            <span class="status-badge status-waiting">Chờ duyệt</span>
                                         }
                                     </td>
                                     <td style="text-align:center;">
-                                        <a asp-action="Details" asp-route-id="@item.Id" class="action-btn btn-view" title="Xem chi ti?t" style="color: #2980b9;">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="action-btn btn-view" title="Xem chi tiết" style="color: #2980b9;">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
                                     </td>
@@ -138,7 +138,7 @@
                         }
                         else
                         {
-                            <tr><td colspan="7" class="text-center text-muted p-4">Kh�ng t�m th?y ?? t�i ph� h?p.</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted p-4">Không tìm thấy đề tài phù hợp.</td></tr>
                         }
                     </tbody>
                 </table>
@@ -152,8 +152,8 @@
                 PageClasses = new string[] { "page-link" },
                 DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
                 DisplayLinkToNextPage = PagedListDisplayMode.Always,
-                LinkToPreviousPageFormat = "�",
-                LinkToNextPageFormat = "�",
+                LinkToPreviousPageFormat = "«",
+                LinkToNextPageFormat = "»",
                 EllipsesFormat = "...",
                 MaximumPageNumbersToDisplay = 5
             })
@@ -196,6 +196,6 @@
                 const newPagination = doc.querySelector('.pagination-container').innerHTML;
                 if (paginationContainer) paginationContainer.innerHTML = newPagination;
             })
-            .catch(err => console.error('L?i t�m ki?m:', err));
+            .catch(err => console.error('Lỗi tìm kiếm:', err));
     }
 </script>

@@ -25,6 +25,10 @@ public partial class ChuongTrinhDaoTao
 
     public virtual ICollection<ChiTietCtdt> ChiTietCtdts { get; set; } = new List<ChiTietCtdt>();
 
+    public virtual ICollection<KhoiKienThuc> KhoiKienThucs { get; set; } = new List<KhoiKienThuc>();
+
+    public virtual ICollection<MonHoc> MonHocs { get; set; } = new List<MonHoc>();
+
     public virtual KhoaHoc? IdKhoaHocNavigation { get; set; }
 
     public virtual Nganh? IdNganhNavigation { get; set; }

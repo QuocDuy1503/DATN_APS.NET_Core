@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
 using ClosedXML.Excel;
+using System.Text.RegularExpressions;
 
 namespace DATN_TMS.Areas.BCNKhoa.Controllers
 {
@@ -130,9 +131,28 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             if (string.IsNullOrWhiteSpace(targetMaCtdt))
                 return Json(new { success = false, message = "Không xác định được mã CTĐT. Vui lòng nhập mã hoặc đặt lại tên file." });
 
-            // Đọc và kiểm tra dữ liệu trước
-            var parsedChiTiet = new List<ChiTietCtdt>();
             int tongTinChi = 0;
+            var parsedChiTiet = new List<ChiTietCtdt>();
+            var khoiImports = new List<(KhoiKienThuc Block, bool SumFromB, List<MonHoc> Subjects)>();
+            (KhoiKienThuc Block, bool SumFromB, List<MonHoc> Subjects)? currentBlock = null;
+            int sttCounter = 1;
+
+            int? SafeParseInt(string? input)
+            {
+                if (string.IsNullOrWhiteSpace(input)) return null;
+                input = input.Trim();
+                if (int.TryParse(input, out var val)) return val;
+                var match = Regex.Match(input, "-?\\d+");
+                if (match.Success && int.TryParse(match.Value, out var inner)) return inner;
+                return null;
+            }
+
+            string RemoveParentheses(string value)
+            {
+                if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+                return Regex.Replace(value, "\\s*\\(.*?\\)\\s*", string.Empty).Trim();
+            }
+
             using (var stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);
@@ -148,57 +168,94 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                         return Json(new { success = false, message = "File Excel trống." });
 
                     int rowCount = lastRow.RowNumber();
-                    int startRow = 3; // dòng dữ liệu đầu tiên sau tiêu đề (điều chỉnh nếu template thay đổi)
-                    int currentHocKy = 0;
+                    int startRow = 1; // duyệt toàn bộ, tự nhận diện khối/môn theo logic yêu cầu
 
                     for (int row = startRow; row <= rowCount; row++)
                     {
-                        var maHp = worksheet.Cell(row, 2).GetValue<string>().Trim(); // Cột B
-                        if (string.IsNullOrEmpty(maHp)) continue;
+                        var colA = worksheet.Cell(row, 1).GetValue<string>().Trim();
+                        var colB = worksheet.Cell(row, 2).GetValue<string>().Trim();
+                        var colC = worksheet.Cell(row, 3).GetValue<string>().Trim();
+                        var colD = worksheet.Cell(row, 4).GetValue<string>().Trim();
+                        var colE = worksheet.Cell(row, 5).GetValue<string>().Trim();
+                        var colF = worksheet.Cell(row, 6).GetValue<string>().Trim();
 
-                        var tenHp = worksheet.Cell(row, 3).GetValue<string>().Trim(); // Cột C
-                        var loaiHp = worksheet.Cell(row, 9).GetValue<string>().Trim(); // Cột I
-                        var dkTienQuyet = worksheet.Cell(row, 10).GetValue<string>().Trim(); // Cột J
-
-                        var valHocKy = worksheet.Cell(row, 1).GetValue<string>().Trim(); // Cột A
-                        if (!string.IsNullOrEmpty(valHocKy) && int.TryParse(valHocKy, out var hk))
+                        bool rowEmpty = string.IsNullOrWhiteSpace(colA) && string.IsNullOrWhiteSpace(colB) && string.IsNullOrWhiteSpace(colC) && string.IsNullOrWhiteSpace(colD) && string.IsNullOrWhiteSpace(colE);
+                        if (rowEmpty && currentBlock == null)
                         {
-                            currentHocKy = hk;
+                            break; // kết thúc import khi không còn dòng hợp lệ
                         }
 
-                        int.TryParse(worksheet.Cell(row, 1).GetValue<string>(), out var stt); // Cột A
-                        int.TryParse(worksheet.Cell(row, 5).GetValue<string>(), out var soTc); // Cột E
+                        bool isBlockHeaderCaseA = !string.IsNullOrWhiteSpace(colB) && !string.IsNullOrWhiteSpace(colE) && string.IsNullOrWhiteSpace(colC);
+                        bool isBlockHeaderCaseC = string.IsNullOrWhiteSpace(colB) && string.IsNullOrWhiteSpace(colE) && !string.IsNullOrWhiteSpace(colA) && string.IsNullOrWhiteSpace(colC);
 
-                        int? hocKiToChuc = null;
-                        var hocKiCell = worksheet.Cell(row, 12).GetValue<string>().Trim(); // Cột L
-                        if (int.TryParse(hocKiCell, out var hkToChuc))
+                        if (isBlockHeaderCaseA || isBlockHeaderCaseC)
                         {
-                            hocKiToChuc = hkToChuc;
-                        }
-                        else if (currentHocKy != 0)
-                        {
-                            hocKiToChuc = currentHocKy;
+                            var khoi = new KhoiKienThuc
+                            {
+                                TenKhoi = isBlockHeaderCaseA ? RemoveParentheses(colB) : colA.Trim(),
+                                TongTinChi = isBlockHeaderCaseA ? SafeParseInt(colE) ?? 0 : 0
+                            };
+                            currentBlock = (khoi, isBlockHeaderCaseC, new List<MonHoc>());
+                            khoiImports.Add(currentBlock.Value);
+                            continue;
                         }
 
-                        // Bỏ qua dòng nếu thiếu bất kỳ cột bắt buộc
-                        if (string.IsNullOrWhiteSpace(tenHp) || string.IsNullOrWhiteSpace(loaiHp) || string.IsNullOrWhiteSpace(dkTienQuyet) || soTc <= 0 || hocKiToChuc == null)
+                        if (rowEmpty)
+                        {
+                            currentBlock = null;
+                            continue;
+                        }
+
+                        if (currentBlock == null && (!string.IsNullOrWhiteSpace(colB) || !string.IsNullOrWhiteSpace(colC) || !string.IsNullOrWhiteSpace(colD) || !string.IsNullOrWhiteSpace(colE)))
+                        {
+                            var khoi = new KhoiKienThuc { TenKhoi = "Khối kiến thức", TongTinChi = 0 };
+                            currentBlock = (khoi, false, new List<MonHoc>());
+                            khoiImports.Add(currentBlock.Value);
+                        }
+
+                        if (currentBlock == null)
+                        {
+                            continue; // bỏ qua các dòng ngoài khối
+                        }
+
+                        bool isSubjectRow = !string.IsNullOrWhiteSpace(colC) || !string.IsNullOrWhiteSpace(colB) || !string.IsNullOrWhiteSpace(colD) || !string.IsNullOrWhiteSpace(colE);
+                        if (!isSubjectRow)
                         {
                             continue;
                         }
 
-                        var chiTiet = new ChiTietCtdt
+                        var soTinChi = SafeParseInt(colE) ?? SafeParseInt(colB);
+                        var hocKi = SafeParseInt(colA);
+                        var mon = new MonHoc
                         {
-                            Stt = stt,
-                            MaHocPhan = maHp,
-                            TenHocPhan = tenHp,
-                            SoTinChi = soTc,
-                            LoaiHocPhan = loaiHp,
-                            DieuKienTienQuyet = dkTienQuyet,
-                            HocKiToChuc = hocKiToChuc
+                            MaMon = string.IsNullOrWhiteSpace(colB) ? null : colB,
+                            TenMon = string.IsNullOrWhiteSpace(colC) ? (string.IsNullOrWhiteSpace(colB) ? null : colB) : colC,
+                            SoTinChi = soTinChi,
+                            LoaiHocPhan = string.IsNullOrWhiteSpace(colD) ? null : colD,
+                            DieuKienTienQuyet = string.IsNullOrWhiteSpace(colF) ? null : colF,
+                            HocKiToChuc = hocKi
                         };
 
-                        parsedChiTiet.Add(chiTiet);
-                        tongTinChi += soTc;
+                        currentBlock.Value.Subjects.Add(mon);
+                        if (currentBlock.Value.SumFromB && soTinChi.HasValue)
+                        {
+                            currentBlock = (currentBlock.Value.Block, currentBlock.Value.SumFromB, currentBlock.Value.Subjects);
+                            currentBlock.Value.Block.TongTinChi = (currentBlock.Value.Block.TongTinChi ?? 0) + soTinChi.Value;
+                        }
+
+                        var detail = new ChiTietCtdt
+                        {
+                            Stt = sttCounter++,
+                            MaHocPhan = mon.MaMon,
+                            TenHocPhan = mon.TenMon,
+                            SoTinChi = mon.SoTinChi,
+                            LoaiHocPhan = mon.LoaiHocPhan,
+                            DieuKienTienQuyet = mon.DieuKienTienQuyet,
+                            HocKiToChuc = mon.HocKiToChuc
+                        };
+
+                        parsedChiTiet.Add(detail);
+                        tongTinChi += mon.SoTinChi ?? 0;
                     }
                 }
             }
@@ -206,6 +263,13 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             if (!parsedChiTiet.Any())
             {
                 return Json(new { success = false, message = "Không tìm thấy dữ liệu học phần trong file." });
+            }
+
+            if (!khoiImports.Any())
+            {
+                // Tạo khối mặc định nếu file chỉ chứa danh sách môn học
+                var khoi = new KhoiKienThuc { TenKhoi = "Khối kiến thức chung", TongTinChi = tongTinChi };
+                khoiImports.Add((khoi, false, new List<MonHoc>()));
             }
 
             // Xóa dữ liệu CTDT trùng (cùng khóa hoặc cùng mã) sau khi file hợp lệ
@@ -216,6 +280,12 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 .ToListAsync();
             if (existingIds.Any())
             {
+                var monOld = _context.MonHocs.Where(m => m.IdCtdt != null && existingIds.Contains(m.IdCtdt.Value));
+                _context.MonHocs.RemoveRange(monOld);
+
+                var khoiOld = _context.KhoiKienThucs.Where(k => k.IdCtdt != null && existingIds.Contains(k.IdCtdt.Value));
+                _context.KhoiKienThucs.RemoveRange(khoiOld);
+
                 var details = _context.ChiTietCtdts.Where(d => d.IdCtdt != null && existingIds.Contains(d.IdCtdt.Value));
                 _context.ChiTietCtdts.RemoveRange(details);
                 var programs = _context.ChuongTrinhDaoTaos.Where(ct => existingIds.Contains(ct.Id));
@@ -243,11 +313,51 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             }
 
             _context.ChiTietCtdts.AddRange(parsedChiTiet);
-            newCtdt.TongTinChi = tongTinChi;
-            _context.ChuongTrinhDaoTaos.Update(newCtdt);
             await _context.SaveChangesAsync();
 
-            return Json(new { success = true, message = "Đã import và ghi đè dữ liệu CTĐT thành công." });
+            foreach (var block in khoiImports)
+            {
+                block.Block.IdCtdt = newCtdt.Id;
+            }
+
+            _context.KhoiKienThucs.AddRange(khoiImports.Select(k => k.Block));
+            await _context.SaveChangesAsync();
+
+            var monToInsert = new List<MonHoc>();
+            foreach (var block in khoiImports)
+            {
+                foreach (var mon in block.Subjects)
+                {
+                    mon.IdKhoiKienThuc = block.Block.Id;
+                    mon.IdCtdt = newCtdt.Id;
+                    if (string.IsNullOrWhiteSpace(mon.TenMon) && !string.IsNullOrWhiteSpace(mon.MaMon))
+                    {
+                        mon.TenMon = mon.MaMon;
+                    }
+                    monToInsert.Add(mon);
+                }
+            }
+
+            if (monToInsert.Any())
+            {
+                _context.MonHocs.AddRange(monToInsert);
+            }
+
+            var computedTongTc = monToInsert.Sum(m => m.SoTinChi ?? 0);
+            if (computedTongTc == 0)
+            {
+                computedTongTc = khoiImports.Sum(k => k.Block.TongTinChi ?? 0);
+            }
+            newCtdt.TongTinChi = computedTongTc;
+            _context.ChuongTrinhDaoTaos.Update(newCtdt);
+
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                message = $"Đã import CTĐT thành công. Khối: {khoiImports.Count}, Môn: {monToInsert.Count}, Tổng tín chỉ: {newCtdt.TongTinChi}"
+            });
         }
     }
 }

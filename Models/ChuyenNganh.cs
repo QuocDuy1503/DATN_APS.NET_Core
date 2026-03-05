@@ -9,6 +9,8 @@ public partial class ChuyenNganh
 
     public int? Stt { get; set; }
 
+    public string? MaChuyenNganh { get; set; }
+
     public string? TenChuyenNganh { get; set; }
 
     public string? TenVietTat { get; set; }

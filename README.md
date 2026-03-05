@@ -1,4 +1,30 @@
-﻿USE QuanLyDoAnTotNghiep;
+﻿-- 1) Gỡ tất cả khóa ngoại
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+SELECT @sql = @sql + N'
+ALTER TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) +
+N' DROP CONSTRAINT ' + QUOTENAME(fk.name) + N';'
+FROM sys.foreign_keys fk
+JOIN sys.tables t       ON fk.parent_object_id = t.object_id
+JOIN sys.schemas s      ON t.schema_id = s.schema_id;
+
+PRINT @sql;  -- kiểm tra trước khi EXEC
+EXEC sp_executesql @sql;
+
+-- 2) Drop toàn bộ bảng
+SET @sql = N'';
+SELECT @sql = @sql + N'
+DROP TABLE ' + QUOTENAME(s.name) + N'.' + QUOTENAME(t.name) + N';'
+FROM sys.tables t
+JOIN sys.schemas s ON t.schema_id = s.schema_id;
+
+PRINT @sql;  -- kiểm tra trước khi EXEC
+EXEC sp_executesql @sql;
+
+
+
+
+USE QuanLyDoAnTotNghiep;
 GO
 
 -- =====================================================================
@@ -56,6 +82,7 @@ CREATE TABLE Nganh (
 CREATE TABLE ChuyenNganh (
     id INT IDENTITY(1,1) PRIMARY KEY,
     stt INT,
+    ma_chuyen_nganh VARCHAR(20) NOT NULL UNIQUE,
     ten_chuyen_nganh NVARCHAR(100),
     ten_viet_tat NVARCHAR(20),
     id_nguoi_tao INT,
@@ -107,6 +134,32 @@ CREATE TABLE ChiTiet_CTDT (
     loai_hoc_phan NVARCHAR(50),
     dieu_kien_tien_quyet NVARCHAR(255),
     hoc_ki_to_chuc INT
+);
+
+-- Khối kiến thức (mapping nhóm học phần trong CTĐT)
+CREATE TABLE KhoiKienThuc (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    id_ctdt INT,
+    ten_khoi NVARCHAR(200),
+    tong_tin_chi INT,
+    ghi_chu NVARCHAR(500),
+    FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id)
+);
+
+-- Môn học/Học phần liên kết khối kiến thức (FK trực tiếp)
+CREATE TABLE MonHoc (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    id_khoi_kien_thuc INT,
+    id_ctdt INT,
+    ma_mon VARCHAR(50),
+    ten_mon NVARCHAR(255),
+    so_tin_chi INT,
+    loai_hoc_phan NVARCHAR(50),
+    dieu_kien_tien_quyet NVARCHAR(255),
+    hoc_ki_to_chuc INT,
+    ghi_chu NVARCHAR(500),
+    FOREIGN KEY (id_khoi_kien_thuc) REFERENCES KhoiKienThuc(id),
+    FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id)
 );
 
 CREATE TABLE SinhVien (
@@ -480,6 +533,9 @@ ALTER TABLE KetQuaHocTap ADD CONSTRAINT FK_KQHT_SinhVien FOREIGN KEY (id_sinh_vi
 ALTER TABLE ChuongTrinhDaoTao ADD CONSTRAINT FK_CTDT_Nganh FOREIGN KEY (id_nganh) REFERENCES Nganh(id);
 ALTER TABLE ChuongTrinhDaoTao ADD CONSTRAINT FK_CTDT_KhoaHoc FOREIGN KEY (id_khoa_hoc) REFERENCES KhoaHoc(id);
 ALTER TABLE ChiTiet_CTDT ADD CONSTRAINT FK_CTDT_ChiTiet FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id);
+ALTER TABLE KhoiKienThuc ADD CONSTRAINT FK_KhoiKienThuc_CTDT FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id);
+ALTER TABLE MonHoc ADD CONSTRAINT FK_MonHoc_KhoiKienThuc FOREIGN KEY (id_khoi_kien_thuc) REFERENCES KhoiKienThuc(id);
+ALTER TABLE MonHoc ADD CONSTRAINT FK_MonHoc_CTDT FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id);
 
 -- 5. Đợt & Đề tài
 ALTER TABLE DotDoAn ADD CONSTRAINT FK_Dot_KhoaHoc FOREIGN KEY (id_khoa_hoc) REFERENCES KhoaHoc(id);
@@ -622,17 +678,17 @@ INSERT INTO Nganh (ma_nganh, ten_nganh, ten_viet_tat, id_nguoi_tao, ngay_tao, id
 ('7480108', N'Trí tuệ nhân tạo', N'AI', 1, '2023-03-01', NULL, NULL, 6);
 
 -- 3.6 CHUYÊN NGÀNH
-INSERT INTO ChuyenNganh (stt, ten_chuyen_nganh, ten_viet_tat, id_nguoi_tao, ngay_tao, id_nguoi_sua, ngay_sua, id_nganh, id_bo_mon) VALUES 
-(1, N'Công nghệ Web', N'Web', 1, '2023-05-01', NULL, NULL, 3, 1),
-(2, N'Lập trình thiết bị di động', N'Mobile', 1, '2023-05-01', NULL, NULL, 3, 1),
-(3, N'Kiểm thử phần mềm', N'Tester', 1, '2023-05-01', 2, '2023-09-12', 3, 1),
-(1, N'Hệ thống thông tin quản lý', N'MIS', 1, '2023-05-05', NULL, NULL, 4, 2),
-(2, N'Phân tích dữ liệu kinh doanh', N'BA', 1, '2023-05-05', NULL, NULL, 4, 2),
-(1, N'Quản trị mạng doanh nghiệp', N'NetAdmin', 1, '2023-06-01', NULL, NULL, 2, 4),
-(2, N'Điện toán đám mây', N'Cloud', 1, '2023-06-01', NULL, NULL, 2, 4),
-(1, N'Điều tra số', N'Forensic', 1, '2023-06-10', 3, '2023-11-20', 6, 5),
-(2, N'Đánh giá an toàn hệ thống', N'Pentest', 1, '2023-06-10', NULL, NULL, 6, 5),
-(1, N'Trí tuệ nhân tạo ứng dụng', N'AI-App', 1, '2023-07-01', NULL, NULL, 1, 3);
+INSERT INTO ChuyenNganh (stt, ma_chuyen_nganh, ten_chuyen_nganh, ten_viet_tat, id_nguoi_tao, ngay_tao, id_nguoi_sua, ngay_sua, id_nganh, id_bo_mon) VALUES 
+(1, 'CN_WEB', N'Công nghệ Web', N'Web', 1, '2023-05-01', NULL, NULL, 3, 1),
+(2, 'CN_MOBILE', N'Lập trình thiết bị di động', N'Mobile', 1, '2023-05-01', NULL, NULL, 3, 1),
+(3, 'CN_TEST', N'Kiểm thử phần mềm', N'Tester', 1, '2023-05-01', 2, '2023-09-12', 3, 1),
+(1, 'CN_MIS', N'Hệ thống thông tin quản lý', N'MIS', 1, '2023-05-05', NULL, NULL, 4, 2),
+(2, 'CN_BA', N'Phân tích dữ liệu kinh doanh', N'BA', 1, '2023-05-05', NULL, NULL, 4, 2),
+(1, 'CN_NET', N'Quản trị mạng doanh nghiệp', N'NetAdmin', 1, '2023-06-01', NULL, NULL, 2, 4),
+(2, 'CN_CLOUD', N'Điện toán đám mây', N'Cloud', 1, '2023-06-01', NULL, NULL, 2, 4),
+(1, 'CN_FORENSIC', N'Điều tra số', N'Forensic', 1, '2023-06-10', 3, '2023-11-20', 6, 5),
+(2, 'CN_PENTEST', N'Đánh giá an toàn hệ thống', N'Pentest', 1, '2023-06-10', NULL, NULL, 6, 5),
+(1, 'CN_AIAPP', N'Trí tuệ nhân tạo ứng dụng', N'AI-App', 1, '2023-07-01', NULL, NULL, 1, 3);
 
 -- 3.7 KHÓA HỌC
 INSERT INTO KhoaHoc (ma_khoa, ten_khoa, nam_nhap_hoc, nam_tot_nghiep, trang_thai) VALUES 
@@ -708,6 +764,31 @@ INSERT INTO ChiTiet_CTDT (id_ctdt, stt, ma_hoc_phan, ten_hoc_phan, so_tin_chi, l
 (@id_k28, 3, 'COMP1002', N'Kỹ thuật Lập trình', 3, N'Bắt buộc', N'COMP1001', 2),
 (@id_k28, 4, 'MATH1002', N'Toán rời rạc', 3, N'Bắt buộc', NULL, 2),
 (@id_k28, 5, 'COMP2001', N'Cấu trúc dữ liệu và Giải thuật', 4, N'Bắt buộc', N'COMP1002', 3);
+
+-- 3.12B KHỐI KIẾN THỨC & MÔN HỌC (mẫu theo logic import)
+DECLARE @khoi_cb INT, @khoi_chuyen INT, @khoi_tuchon INT;
+INSERT INTO KhoiKienThuc (id_ctdt, ten_khoi, tong_tin_chi, ghi_chu)
+VALUES (@id_k27, N'Khối kiến thức đại cương', 18, N'Tiêu đề khối với tổng TC nằm ở cột E (Case A)');
+SET @khoi_cb = SCOPE_IDENTITY();
+
+INSERT INTO KhoiKienThuc (id_ctdt, ten_khoi, tong_tin_chi, ghi_chu)
+VALUES (@id_k27, N'Khối chuyên ngành bắt buộc', 30, N'Case A, tên khối lấy từ cột B, bỏ phần trong ngoặc');
+SET @khoi_chuyen = SCOPE_IDENTITY();
+
+INSERT INTO KhoiKienThuc (id_ctdt, ten_khoi, tong_tin_chi, ghi_chu)
+VALUES (@id_k27, N'Khối tự chọn (tính từ cột B)', 4, N'Case C: tổng tín chỉ cộng dồn từ cột B');
+SET @khoi_tuchon = SCOPE_IDENTITY();
+
+INSERT INTO MonHoc (id_khoi_kien_thuc, id_ctdt, ma_mon, ten_mon, so_tin_chi, loai_hoc_phan, hoc_ki_to_chuc)
+VALUES
+(@khoi_cb, @id_k27, 'COMP1001', N'Nhập môn lập trình', 3, N'Bắt buộc', 1),
+(@khoi_cb, @id_k27, 'MATH1001', N'Giải tích 1', 3, N'Bắt buộc', 1),
+(@khoi_cb, @id_k27, 'PHYS1001', N'Vật lý đại cương', 4, N'Bắt buộc', 1),
+(@khoi_chuyen, @id_k27, 'COMP2001', N'Cấu trúc dữ liệu', 4, N'Bắt buộc', 3),
+(@khoi_chuyen, @id_k27, 'COMP2002', N'Kiến trúc máy tính', 3, N'Bắt buộc', 3),
+(@khoi_chuyen, @id_k27, 'COMP3001', N'Lập trình Web', 3, N'Bắt buộc', 5),
+(@khoi_tuchon, @id_k27, 'ELECT01', N'Chuyên đề tự chọn 1', 2, N'Tự chọn', 5),
+(@khoi_tuchon, @id_k27, 'ELECT02', N'Chuyên đề tự chọn 2', 2, N'Tự chọn', 5);
 
 -- 3.13 KẾT QUẢ HỌC TẬP
 INSERT INTO KetQuaHocTap (id_sinh_vien, stt, ma_hoc_phan, ten_hoc_phan, so_tc, diem_so, diem_chu, tong_so_tin_chi, GPA, ket_qua) VALUES 

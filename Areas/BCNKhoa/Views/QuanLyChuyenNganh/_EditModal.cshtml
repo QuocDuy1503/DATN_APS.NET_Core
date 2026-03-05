@@ -11,8 +11,8 @@
             
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Mã chuyên ngành (STT) <span class="required">*</span></label>
-                    <input type="number" name="Stt" id="editStt" class="form-control" required>
+                    <label>Mã chuyên ngành <span class="required">*</span></label>
+                    <input type="text" name="MaChuyenNganh" id="editMaChuyenNganh" class="form-control" maxlength="20" placeholder="Nhập mã chuyên ngành (ví dụ: CN_CNTT)" required>
                 </div>
                 
                 <div class="form-group">
@@ -75,7 +75,7 @@
             
             if (result.success) {
                 document.getElementById('editId').value = result.data.id;
-                document.getElementById('editStt').value = result.data.stt || '';
+                document.getElementById('editMaChuyenNganh').value = result.data.maChuyenNganh || '';
                 document.getElementById('editTenChuyenNganh').value = result.data.tenChuyenNganh || '';
                 document.getElementById('editTenVietTat').value = result.data.tenVietTat || '';
                 document.getElementById('editIdNganh').value = result.data.idNganh || '';

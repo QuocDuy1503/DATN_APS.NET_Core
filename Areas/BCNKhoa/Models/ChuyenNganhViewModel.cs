@@ -6,7 +6,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Models
     {
         public int Id { get; set; }
 
-        public int? Stt { get; set; }
+        public string MaChuyenNganh { get; set; }
 
         public string TenChuyenNganh { get; set; }
 

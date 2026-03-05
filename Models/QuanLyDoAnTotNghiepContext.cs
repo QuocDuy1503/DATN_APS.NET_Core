@@ -57,9 +57,13 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
 
     public virtual DbSet<KhoaHoc> KhoaHocs { get; set; }
 
+    public virtual DbSet<KhoiKienThuc> KhoiKienThucs { get; set; }
+
     public virtual DbSet<LichSuGuiEmail> LichSuGuiEmails { get; set; }
 
     public virtual DbSet<LoaiPhieuCham> LoaiPhieuChams { get; set; }
+
+    public virtual DbSet<MonHoc> MonHocs { get; set; }
 
     public virtual DbSet<MauThongBao> MauThongBaos { get; set; }
 
@@ -738,6 +742,57 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.TrangThai)
                 .HasDefaultValue(true)
                 .HasColumnName("trang_thai");
+        });
+
+        modelBuilder.Entity<KhoiKienThuc>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("KhoiKienThuc");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.GhiChu).HasColumnName("ghi_chu");
+            entity.Property(e => e.IdCtdt).HasColumnName("id_ctdt");
+            entity.Property(e => e.TenKhoi)
+                .HasMaxLength(200)
+                .HasColumnName("ten_khoi");
+            entity.Property(e => e.TongTinChi).HasColumnName("tong_tin_chi");
+
+            entity.HasOne(d => d.IdCtdtNavigation).WithMany(p => p.KhoiKienThucs)
+                .HasForeignKey(d => d.IdCtdt)
+                .HasConstraintName("FK_KhoiKienThuc_CTDT");
+        });
+
+        modelBuilder.Entity<MonHoc>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("MonHoc");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.DieuKienTienQuyet).HasColumnName("dieu_kien_tien_quyet");
+            entity.Property(e => e.GhiChu).HasColumnName("ghi_chu");
+            entity.Property(e => e.HocKiToChuc).HasColumnName("hoc_ki_to_chuc");
+            entity.Property(e => e.IdCtdt).HasColumnName("id_ctdt");
+            entity.Property(e => e.IdKhoiKienThuc).HasColumnName("id_khoi_kien_thuc");
+            entity.Property(e => e.LoaiHocPhan)
+                .HasMaxLength(50)
+                .HasColumnName("loai_hoc_phan");
+            entity.Property(e => e.MaMon)
+                .HasMaxLength(50)
+                .HasColumnName("ma_mon");
+            entity.Property(e => e.SoTinChi).HasColumnName("so_tin_chi");
+            entity.Property(e => e.TenMon)
+                .HasMaxLength(255)
+                .HasColumnName("ten_mon");
+
+            entity.HasOne(d => d.IdKhoiKienThucNavigation).WithMany(p => p.MonHocs)
+                .HasForeignKey(d => d.IdKhoiKienThuc)
+                .HasConstraintName("FK_MonHoc_KhoiKienThuc");
+
+            entity.HasOne(d => d.IdCtdtNavigation).WithMany(p => p.MonHocs)
+                .HasForeignKey(d => d.IdCtdt)
+                .HasConstraintName("FK_MonHoc_CTDT");
         });
 
         modelBuilder.Entity<LichSuGuiEmail>(entity =>

@@ -48,7 +48,8 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             if (!string.IsNullOrEmpty(searchString))
             {
                 query = query.Where(x => x.cn.TenChuyenNganh.Contains(searchString) ||
-                                         x.cn.TenVietTat.Contains(searchString));
+                                         x.cn.TenVietTat.Contains(searchString) ||
+                                         x.cn.MaChuyenNganh.Contains(searchString));
             }
 
             // SẮP XẾP MỚI NHẤT LÊN ĐẦU
@@ -58,7 +59,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             var modelQuery = query.Select(x => new ChuyenNganhViewModel
             {
                 Id = x.cn.Id,
-                Stt = x.cn.Stt,
+                MaChuyenNganh = x.cn.MaChuyenNganh ?? string.Empty,
                 TenChuyenNganh = x.cn.TenChuyenNganh ?? "",
                 TenVietTat = x.cn.TenVietTat ?? "",
 
@@ -85,7 +86,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 .Select(n => new
                 {
                     n.Id,
-                    n.Stt,
+                    n.MaChuyenNganh,
                     n.TenChuyenNganh,
                     n.TenVietTat,
                     n.IdNganh,
@@ -104,25 +105,35 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         // POST: Create - Thêm chuyên ngành mới
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int? Stt, string TenChuyenNganh, string TenVietTat, int? IdNganh, int? IdBoMon)
+        public async Task<IActionResult> Create(string MaChuyenNganh, string TenChuyenNganh, string TenVietTat, int? IdNganh, int? IdBoMon)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(MaChuyenNganh))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập mã chuyên ngành.";
+                    return RedirectToAction("Index");
+                }
+
+                MaChuyenNganh = MaChuyenNganh.Trim();
+                if (MaChuyenNganh.Length > 20)
+                {
+                    TempData["ErrorMessage"] = "Mã chuyên ngành không được vượt quá 20 ký tự.";
+                    return RedirectToAction("Index");
+                }
+
                 if (string.IsNullOrWhiteSpace(TenChuyenNganh))
                 {
                     TempData["ErrorMessage"] = "Vui lòng nhập tên chuyên ngành.";
                     return RedirectToAction("Index");
                 }
 
-                // Kiểm tra trùng mã (STT) nếu cần thiết
-                if (Stt.HasValue)
+                // Kiểm tra trùng mã
+                var exists = await _context.ChuyenNganhs.AnyAsync(x => x.MaChuyenNganh != null && x.MaChuyenNganh.ToLower() == MaChuyenNganh.ToLower());
+                if (exists)
                 {
-                    var exists = await _context.ChuyenNganhs.AnyAsync(x => x.Stt == Stt);
-                    if (exists)
-                    {
-                        TempData["ErrorMessage"] = $"Mã chuyên ngành (STT) '{Stt}' đã tồn tại.";
-                        return RedirectToAction("Index");
-                    }
+                    TempData["ErrorMessage"] = $"Mã chuyên ngành '{MaChuyenNganh}' đã tồn tại.";
+                    return RedirectToAction("Index");
                 }
 
                 int? idNguoiTao = null;
@@ -135,7 +146,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
                 var chuyenNganh = new ChuyenNganh
                 {
-                    Stt = Stt,
+                    MaChuyenNganh = MaChuyenNganh,
                     TenChuyenNganh = TenChuyenNganh.Trim(),
                     TenVietTat = TenVietTat?.Trim(),
                     IdNganh = IdNganh,
@@ -160,10 +171,23 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         // POST: Edit - Cập nhật chuyên ngành
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int Id, int? Stt, string TenChuyenNganh, string TenVietTat, int? IdNganh, int? IdBoMon)
+        public async Task<IActionResult> Edit(int Id, string MaChuyenNganh, string TenChuyenNganh, string TenVietTat, int? IdNganh, int? IdBoMon)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(MaChuyenNganh))
+                {
+                    TempData["ErrorMessage"] = "Vui lòng nhập mã chuyên ngành.";
+                    return RedirectToAction("Index");
+                }
+
+                MaChuyenNganh = MaChuyenNganh.Trim();
+                if (MaChuyenNganh.Length > 20)
+                {
+                    TempData["ErrorMessage"] = "Mã chuyên ngành không được vượt quá 20 ký tự.";
+                    return RedirectToAction("Index");
+                }
+
                 if (string.IsNullOrWhiteSpace(TenChuyenNganh))
                 {
                     TempData["ErrorMessage"] = "Vui lòng nhập tên chuyên ngành.";
@@ -177,15 +201,11 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // Kiểm tra trùng mã (STT) trừ bản ghi hiện tại
-                if (Stt.HasValue)
+                var exists = await _context.ChuyenNganhs.AnyAsync(x => x.MaChuyenNganh != null && x.MaChuyenNganh.ToLower() == MaChuyenNganh.ToLower() && x.Id != Id);
+                if (exists)
                 {
-                    var exists = await _context.ChuyenNganhs.AnyAsync(x => x.Stt == Stt && x.Id != Id);
-                    if (exists)
-                    {
-                        TempData["ErrorMessage"] = $"Mã chuyên ngành (STT) '{Stt}' đã tồn tại.";
-                        return RedirectToAction("Index");
-                    }
+                    TempData["ErrorMessage"] = $"Mã chuyên ngành '{MaChuyenNganh}' đã tồn tại.";
+                    return RedirectToAction("Index");
                 }
 
                 int? idNguoiSua = null;
@@ -196,7 +216,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     idNguoiSua = nguoiDung?.Id;
                 }
 
-                chuyenNganh.Stt = Stt;
+                chuyenNganh.MaChuyenNganh = MaChuyenNganh;
                 chuyenNganh.TenChuyenNganh = TenChuyenNganh.Trim();
                 chuyenNganh.TenVietTat = TenVietTat?.Trim();
                 chuyenNganh.IdNganh = IdNganh;
