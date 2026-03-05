@@ -14,28 +14,22 @@ public partial class KeHoachCongViec
     public int? Stt { get; set; }
 
     [Column("id_sinh_vien")]
-    public int? IdSinhVien { get; set; }
+    public int IdSinhVien { get; set; }
 
     [Column("id_dot")]
     public int? IdDot { get; set; }
 
-    [Column("tuan")]
-    public int? Tuan { get; set; }
+    [Column("ngay_bat_dau")]
+    public DateOnly? NgayBatDau { get; set; }
 
-    [Column("thu_trong_tuan")]
-    public byte? ThuTrongTuan { get; set; }
+    [Column("ngay_ket_thuc")]
+    public DateOnly? NgayKetThuc { get; set; }
 
-    [Column("gio_bat_dau")]
-    public TimeOnly? GioBatDau { get; set; }
+    [Column("ngay_bat_dau_thuc_te")]
+    public DateOnly? NgayBatDauThucTe { get; set; }
 
-    [Column("gio_ket_thuc")]
-    public TimeOnly? GioKetThuc { get; set; }
-
-    [Column("gio_bat_dau_thuc_te")]
-    public TimeOnly? GioBatDauThucTe { get; set; }
-
-    [Column("gio_ket_thuc_thuc_te")]
-    public TimeOnly? GioKetThucThucTe { get; set; }
+    [Column("ngay_ket_thuc_thuc_te")]
+    public DateOnly? NgayKetThucThucTe { get; set; }
 
     [Column("ten_cong_viec")]
     public string? TenCongViec { get; set; }
@@ -45,6 +39,9 @@ public partial class KeHoachCongViec
 
     [Column("trang_thai")]
     public string? TrangThai { get; set; }
+
+    [Column("ghi_chu")]
+    public string? GhiChu { get; set; }
 
     [Column("id_file_minh_chung")]
     public int? IdFileMinhChung { get; set; }

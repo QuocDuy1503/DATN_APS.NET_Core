@@ -152,6 +152,12 @@ namespace DATN_TMS.Migrations
                         .HasColumnType("date")
                         .HasColumnName("ngay_tao");
 
+                    b.Property<string>("MaChuyenNganh")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("ma_chuyen_nganh");
+
                     b.Property<int?>("Stt")
                         .HasColumnType("int")
                         .HasColumnName("stt");
@@ -432,6 +438,10 @@ namespace DATN_TMS.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK__ChuyenNg__3213E83F894A4D66");
+
+                    b.HasIndex("MaChuyenNganh")
+                        .IsUnique()
+                        .HasFilter("[ma_chuyen_nganh] IS NOT NULL");
 
                     b.HasIndex("IdBoMon");
 

@@ -304,6 +304,8 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
 
             entity.ToTable("ChuyenNganh");
 
+            entity.HasIndex(e => e.MaChuyenNganh).IsUnique();
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.IdBoMon).HasColumnName("id_bo_mon");
             entity.Property(e => e.IdNganh).HasColumnName("id_nganh");
@@ -311,6 +313,10 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdNguoiTao).HasColumnName("id_nguoi_tao");
             entity.Property(e => e.NgaySua).HasColumnName("ngay_sua");
             entity.Property(e => e.NgayTao).HasColumnName("ngay_tao");
+            entity.Property(e => e.MaChuyenNganh)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasColumnName("ma_chuyen_nganh");
             entity.Property(e => e.Stt).HasColumnName("stt");
             entity.Property(e => e.TenChuyenNganh)
                 .HasMaxLength(100)
@@ -641,13 +647,12 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.IdDot).HasColumnName("id_dot");
             entity.Property(e => e.IdFileMinhChung).HasColumnName("id_file_minh_chung");
             entity.Property(e => e.IdSinhVien).HasColumnName("id_sinh_vien");
-            entity.Property(e => e.Tuan).HasColumnName("tuan");
-            entity.Property(e => e.ThuTrongTuan).HasColumnName("thu_trong_tuan");
-            entity.Property(e => e.GioBatDau).HasColumnName("gio_bat_dau");
-            entity.Property(e => e.GioKetThuc).HasColumnName("gio_ket_thuc");
-            entity.Property(e => e.GioBatDauThucTe).HasColumnName("gio_bat_dau_thuc_te");
-            entity.Property(e => e.GioKetThucThucTe).HasColumnName("gio_ket_thuc_thuc_te");
+            entity.Property(e => e.NgayBatDau).HasColumnName("ngay_bat_dau");
+            entity.Property(e => e.NgayKetThuc).HasColumnName("ngay_ket_thuc");
+            entity.Property(e => e.NgayBatDauThucTe).HasColumnName("ngay_bat_dau_thuc_te");
+            entity.Property(e => e.NgayKetThucThucTe).HasColumnName("ngay_ket_thuc_thuc_te");
             entity.Property(e => e.MoTaCongViec).HasColumnName("mo_ta_cong_viec");
+            entity.Property(e => e.GhiChu).HasColumnName("ghi_chu");
             entity.Property(e => e.Stt).HasColumnName("stt");
             entity.Property(e => e.TenCongViec)
                 .HasMaxLength(200)

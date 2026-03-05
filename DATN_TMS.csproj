@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dafc733e-63e5-4e57-874d-29a845bfb938</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,6 +51,11 @@
     </PackageReference>
     <PackageReference Include="X.PagedList.Mvc.Core" Version="10.5.9" />
     <PackageReference Include="ClosedXML" Version="0.104.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\BCNKhoa\Views\ImportDiem\" />
+    <Folder Include="Views\ImportDiem\" />
   </ItemGroup>
 
 </Project>

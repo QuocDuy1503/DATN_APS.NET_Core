@@ -1,0 +1,438 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+}
+@{
+    ViewData["Title"] = "Sinh viên";
+}
+<div class="content-body">
+
+    <div class="detail-container">
+
+        <div class="info-section">
+
+            <div class="form-header">
+                <a href="QLDDA_Dangkidetai.html" class="btn-back-circle" title="Quay lại danh sách">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <h3 class="form-title">Chi tiết báo cáo</h3>
+            </div>
+
+
+
+            <div style="display: flex; gap: 20px;">
+
+                <div class="detail-group" style="flex: 1;">
+                    <label>Tên báo cáo:</label>
+                    <input type="text"
+                           class="detail-control detail-control--sm"
+                           value="Đề cương"
+                           readonly>
+                </div>
+            </div>
+
+            <div class="detail-group" style="flex: 1;">
+                <label>Hạn nộp:</label>
+                <input type="text"
+                       class="detail-control detail-control--sm"
+                       value="23:59 - Thứ Sáu, 15/03/2026"
+                       readonly>
+            </div>
+
+            <div class="detail-group">
+                <label>Yêu cầu:</label>
+
+                <input type="text"
+                       class="detail-control detail-control--sm"
+                       value="Nộp file PDF báo cáo tiến độ (2–5 trang)"
+                       readonly>
+            </div>
+            <div class="divider-text"><span></span></div>
+            <!-- Nộp file -->
+            <div class="upload-card">
+                <div class="upload-row">
+                    <div class="upload-field">
+                        <label>Chọn tệp nộp</label>
+
+                        <input type="file" id="submitFile" class="upload-fileInput"
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.png,.jpg,.jpeg" />
+
+                        <div class="upload-fileUi">
+                            <span id="submitFileName" class="upload-fileName">Chưa chọn file</span>
+                            <button type="button" id="btnPickSubmitFile" class="upload-btn">
+                                <i class="fa-solid fa-paperclip"></i> Chọn file
+                            </button>
+                            <button type="button" id="btnClearSubmitFile" class="upload-btn upload-btn--danger">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="upload-actions">
+                    <button type="button" class="upload-submit" id="btnSubmit">
+                        <i class="fa-solid fa-upload"></i> Nộp bài
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<Style>
+    .field {
+        margin-bottom: 14px;
+    }
+
+        .field label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #111827;
+        }
+
+            .field label span {
+                color: #dc2626;
+            }
+
+        .field textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            background-color: #f3f4f6; /* giống ảnh */
+            resize: none;
+            font-size: 14px;
+        }
+
+            .field textarea:focus {
+                outline: none;
+                border-color: #2563eb;
+                background-color: #ffffff;
+                box-shadow: 0 0 0 3px rgba(37,99,235,.18);
+            }
+
+    .divider-text {
+        display: flex;
+        align-items: center;
+        margin: 28px 0;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+        .divider-text::before,
+        .divider-text::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider-text span {
+            padding: 0 12px;
+        }
+    /* ====== NỘP FILE (UPLOAD) ====== */
+    .upload-card {
+        margin-top: 14px;
+        padding: 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background: #ffffff;
+    }
+
+    .upload-row {
+        margin-bottom: 14px;
+    }
+
+    .upload-field label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #111827;
+        font-size: 14px;
+    }
+
+    /* Ẩn input file gốc */
+    .upload-fileInput {
+        display: none;
+    }
+
+    /* dòng UI chọn file */
+    .upload-fileUi {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* ô hiển thị tên file giống detail-control */
+    .upload-fileName {
+        flex: 1;
+        min-width: 260px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        background: #f3f4f6;
+        font-size: 14px;
+        color: #111827;
+    }
+
+    /* nút */
+    .upload-btn {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        background: #ffffff;
+        cursor: pointer;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: .15s;
+    }
+
+        .upload-btn:hover {
+            background: #f9fafb;
+        }
+
+    .upload-btn--danger {
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+        .upload-btn--danger:hover {
+            background: #fff1f2;
+        }
+
+    /* hint */
+    .upload-hint {
+        display: block;
+        margin-top: 8px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    /* textarea ghi chú giống detail-control */
+    .upload-textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        background: #f3f4f6;
+        font-size: 14px;
+        resize: vertical;
+        min-height: 90px;
+    }
+
+        .upload-textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.18);
+        }
+
+    /* nút nộp */
+    .upload-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+
+    .upload-submit {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: .15s;
+    }
+
+        .upload-submit:hover {
+            filter: brightness(.95);
+        }
+
+        .upload-submit:active {
+            transform: translateY(1px);
+        }
+
+
+    /* --- BỐ CỤC CHIA 2 CỘT --- */
+    .detail-container {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+    }
+
+
+    .info-section {
+        flex: 7;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Cột tác vụ (Bên phải) */
+    .action-section {
+        flex: 3;
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        position: sticky;
+        top: 20px;
+    }
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .btn-back-circle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background-color: #f3f4f6;
+        color: #555;
+        border-radius: 50%;
+        text-decoration: none;
+        transition: 0.2s;
+        font-size: 14px;
+    }
+
+        .btn-back-circle:hover {
+            background-color: #e5e7eb;
+            color: var(--primary-red);
+            transform: translateX(-2px);
+        }
+
+    .form-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0;
+    }
+
+
+    .detail-group {
+        margin-bottom: 20px;
+    }
+
+        .detail-group label {
+            display: block;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+    .detail-control {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid #bebebe;
+        border-radius: 4px;
+        background-color: #f1f1f1;
+        color: #333;
+        font-size: 14px;
+        resize: none;
+    }
+
+        .detail-control:focus {
+            outline: none;
+            border-color: #ddd;
+        }
+
+    textarea.detail-control {
+        height: 100px;
+        line-height: 1.5;
+    }
+
+
+    .action-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--primary-red);
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .current-status {
+        margin-bottom: 20px;
+        padding: 10px;
+        background: #e6e6e6;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .status-label {
+        font-size: 13px;
+        color: #f8f9fa;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .status-value {
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .feedback-area {
+        margin-bottom: 20px;
+    }
+
+    .feedback-input {
+        width: 100%;
+        height: 120px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        resize: vertical;
+    }
+
+        .feedback-input:focus {
+            border-color: var(--primary-red);
+            outline: none;
+        }
+
+    .feedback-required-msg {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+    }
+
+    /* Buttons */
+    .btn-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+    .detail-control:focus {
+        border-color: #0d6efd !important;
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+</Style>

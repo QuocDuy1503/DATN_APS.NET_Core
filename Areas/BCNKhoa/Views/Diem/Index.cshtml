@@ -1,0 +1,188 @@
+﻿@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "Import Điểm";
+    var hocKyOptions = ViewBag.HocKyList as IEnumerable<SelectListItem> ?? new List<SelectListItem>
+    {
+        new SelectListItem { Text = "-- Chọn học kỳ --", Value = "" },
+        new SelectListItem { Text = "HK1 2024-2025", Value = "HK1_2024_2025" },
+        new SelectListItem { Text = "HK2 2024-2025", Value = "HK2_2024_2025" }
+    };
+}
+
+<style>
+    .content-body { width: 100%; }
+    .content-card { background: #fff; padding: 18px; border-radius: 10px; border: 1px solid #eee; width: 100%; }
+    .page-title { margin: 0; font-family: 'Inter', 'Segoe UI', sans-serif; font-size: 20px; font-weight: 700; color: #2c3e50; text-transform: uppercase; margin-bottom: 20px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+    
+    .form-group { margin-bottom: 14px; }
+    .form-group label { font-weight: 600; font-size: 13px; color: #333; display: block; margin-bottom: 6px; }
+    .form-control, select { width: 100%; border: 1px solid #dcdcdc; border-radius: 6px; padding: 8px 10px; font-size: 13px; background-color: #fff; color: #333; }
+    .form-control:focus, select:focus { outline: none; border-color: #8A2BE2; box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1); }
+    
+    .dropzone { border: 2px dashed #a5b4fc; background: #f8fafc; border-radius: 12px; padding: 28px; text-align: center; transition: all 0.2s ease; cursor: pointer; }
+    .dropzone:hover, .dropzone.dragover { border-color: #8A2BE2; background: #f3f0ff; box-shadow: 0 8px 24px rgba(138, 43, 226, 0.12); }
+    .dropzone-content { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #4b5563; }
+    .dropzone .icon { font-size: 40px; }
+    .dropzone .headline { font-size: 18px; font-weight: 700; margin: 0; color: #111827; }
+    .dropzone .subtext { margin: 0; font-size: 13px; color: #6b7280; }
+    .file-info { margin-top: 8px; font-size: 13px; color: #374151; }
+    
+    .status-area { min-height: 28px; margin-bottom: 12px; font-size: 13px; }
+    .status-area.error { color: #b91c1c; }
+    .status-area.success { color: #0f5132; }
+    
+    .btn-actions { display: flex; gap: 12px; margin-top: 18px; justify-content: flex-end; flex-wrap: wrap; }
+    .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; border: none; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.15s ease; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-purple { background-color: #8A2BE2; color: white; }
+    .btn-purple:hover:not(:disabled) { background-color: #7b27cc; }
+    .btn-ghost { background: #f3f0ff; color: #7b27cc; border: 1px solid #e7dfff; border-radius: 6px; padding: 8px 14px; }
+    .btn-ghost:hover { background: #e7dfff; }
+    
+    .note { font-size: 12px; color: #666; margin-top: 6px; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <div class="toolbar">
+            <div>
+                <h2 class="page-title">Import Điểm</h2>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" asp-controller="Diem" asp-action="Import" id="importForm">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label for="hocKySelect">Học kỳ</label>
+                <select id="hocKySelect" name="hocKy" class="form-control">
+                    @foreach (var hk in hocKyOptions)
+                    {
+                        <option value="@hk.Value">@hk.Text</option>
+                    }
+                </select>
+            </div>
+
+            <div id="statusArea" class="status-area" role="alert" aria-live="polite"></div>
+
+            <div class="dropzone" id="dropzone">
+                <input type="file" id="fileInput" name="file" accept=".csv,.xls,.xlsx" hidden />
+                <div class="dropzone-content">
+                    <div class="icon">📤</div>
+                    <p class="headline">Kéo thả file điểm vào đây</p>
+                    <p class="subtext">Hỗ trợ định dạng .csv, .xls, .xlsx (≤ 10MB)</p>
+                    <button type="button" class="btn btn-purple" id="btnChoose">Chọn file</button>
+                    <div class="file-info" id="fileInfo">Chưa chọn file</div>
+                </div>
+            </div>
+
+            <div class="btn-actions">
+                <button type="submit" class="btn btn-purple" id="btnImport" disabled><i class="fa-solid fa-floppy-disk"></i> Import</button>
+                <button type="button" class="btn btn-ghost" id="btnReset">Reset</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const btnChoose = document.getElementById('btnChoose');
+    const btnImport = document.getElementById('btnImport');
+    const btnReset = document.getElementById('btnReset');
+    const fileInfo = document.getElementById('fileInfo');
+    const statusArea = document.getElementById('statusArea');
+    const form = document.getElementById('importForm');
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    const allowedExt = ['.csv', '.xls', '.xlsx'];
+
+    function setStatus(message, type) {
+        statusArea.textContent = message || '';
+        statusArea.className = 'status-area' + (type ? ' ' + type : '');
+    }
+
+    function getExtension(fileName) {
+        const idx = fileName.lastIndexOf('.');
+        return idx >= 0 ? fileName.substring(idx).toLowerCase() : '';
+    }
+
+    function validateFile(file) {
+        if (!file) return false;
+        const ext = getExtension(file.name);
+        if (!allowedExt.includes(ext)) {
+            setStatus('Định dạng không hợp lệ. Chỉ chấp nhận .csv, .xls, .xlsx', 'error');
+            return false;
+        }
+        if (file.size > MAX_SIZE) {
+            setStatus('Kích thước file vượt quá 10MB', 'error');
+            return false;
+        }
+        return true;
+    }
+
+    function updateFileInfo(file) {
+        if (!file) {
+            fileInfo.textContent = 'Chưa chọn file';
+            btnImport.disabled = true;
+            return;
+        }
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        fileInfo.textContent = `${file.name} (${sizeMb} MB)`;
+        btnImport.disabled = !validateFile(file);
+        if (!btnImport.disabled) setStatus('', '');
+    }
+
+    dropzone.addEventListener('click', () => fileInput.click());
+    btnChoose.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (validateFile(file)) {
+            updateFileInfo(file);
+        } else {
+            fileInput.value = '';
+            updateFileInfo(null);
+        }
+    });
+
+    ['dragenter', 'dragover'].forEach(evt => {
+        dropzone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.add('dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+        dropzone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzone.classList.remove('dragover');
+        });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files[0];
+        if (validateFile(file)) {
+            fileInput.files = e.dataTransfer.files;
+            updateFileInfo(file);
+        } else {
+            fileInput.value = '';
+            updateFileInfo(null);
+        }
+    });
+
+    btnReset.addEventListener('click', () => {
+        fileInput.value = '';
+        updateFileInfo(null);
+        setStatus('', '');
+    });
+
+    form.addEventListener('submit', () => {
+        btnImport.disabled = true;
+        btnImport.textContent = 'Đang import...';
+    });
+})();
+</script>

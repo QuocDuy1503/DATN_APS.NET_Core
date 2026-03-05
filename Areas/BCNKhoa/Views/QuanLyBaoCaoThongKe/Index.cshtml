@@ -1,0 +1,153 @@
+﻿@model DATN_TMS.Areas.BCNKhoa.Models.BaoCaoThongKeViewModel
+
+@{
+    ViewData["Title"] = "Thống kê tổng hợp";
+}
+
+<style>
+    .content-body { width: 100%; }
+    .content-card { background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0 0 20px 0; text-transform: uppercase; }
+
+    /* Toolbar & Filter */
+    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+    .toolbar-left { display: flex; gap: 20px; align-items: flex-end; }
+    .filter-item { display: flex; flex-direction: column; }
+    .filter-label { font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; }
+    
+    select.form-control { 
+        padding: 8px 12px; 
+        border: 1px solid #ddd; 
+        border-radius: 4px; 
+        font-size: 13px; 
+        min-width: 220px; 
+        background-color: #ffffff !important; 
+        color: #333 !important; 
+        height: 38px;
+    }
+    select.form-control:focus { outline: none; border-color: #484BE0; }
+
+    /* Stat Cards */
+    .stats-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-card { display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 12px 16px; min-width: 160px; flex: 1; cursor: pointer; transition: all 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .stat-info h3 { font-size: 20px; font-weight: 700; margin: 0; color: #2c3e50; }
+    .stat-info p { font-size: 12px; color: #666; margin: 4px 0 0 0; }
+    .stat-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; color: white; }
+    
+    /* Màu icon theo loại */
+    .bg-sv { background: #17a2b8; } /* Xanh nước */
+    .bg-dt { background: #fd7e14; } /* Cam */
+    .bg-task { background: #6f42c1; } /* Tím */
+    .bg-progress { background: #198754; } /* Xanh lá */
+
+    /* Progress bar */
+    .progress-bar { width: 100%; height: 8px; background: #e5e7eb; border-radius: 12px; overflow: hidden; margin-top: 6px; }
+    .progress-fill { height: 100%; background: #484BE0; border-radius: 12px; transition: width 0.3s ease; }
+
+    /* Table */
+    .table-responsive { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th { background-color: #f8f9fa; padding: 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #eee; font-size: 13px; color: #444; white-space: nowrap; }
+    td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 13px; color: #333; }
+    tr:hover { background-color: #f9f9f9; }
+    
+    .no-data { padding: 30px; text-align: center; color: #999; }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title">Thống kê tổng hợp</h2>
+
+        <!-- Toolbar with Filter -->
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <label class="filter-label">Chọn đợt:</label>
+                    <form method="get" style="display: flex; align-items: center; gap: 8px;">
+                        <select name="dotId" class="form-control" onchange="this.form.submit()">
+                            @foreach (var opt in Model.DotOptions)
+                            {
+                                <option value="@opt.Value" selected="@(opt.Value == Model.SelectedDotId)">@opt.Text</option>
+                            }
+                        </select>
+                        <noscript><button type="submit" style="padding: 8px 14px; border-radius: 4px; background: #484BE0; color: white; border: none; cursor: pointer; font-weight: 600; height: 38px;">Xem</button></noscript>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>@Model.TongSinhVien</h3>
+                    <p>Tổng sinh viên</p>
+                </div>
+                <div class="stat-icon bg-sv"><i class="fa-solid fa-user-graduate"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>@Model.TongDeTai</h3>
+                    <p>Tổng đề tài</p>
+                </div>
+                <div class="stat-icon bg-dt"><i class="fa-solid fa-book-open"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>@Model.TongTask</h3>
+                    <p>Tổng task</p>
+                </div>
+                <div class="stat-icon bg-task"><i class="fa-solid fa-list-check"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>@Model.TienDoPhanTram.ToString("0.#")%</h3>
+                    <p>Tiến độ tổng thể</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: @Model.TienDoPhanTram.ToString("0.##")%"></div>
+                    </div>
+                </div>
+                <div class="stat-icon bg-progress"><i class="fa-solid fa-medal"></i></div>
+            </div>
+        </div>
+
+        <!-- Progress Table -->
+        <h3 style="font-size: 16px; font-weight: 700; color: #333; margin: 24px 0 12px 0;">Tiến độ đề tài</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Đề tài</th>
+                        <th>Sinh viên</th>
+                        <th>Task</th>
+                        <th style="width: 200px;">Tiến độ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.DeTaiSummaries.Any())
+                    {
+                        foreach (var item in Model.DeTaiSummaries)
+                        {
+                            <tr>
+                                <td>@item.TenDeTai</td>
+                                <td>@item.SinhVien</td>
+                                <td>@item.TaskDone/@item.TaskTotal</td>
+                                <td>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: @item.TienDoPhanTram.ToString("0.##")%"></div>
+                                    </div>
+                                    <span style="font-size: 12px; color: #555;">@item.TienDoPhanTram.ToString("0.#")%</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="4" class="no-data">Không có dữ liệu.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

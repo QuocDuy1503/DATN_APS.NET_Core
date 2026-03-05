@@ -38,7 +38,7 @@ namespace DATN_TMS.Controllers
 
                 if (role == "GIANG_VIEN")
                 {
-                    return RedirectToAction("Index", "QuanLyDotDoAn", new { area = "GiangVien" });
+                    return RedirectToAction("Index", "DeXuatDeTai", new { area = "GiangVien" });
                 }
 
                 if (role == "SINH_VIEN" || role == "SV")
@@ -114,6 +114,12 @@ namespace DATN_TMS.Controllers
                 claims.Add(new Claim(ClaimTypes.Role, "SV"));
             }
 
+            if (roleCode == "GIANG_VIEN")
+            {
+                // Thêm role ngắn để tương thích các controller dùng "GV"
+                claims.Add(new Claim(ClaimTypes.Role, "GV"));
+            }
+
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity),
@@ -139,7 +145,7 @@ namespace DATN_TMS.Controllers
             }
             else if (roleCode == "GIANG_VIEN")
             {
-                return RedirectToAction("Index", "QuanLyDotDoAn", new { area = "GiangVien" });
+                return RedirectToAction("Index", "DeXuatDeTai", new { area = "GiangVien" });
             }
             else if (roleCode == "SINH_VIEN")
             {

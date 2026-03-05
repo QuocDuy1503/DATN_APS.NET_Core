@@ -1,0 +1,144 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+}
+@{
+    ViewData["Title"] = "Giảng viên";
+}
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title" style="margin-bottom: 20px;">Nộp báo cáo</h2>
+
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <span class="filter-label">Năm học</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">2023-2024</option>
+                        <option value="K27">2024-2025</option>
+                        <option value="K28">2025-2026</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">Học kì</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">101</option>
+                        <option value="K27">102</option>
+                        <option value="K28">103</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <span class="filter-label">Tìm kiếm:</span>
+                    <input type="text" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 250px;">
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên báo cáo</th>
+                        <th>Deadline</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>01</td>
+                        <td class="ellipsis-10">Đề cương</td>
+                        <td>01/01/2025 11:59PM</td>
+                        <td><span class="status-badge status-running">Chờ duyệt</span></td>
+                        <td>
+                            <i class="fa-regular fa-eye"></i>
+
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<style>
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+    .modal-dialog {
+        width: 1100px;
+        max-width: 95vw;
+    }
+
+    .modal-body {
+        padding: 20px 24px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+    /* textarea lớn */
+    .textarea-lg {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* textarea vừa */
+    .textarea-md {
+        min-height: 90px;
+        resize: vertical;
+    }
+
+    .modal-dialog textarea {
+        resize: none !important;
+    }
+
+    .btn-submit {
+        padding: 8px 14px;
+        border-radius: 10px;
+        border: 1px solid #2563eb;
+        background: #2563eb;
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: 0.15s ease;
+    }
+
+        .btn-submit:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+</style>

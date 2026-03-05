@@ -1,0 +1,622 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+}
+@{
+    ViewData["Title"] = "Sinh viên";
+}
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title" style="margin-bottom: 20px;">Bảng kế hoạch</h2>
+
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <span class="filter-label">Năm học</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">2023-2024</option>
+                        <option value="K27">2024-2025</option>
+                        <option value="K28">2025-2026</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">Học kì</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">101</option>
+                        <option value="K27">102</option>
+                        <option value="K28">103</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+
+                <button class="btn btn-primary" id="btnOpenTaskModal" type="button">
+                    <i class="fa-solid fa-plus"></i> Thêm công việc
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên công việc</th>
+                        <th>Người thực hiện</th>
+                        <th>Thời hạn dự kiến</th>
+                        <th>Thời hạn thực tế</th>
+                        <th>Ước lượng (hours)</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>Task 1</td>
+                        <td>John Doe</td>
+                        <td>2023-10-01</td>
+                        <td>2023-10-05</td>
+                        <td>8</td>
+                        <td>Đang thực hiện</td>
+                        <td>
+                            <i class="fa-solid fa-eye"></i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay hidden" id="taskModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Thêm công việc</div>
+            <button class="btn-close close-task" type="button">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>Tên công việc</label>
+                <input type="text" id="taskName" class="form-control" placeholder="Nhập tên công việc">
+            </div>
+
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>Người thực hiện</label>
+                <input type="text" id="taskOwner" class="form-control" placeholder="Nhập người thực hiện">
+            </div>
+
+
+            <div class="form-group">
+                <label>Ngày bắt đầu</label>
+                <input type="date" id="taskStart" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>Ngày kết thúc</label>
+                <input type="date" id="taskEnd" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>Mô tả</label>
+                <textarea id="taskDesc" class="form-control textarea-lg" placeholder="Nhập mô tả"></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary close-task" type="button">Hủy</button>
+            <button class="btn btn-save" id="btnSaveTask" type="button">Lưu</button>
+        </div>
+    </div>
+</div>
+<style>
+        /* FIX HIỂN THỊ MODAL THÊM TUẦN */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999; /* QUAN TRỌNG */
+    }
+
+    .modal-overlay.hidden {
+      display: none !important;
+    }
+
+    .week-form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      min-width: 300px;
+    }
+    /* layout toolbar */
+    .toolbar-row{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+    }
+
+    .toolbar-left{
+        display:flex;
+        align-items:center;
+        gap:10px;
+    }
+
+    .toolbar-right{
+        display:flex;
+        align-items:center;
+        gap:10px;
+    }
+
+    /* nút thêm tuần */
+    .btn-week{
+        background:#0d6efd;          /* xanh quản lý */
+        color:#fff;
+        border:none;
+        padding:8px 14px;
+        border-radius:6px;
+        font-weight:500;
+        transition:0.2s;
+    }
+    .btn-week:hover{
+        background:#0b5ed7;
+        transform:translateY(-1px);
+    }
+
+    /* nút thêm công việc */
+    .btn-task{
+        background:#198754;          /* xanh lá hành động */
+        color:#fff;
+        border:none;
+        padding:8px 14px;
+        border-radius:6px;
+        font-weight:500;
+        transition:0.2s;
+    }
+    .btn-task:hover{
+        background:#157347;
+        transform:translateY(-1px);
+    }
+
+    /* icon trong nút */
+    .btn-week i,
+    .btn-task i{
+        margin-right:6px;
+    }
+
+</style>
+
+</div>
+<script>
+    (() => {
+      /* ===================== STORAGE KEYS ===================== */
+      const WEEK_KEY = "weeks_v1";
+      const TASK_KEY = "tasks_v1";
+
+      /* ===================== STATE ===================== */
+      /** week: {id:"W1", number:1, start:"2026-01-01", end:"2026-01-07"} */
+      let weeks = loadJson(WEEK_KEY, []);
+      /** task: {id:1, name, owner, start, endPlan, endActual:"", hours:2, status:"todo", weekId:"W1", desc:""} */
+      let tasks = loadJson(TASK_KEY, []);
+
+      /* ===================== DOM ===================== */
+      // filters
+      const weekSelect = document.getElementById("weekSelect");
+
+      // table body
+      const taskTableBody = document.getElementById("taskTableBody");
+
+      // buttons open
+      const btnOpenWeekModal = document.getElementById("btnOpenWeekModal");
+      const btnOpenTaskModal = document.getElementById("btnOpenTaskModal") || document.getElementById("btnOpenModal");
+
+      // modals
+      const weekModal = document.getElementById("weekModal");
+      const taskModal = document.getElementById("taskModal");
+
+      // week inputs
+      const weekNumberInput = document.getElementById("weekNumber");
+      const startDateInput  = document.getElementById("startDate");
+      const endDateInput    = document.getElementById("endDate");
+      const btnSaveWeek     = document.getElementById("btnSaveWeek");
+
+      // task inputs
+      const taskNameInput  = document.getElementById("taskName");
+      const taskOwnerInput = document.getElementById("taskOwner");
+      const taskStartInput = document.getElementById("taskStart");
+      const taskEndInput   = document.getElementById("taskEnd");
+      const taskWeekSelect = document.getElementById("taskWeek");
+      const taskDescInput  = document.getElementById("taskDesc");
+      const btnSaveTask    = document.getElementById("btnSaveTask");
+
+      // close buttons
+      const closeWeekBtns = document.querySelectorAll(".close-week");
+      const closeTaskBtns = document.querySelectorAll(".close-task");
+
+      /* ===================== GUARD ===================== */
+      // Nếu thiếu DOM quan trọng thì stop (tránh lỗi spam console)
+      if (!weekSelect || !taskTableBody || !weekModal || !taskModal || !taskWeekSelect) {
+        console.warn("Thiếu một số ID cần thiết. Hãy sửa HTML theo chuẩn: weekModal, taskModal, weekSelect, taskWeek, taskTableBody...");
+        return;
+      }
+
+      /* ===================== UTIL ===================== */
+      function loadJson(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch {
+          return fallback;
+        }
+      }
+      function saveJson(key, val) {
+        localStorage.setItem(key, JSON.stringify(val));
+      }
+      function pad2(n) { return String(n).padStart(2, "0"); }
+      function formatDMY(iso) {
+        if (!iso) return "";
+        const [y, m, d] = iso.split("-");
+        return `${d}/${m}/${y}`;
+      }
+      function esc(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function openModal(modal) { modal.classList.remove("hidden"); }
+      function closeModal(modal) { modal.classList.add("hidden"); }
+
+      /* ===================== RENDER WEEKS ===================== */
+      function weekOptionText(w) {
+        // "Tuần 1 (01/01 - 07/01)" - nhìn giống kiểu form
+        const s = w.start ? `${w.start.split("-")[2]}/${w.start.split("-")[1]}` : "";
+        const e = w.end ? `${w.end.split("-")[2]}/${w.end.split("-")[1]}` : "";
+        const extra = (s && e) ? ` (${s} - ${e})` : "";
+        return `Tuần ${w.number}${extra}`;
+      }
+
+      function renderWeekSelects() {
+        // filter (có "Tất cả")
+        const currentFilter = weekSelect.value;
+        weekSelect.innerHTML = `<option value="">-- Tất cả --</option>`;
+        weeks.slice().sort((a,b)=>a.number-b.number).forEach(w => {
+          weekSelect.insertAdjacentHTML("beforeend",
+            `<option value="${esc(w.id)}">${esc(weekOptionText(w))}</option>`
+          );
+        });
+        weekSelect.value = currentFilter; // giữ filter đang chọn nếu còn tồn tại
+
+        // task select
+        const currentTaskWeek = taskWeekSelect.value;
+        taskWeekSelect.innerHTML = `<option value="">-- Chọn tuần --</option>`;
+        weeks.slice().sort((a,b)=>a.number-b.number).forEach(w => {
+          taskWeekSelect.insertAdjacentHTML("beforeend",
+            `<option value="${esc(w.id)}">${esc(weekOptionText(w))}</option>`
+          );
+        });
+        taskWeekSelect.value = currentTaskWeek;
+      }
+
+      /* ===================== TASKS ===================== */
+      function nextTaskId() {
+        const maxId = tasks.reduce((m, t) => Math.max(m, Number(t.id) || 0), 0);
+        return maxId + 1;
+      }
+
+      function renderTasks() {
+        const filterWeek = weekSelect.value;
+
+        const list = filterWeek
+          ? tasks.filter(t => t.weekId === filterWeek)
+          : tasks.slice();
+
+        taskTableBody.innerHTML = "";
+
+        list.forEach(t => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${esc(t.id)}</td>
+            <td title="${esc(t.desc || "")}">${esc(t.name)}</td>
+            <td>${esc(t.owner)}</td>
+            <td>${esc(formatDMY(t.endPlan))}</td>
+            <td>${esc(formatDMY(t.endActual || ""))}</td>
+            <td>${esc(t.hours)} hours</td>
+            <td>
+              <select class="status-select" data-id="${esc(t.id)}" style="width:150px;">
+                <option value="todo"  ${t.status==="todo"?"selected":""}>Chưa thực hiện</option>
+                <option value="doing" ${t.status==="doing"?"selected":""}>Đang thực hiện</option>
+                <option value="wait"  ${t.status==="wait"?"selected":""}>Chờ giảng viên duyệt</option>
+                <option value="done"  ${t.status==="done"?"selected":""}>Đã duyệt</option>
+              </select>
+            </td>
+            <td class="action-more">
+              <button class="btn-ellipsis" data-del="${esc(t.id)}" title="Xóa">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </td>
+          `;
+          taskTableBody.appendChild(tr);
+        });
+      }
+
+      function addTaskFromForm() {
+        const name  = taskNameInput.value.trim();
+        const owner = taskOwnerInput.value.trim();
+        const start = taskStartInput.value;
+        const end   = taskEndInput.value;
+        const weekId= taskWeekSelect.value;
+        const desc  = (taskDescInput?.value || "").trim();
+
+        if (!name || !owner || !start || !end || !weekId) {
+          alert("Vui lòng nhập đầy đủ thông tin công việc");
+          return;
+        }
+        if (end < start) {
+          alert("Ngày kết thúc phải >= ngày bắt đầu");
+          return;
+        }
+
+        const task = {
+          id: nextTaskId(),
+          name,
+          owner,
+          start,
+          endPlan: end,
+          endActual: "",     // chưa có thì để rỗng
+          hours: 2,          // nếu muốn nhập thì bạn thêm input hours
+          status: "todo",
+          weekId,
+          desc
+        };
+
+        tasks.push(task);
+        saveJson(TASK_KEY, tasks);
+
+        // clear form
+        taskNameInput.value = "";
+        taskOwnerInput.value = "";
+        taskStartInput.value = "";
+        taskEndInput.value = "";
+        if (taskDescInput) taskDescInput.value = "";
+
+        closeModal(taskModal);
+        renderTasks();
+      }
+
+      /* ===================== WEEK ADD ===================== */
+      function addWeekFromForm() {
+        const number = Number(weekNumberInput.value);
+        const start  = startDateInput.value;
+        const end    = endDateInput.value;
+
+        if (!number || !start || !end) {
+          alert("Vui lòng nhập đầy đủ thông tin tuần");
+          return;
+        }
+        if (end < start) {
+          alert("Ngày kết thúc phải >= ngày bắt đầu");
+          return;
+        }
+
+        const id = `W${number}`;
+        if (weeks.some(w => w.id === id)) {
+          alert("Tuần này đã tồn tại");
+          return;
+        }
+
+        weeks.push({ id, number, start, end });
+        saveJson(WEEK_KEY, weeks);
+
+        // clear
+        weekNumberInput.value = "";
+        startDateInput.value = "";
+        endDateInput.value = "";
+
+        closeModal(weekModal);
+        renderWeekSelects();
+
+        // auto chọn tuần mới cho form task
+        taskWeekSelect.value = id;
+      }
+
+      /* ===================== EVENTS ===================== */
+      // open modals
+      btnOpenWeekModal?.addEventListener("click", () => openModal(weekModal));
+
+      btnOpenTaskModal?.addEventListener("click", () => {
+        renderWeekSelects(); // đảm bảo luôn mới
+        openModal(taskModal);
+
+        // auto chọn theo filter nếu đang lọc tuần
+        if (weekSelect.value) taskWeekSelect.value = weekSelect.value;
+      });
+
+      // close buttons
+      closeWeekBtns.forEach(btn => btn.addEventListener("click", () => closeModal(weekModal)));
+      closeTaskBtns.forEach(btn => btn.addEventListener("click", () => closeModal(taskModal)));
+
+      // click overlay close
+      weekModal.addEventListener("click", (e) => { if (e.target === weekModal) closeModal(weekModal); });
+      taskModal.addEventListener("click", (e) => { if (e.target === taskModal) closeModal(taskModal); });
+
+      // save
+      btnSaveWeek?.addEventListener("click", addWeekFromForm);
+      btnSaveTask?.addEventListener("click", addTaskFromForm);
+
+      // filter change
+      weekSelect.addEventListener("change", renderTasks);
+
+      // change status + delete
+      document.addEventListener("change", (e) => {
+        const sel = e.target.closest(".status-select");
+        if (!sel) return;
+
+        const id = Number(sel.dataset.id);
+        const t = tasks.find(x => Number(x.id) === id);
+        if (!t) return;
+
+        t.status = sel.value;
+        saveJson(TASK_KEY, tasks);
+      });
+
+      document.addEventListener("click", (e) => {
+        const delBtn = e.target.closest("[data-del]");
+        if (!delBtn) return;
+
+        const id = Number(delBtn.dataset.del);
+        tasks = tasks.filter(t => Number(t.id) !== id);
+        saveJson(TASK_KEY, tasks);
+        renderTasks();
+      });
+
+      /* ===================== INIT ===================== */
+      renderWeekSelects();
+      renderTasks();
+    })();
+        document.addEventListener("DOMContentLoaded", () => {
+      const weekSelect = document.getElementById("weekSelect");
+      const modal = document.getElementById("addModal");
+
+      if (!weekSelect || !modal) {
+        console.error("Không tìm thấy weekSelect hoặc addModal");
+        return;
+      }
+
+      // MỞ FORM KHI CHỌN "THÊM TUẦN"
+      weekSelect.addEventListener("change", () => {
+        if (weekSelect.value === "__add__") {
+          modal.classList.remove("hidden");
+          weekSelect.value = "";
+        }
+      });
+    });
+
+    // ĐÓNG FORM
+    function closeWeekForm() {
+      document.getElementById("addModal").classList.add("hidden");
+    }
+
+    // LƯU TUẦN
+    function saveWeek() {
+      const weekNum = document.getElementById("weekNumber").value;
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+      const select = document.getElementById("weekSelect");
+
+      if (!weekNum || !start || !end) {
+        alert("Nhập đầy đủ thông tin tuần");
+        return;
+      }
+
+      const option = document.createElement("option");
+      option.text = `Tuần ${weekNum} (${start} → ${end})`;
+      option.value = `week-${weekNum}`;
+
+      select.insertBefore(option, select.lastElementChild);
+      select.selectedIndex = select.options.length - 2;
+
+      closeWeekForm();
+    }
+    // ĐỔI MÀU KHI THAY ĐỔI TRẠNG THÁI
+
+    document.querySelectorAll(".status-select").forEach(select => {
+      updateStatusColor(select);
+      select.addEventListener("change", () => updateStatusColor(select));
+    });
+
+    function updateStatusColor(select) {
+      select.classList.remove("todo", "doing", "done");
+      select.classList.add(select.value);
+    }
+    // THÊM CÔNG VIỆC
+    // ===== THÊM CÔNG VIỆC =====
+
+    // MỞ MODAL
+    document.getElementById("btnOpenModal").addEventListener("click", () => {
+      document.getElementById("taskModal").classList.remove("hidden");
+    });
+
+    // ĐÓNG MODAL
+    function closeTaskModal() {
+      document.getElementById("taskModal").classList.add("hidden");
+    }
+
+    // LƯU CÔNG VIỆC → THÊM VÀO BẢNG
+    function saveTask() {
+      const name = document.getElementById("taskName").value.trim();
+      const owner = document.getElementById("taskOwner").value.trim();
+      const start = document.getElementById("taskStart").value;
+      const end = document.getElementById("taskEnd").value;
+      const week = document.getElementById("taskWeek").value;
+
+
+      if (!name || !owner || !start || !end) {
+        alert("Vui lòng nhập đầy đủ thông tin");
+        return;
+      }
+
+      const tbody = document.querySelector(".table-responsive tbody");
+      const newId = tbody.children.length + 1;
+
+      const tr = document.createElement("tr");
+      tr.dataset.week = week;
+      tr.innerHTML = `
+        <td>${newId}</td>
+        <td>${name}</td>
+        <td>${owner}</td>
+        <td>${formatDate(start)}</td>
+        <td>${formatDate(end)}</td>
+        <td>
+          <select class="status-select ${status}">
+            <option value="todo" ${status==="todo"?"selected":""}>Chưa thực hiện</option>
+            <option value="doing" ${status==="doing"?"selected":""}>Đang thực hiện</option>
+            <option value="done" ${status==="done"?"selected":""}>Hoàn thành</option>
+          </select>
+        </td>
+        <td></td>
+      `;
+
+      tbody.appendChild(tr);
+
+      // gán lại màu trạng thái
+      const select = tr.querySelector(".status-select");
+      updateStatusColor(select);
+      select.addEventListener("change", () => updateStatusColor(select));
+
+      closeTaskModal();
+    }
+
+    // FORMAT DATE
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString("vi-VN");
+    }
+    let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    let taskAutoId = Number(localStorage.getItem("taskAutoId")) || 1;
+    document.getElementById("weekSelect").addEventListener("change", function () {
+      const selectedWeek = this.value;
+      const rows = document.querySelectorAll(".table-responsive tbody tr");
+
+      rows.forEach(row => {
+        if (!selectedWeek || row.dataset.week === selectedWeek) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    });
+    const params = new URLSearchParams(window.location.search);
+     const topicId = params.get('topicId');
+
+    // demo
+    document.getElementById('topic-code').innerText = topicId;
+</script>

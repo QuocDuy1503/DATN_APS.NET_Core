@@ -1,0 +1,434 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+}
+@{
+    ViewData["Title"] = "Sinh viên";
+}
+<h2>Trang SinhVien</h2>
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title" style="margin-bottom: 20px;">Nhật ký hướng dẫn</h2>
+
+        <div class="toolbar-row">
+            <div class="toolbar-left">
+                <div class="filter-item">
+                    <span class="filter-label">Năm học</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">2023-2024</option>
+                        <option value="K27">2024-2025</option>
+                        <option value="K28">2025-2026</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">Học kì</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="K26">101</option>
+                        <option value="K27">102</option>
+                        <option value="K28">103</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">Tuần</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="1">Tuần 1</option>
+                        <option value="2">Tuần 2</option>
+                        <option value="3">Tuần 3</option>
+                        <option value="4">Tuần 4</option>
+                        <option value="5">Tuần 5</option>
+                        <option value="6">Tuần 6</option>
+                        <option value="7">Tuần 7</option>
+                        <option value="8">Tuần 8</option>
+                        <option value="9">Tuần 9</option>
+                        <option value="10">Tuần 10</option>
+                        <option value="11">Tuần 11</option>
+                        <option value="12">Tuần 12</option>
+                        <option value="13">Tuần 13</option>
+                        <option value="14">Tuần 14</option>
+                        <option value="15">Tuần 15</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <span class="filter-label">Hình thức họp</span>
+                    <select class="toolbar-input" style="width: 150px;">
+                        <option value="">-- Tất cả --</option>
+                        <option value="On">Online</option>
+                        <option value="Off">Offline</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <span class="filter-label">Tìm kiếm:</span>
+                    <input type="text" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 250px;">
+                </div>
+                <button class="btn btn-primary" id="btnOpenModal">
+                    <i class="fa-solid fa-plus"></i> Tạo nhật ký
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tuần</th>
+                        <th>Ngày</th>
+                        <th>Hình thức họp</th>
+                        <th>Nội dung</th>
+                        <th>Thời gian</th>
+                        <th>Địa điểm </th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tr>
+                    <td>Tuần 1</td>
+                    <td>01/01/2026</td>
+                    <td>Offline</td>
+                    <td>Báo cáo tiến độ</td>
+                    <td>15h30</td>
+                    <td>F__</td>
+                    <td>
+                        <i class="fa-regular fa-pen-to-square"></i>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="addModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Tạo nhật ký hướng dẫn</div>
+            <button class="btn-close close-modal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="modal-body">
+
+                <!-- Date -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ngày họp</label>
+                        <input type="date" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Thời gian</label>
+                        <input type="time" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa điểm</label>
+                        <input type="text" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hình thức họp</label>
+                        <select class="form-control">
+                            <option>Online</option>
+                            <option>Offline</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Attendees -->
+                <div class="form-group">
+                    <label for="attendees">Thành viên tham dự (Attendees)</label>
+                    <textarea id="attendees" class="form-control textarea-md" placeholder="VD: Hoàng Ngọc Cường, Hà Hoàng Nam..."></textarea>
+                </div>
+
+                <!-- Mentor -->
+                <div class="form-group">
+                    <label for="mentor">Mentor / Giảng viên hướng dẫn</label>
+                    <input type="text" id="mentor" class="form-control" placeholder="Tên GVHD">
+                </div>
+
+
+
+                <!-- Objective -->
+                <div class="form-group">
+                    <label for="objective">Mục tiêu buổi họp (Objective of meeting)</label>
+                    <textarea id="objective" class="form-control textarea-md" placeholder="Nêu rõ mục tiêu buổi họp"></textarea>
+                </div>
+
+                <!-- Content -->
+                <div class="form-group">
+                    <label for="content">Nội dung họp (Content)</label>
+                    <textarea id="content" class="form-control textarea-lg" placeholder="Ghi nội dung trao đổi, quyết định, kết luận..."></textarea>
+                </div>
+
+                <hr>
+
+                <h4 class="action-title">Action list</h4>
+
+                <div class="table-responsive action-table-wrap">
+                    <table class="table-action">
+                        <thead>
+                            <tr>
+                                <th style="width:60px;">#</th>
+                                <th>Task</th>
+                                <th style="width:220px;">Owner</th>
+                                <th style="width:170px;">Deadline</th>
+                            </tr>
+                        </thead>
+                        <tbody id="actionBody">
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" class="form-control" placeholder="Nhập task"></td>
+                                <td><input type="text" class="form-control" placeholder="Người phụ trách"></td>
+                                <td><input type="date" class="form-control"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" class="btn btn-secondary btn-add-action" onclick="addActionRow()">
+                    + Thêm task
+                </button>
+
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary close-modal">Hủy</button>
+            <button class="btn btn-save" id="btnSaveModal">Lưu</button>
+        </div>
+    </div>
+</div>
+<script>
+    function addActionRow() {
+        const tbody = document.getElementById("actionBody");
+        if (!tbody) return;
+
+        const nextIndex = tbody.querySelectorAll("tr").length + 1;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${nextIndex}</td>
+            <td><input type="text" class="form-control" placeholder="Nhập task"></td>
+            <td><input type="text" class="form-control" placeholder="Người phụ trách"></td>
+            <td><input type="date" class="form-control"></td>
+        `;
+        tbody.appendChild(tr);
+    }
+</script>
+<style>
+    /* ===============================
+       NHẬT KÝ HƯỚNG DẪN – SINH VIÊN
+    =============================== */
+
+    /* ===============================
+       TOOLBAR – FILTER + SEARCH (GIỐNG ẢNH)
+    =============================== */
+
+    /* LEFT: FILTER */
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .toolbar-input {
+        height: 36px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 14px;
+        background: #ffffff;
+    }
+
+    /* RIGHT: SEARCH */
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    #btnOpenModal {
+        margin-left: auto;
+    }
+
+
+    /* Responsive table */
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    /* Upload button */
+    .upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        color: #212122;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+
+
+    /* Deadline */
+    .deadline-text {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #b45309;
+    }
+
+    /* Submit button */
+    .btn-submit {
+        padding: 8px 16px;
+        background: #2563eb;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    /* Submit time */
+    .submit-time {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .muted-text {
+        color: #6b7280;
+    }
+
+    /* Table align */
+    .main-table td:nth-child(1),
+    .main-table td:nth-child(4),
+    .main-table td:nth-child(5) {
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .table-responsive button {
+        padding: 8px 18px;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+
+    .table-responsive table thead th {
+        background: #f9fafb;
+        color: #111827;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 12px 14px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+        white-space: nowrap;
+    }
+
+    /* Tạo nhật ký */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .modal-dialog {
+        width: 800px;
+        max-width: 80vw;
+    }
+
+    .modal-body {
+        padding: 20px 24px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+
+    /* textarea lớn */
+    .textarea-lg {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    /* textarea vừa */
+    .form-control {
+        padding: 6px 8px;
+        font-size: 14px;
+        height: 34px; /* input thấp lại */
+    }
+
+    .textarea-md {
+        min-height: 60px;
+    }
+
+    .textarea-lg {
+        min-height: 80px;
+    }
+
+    .modal-dialog textarea {
+        resize: none;
+    }
+
+    .modal-dialog textarea {
+        resize: none !important;
+    }
+
+    /* Action list table */
+    .table-action {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+        .table-action th,
+        .table-action td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            vertical-align: top;
+        }
+
+        .table-action th {
+            background: #f5f5f5;
+            font-weight: 600;
+        }
+
+    .action-title {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .btn-add-action {
+        margin-top: 10px;
+    }
+
+</style>
+<link rel="stylesheet" href="~/css/index.css" />
+<link rel="stylesheet" href="~/css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="~/js/script.js" asp-append-version="true"></script>

@@ -1,0 +1,101 @@
+﻿@{
+    ViewData["Title"] = "Nhật ký hướng dẫn";
+}
+
+<style>
+    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dotdoan-page .content-card {
+        background: #fff; border-radius: 8px; padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+        min-height: calc(100vh - 140px); font-family: inherit;
+    }
+    .page-header-row { margin-bottom: 15px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
+    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; }
+    tbody td { padding:12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    tbody tr:hover { background: #f9f9f9; }
+
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #7c3aed; padding: 4px 6px; border-radius: 4px; transition: 0.15s; }
+    .action-btn:hover { background: #eef2ff; color: #6d28d9; }
+
+    .upload-label { display: inline-flex; align-items: center; gap: 6px; color: #2563eb; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline; }
+    .upload-label:hover { color: #1d4ed8; }
+</style>
+
+<div class="content-body dotdoan-page">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Nhật ký hướng dẫn</h2>
+        </div>
+
+        <div class="toolbar-row">
+            <div class="filter-wrapper">
+                <div class="filter-item">
+                    <span class="filter-label">Tuần</span>
+                    <select class="form-control" style="width: 160px;">
+                        <option value="">-- Tất cả --</option>
+                        <option>Tuần 1</option>
+                        <option>Tuần 2</option>
+                        <option>Tuần 3</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tuần</th>
+                            <th>Ngày</th>
+                            <th>Hình thức họp</th>
+                            <th>Thời gian</th>
+                            <th>Địa điểm</th>
+                            <th>Nội dung</th>
+                            <th>Chữ ký điện tử</th>
+                            <th style="text-align:center; width:80px;">Chi tiết</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tuần 1</td>
+                            <td>05/03/2026</td>
+                            <td>Trực tiếp</td>
+                            <td>09:00</td>
+                            <td>Phòng A.05.01</td>
+                            <td>
+                                <label class="upload-label">
+                                    Nhatkyhuongdan
+                                    <input type="file" hidden>
+                                </label>
+                            </td>
+                            <td>
+                                <label class="upload-label">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Upload
+                                    <input type="file" hidden>
+                                </label>
+                            </td>
+                            <td style="text-align:center;">
+                                <a class="action-btn" title="Xem chi tiết">
+                                    <i class="fa-regular fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

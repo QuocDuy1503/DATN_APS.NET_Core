@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace DATN_TMS.Areas.Giangvien.Controllers
+namespace DATN_TMS.Areas.GiangVien.Controllers
 {
-    [Area("Giangvien")]
+    [Area("GiangVien")]
     public class QLSVController : Controller
     {
         public IActionResult DSSV()

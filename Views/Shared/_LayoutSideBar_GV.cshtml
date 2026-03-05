@@ -12,42 +12,67 @@
             </div>
             <ul class="submenu open">
                 <li>
-                    <a asp-area="Giangvien"
-                       asp-controller="QuanLyDotDoAn"
-                       asp-action="DeXuatDT">
+                    <a asp-area="GiangVien"
+                       asp-controller="DeXuatDeTai"
+                       asp-action="Index">
                         Đề xuất đề tài
                     </a>
                 </li>
                 <li>
-                    <a asp-area="Giangvien"
-                       asp-controller="QuanLyDotDoAn"
-                       asp-action="DuyetSV">
-                        Duyệt sinh viên
+                    <a asp-area="GiangVien"
+                       asp-controller="QuanLyDangKyDeTai"
+                       asp-action="Index">
+                        Duyệt sinh viên đăng ký
                     </a>
                 </li>
             </ul>
         </li>
 
         <li class="menu-item">
-            <a asp-area="Giangvien"
-               asp-controller="QLSV"
-               asp-action="DSSV"
-               class="menu-link">
-                <span>
-                    <i class="fa-solid fa-chart-pie"></i> Quản lý sinh viên
-                </span>
-            </a>
+            <div class="menu-link">
+                <span><i class="fa-solid fa-users"></i> Quản lý sinh viên</span>
+                <i class="fa-solid fa-chevron-right chevron"></i>
+            </div>
+            <ul class="submenu">
+                <li>
+                    <a asp-area="GiangVien"
+                       asp-controller="QuanLySinhVien"
+                       asp-action="Index">
+                        Danh sách sinh viên
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="GiangVien"
+                       asp-controller="BangKeHoachSinhVien"
+                       asp-action="Index">
+                        Bảng kế hoạch sinh viên
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="GiangVien"
+                       asp-controller="QuanLyNhatKyHuongDan"
+                       asp-action="Index">
+                        Nhật ký hướng dẫn
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="GiangVien"
+                       asp-controller="QuanLyNopBaoCao"
+                       asp-action="Index">
+                        Nộp báo cáo
+                    </a>
+                </li>
+            </ul>
         </li>
 
         <li class="menu-item">
-            <a asp-area="Giangvien"
-               asp-controller="DGKQHT"
-               asp-action="DS_DGKQHT"
+            <a asp-area="GiangVien"
+               asp-controller="DanhGiaketQua"
+               asp-action="Index"
                class="menu-link">
                 <span><i class="fa-solid fa-clipboard-check"></i> Đánh giá kết quả đề tài</span>
             </a>
         </li>
 
-       
     </ul>
 </aside>

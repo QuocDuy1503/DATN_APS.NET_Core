@@ -136,7 +136,7 @@ CREATE TABLE ChiTiet_CTDT (
     hoc_ki_to_chuc INT
 );
 
--- Khối kiến thức (mapping nhóm học phần trong CTĐT)
+
 CREATE TABLE KhoiKienThuc (
     id INT IDENTITY(1,1) PRIMARY KEY,
     id_ctdt INT,
@@ -146,7 +146,6 @@ CREATE TABLE KhoiKienThuc (
     FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id)
 );
 
--- Môn học/Học phần liên kết khối kiến thức (FK trực tiếp)
 CREATE TABLE MonHoc (
     id INT IDENTITY(1,1) PRIMARY KEY,
     id_khoi_kien_thuc INT,
@@ -190,18 +189,6 @@ CREATE TABLE KetQuaHocTap (
     GPA FLOAT,
     ket_qua BIT 
 );
-
--- 3. NHÓM ĐỢT & ĐỀ TÀI (bổ sung luồng xét duyệt hội đồng)
--- Luồng xét duyệt:
---  * Chỉ thành viên hội đồng duyệt của đợt được ghi nhận xét và chọn Duyệt/Từ chối.
---  * Người đề xuất chỉ xem trạng thái và toàn bộ nhận xét, không có nút duyệt/từ chối.
---  * Trạng thái tổng của đề tài:
---      - Nếu bất kỳ nhận xét có trạng thái TU_CHOI -> đề tài = TU_CHOI.
---      - Nếu chưa đủ số nhận xét bằng số thành viên hội đồng -> đề tài = CHO_DUYET.
---      - Nếu đủ nhận xét và tất cả DA_DUYET -> đề tài = DA_DUYET.
---  * Thông báo:
---      - Gửi cho người đề xuất khi đề tài bị từ chối.
---      - Gửi cho người đề xuất khi đủ số thành viên duyệt và trạng thái chuyển DA_DUYET.
 
 CREATE TABLE DotDoAn (
     id INT IDENTITY(1,1) PRIMARY KEY,
@@ -444,15 +431,14 @@ CREATE TABLE KeHoachCongViec (
     stt INT,
     id_sinh_vien INT NOT NULL,
     id_dot INT NULL,           -- hoặc id_de_tai, id_hoc_ki nếu cần
-    tuan INT NULL,             -- 1..16, tính từ mốc kết thúc duyệt đề tài
-    thu_trong_tuan TINYINT NULL,   -- 2..8 (Thứ 2..CN) nếu dùng lưới giờ-thứ
-    gio_bat_dau TIME NULL,       
-    gio_ket_thuc TIME NULL,
-    gio_bat_dau_thuc_te TIME NULL,       
-    gio_ket_thuc_thuc_te TIME NULL,
+    ngay_bat_dau DATE NULL,       
+    ngay_ket_thuc DATE NULL,
+    ngay_bat_dau_thuc_te DATE NULL,       
+    ngay_ket_thuc_thuc_te DATE NULL,
     ten_cong_viec NVARCHAR(200),
     mo_ta_cong_viec NVARCHAR(MAX),
     trang_thai NVARCHAR(20),
+    ghi_chu NVARCHAR(MAX),
     id_file_minh_chung INT NULL,
     FOREIGN KEY (id_sinh_vien) REFERENCES SinhVien(id_nguoi_dung),
     FOREIGN KEY (id_dot) REFERENCES DotDoAn(id)
@@ -488,7 +474,6 @@ CREATE TABLE NhatKyHuongDan (
                                        --   {"task":"T1","owner":"A","deadline":"2024-06-01"},
                                        --   {"task":"T2","owner":"B","deadline":"2024-06-05"}
                                        -- ]
-    -- FK tùy chọn:
     FOREIGN KEY (id_dot) REFERENCES DotDoAn(id)
 );
 
@@ -818,14 +803,14 @@ INSERT INTO DotDoAn (
     ten_dot, id_khoa_hoc, id_hoc_ki, ngay_bat_dau_dot, ngay_ket_thuc_dot,
     ngay_bat_dau_dk_nguyen_vong, ngay_ket_thuc_dk_nguyen_vong,
     ngay_bat_dau_dk_duyet_nguyen_vong, ngay_ket_thuc_dk_duyet_nguyen_vong,
-    ngay_bat_dau_de_xuat_de_tai, ngay_ket_thuc_de_xuat_de_tai,
-    ngay_bat_dau_duyet_de_xuat_de_tai, ngay_ket_thuc_duyet_de_xuat_de_tai,
-    ngay_lap_hoi_dong_duyet_DXDT, ngay_duyet_DXDT,
-    ngay_bat_dau_nop_de_cuong, ngay_ket_thuc_nop_de_cuong,
-    ngay_bat_dau_bao_cao_cuoi_ki, ngay_ket_thuc_bao_cao_cuoi_ki,
-    ngay_lap_HD_BCCK, ngay_nop_tai_lieu_BCCK, ngay_cong_bo_kq_BCCK,
-    ngay_bat_dau_bao_cao_giua_ki, ngay_ket_thuc_bao_cao_giua_ki,
-    ngay_lap_HD_BCGK, ngay_nop_tai_lieu_BCGK,
+    ngay_bat_dau_de_xuat_de_tai DATE, ngay_ket_thuc_de_xuat_de_tai DATE,
+    ngay_bat_dau_duyet_de_xuat_de_tai DATE, ngay_ket_thuc_duyet_de_xuat_de_tai DATE,
+    ngay_lap_hoi_dong_duyet_DXDT INT, ngay_duyet_DXDT INT,
+    ngay_bat_dau_nop_de_cuong DATE, ngay_ket_thuc_nop_de_cuong DATE,
+    ngay_bat_dau_bao_cao_cuoi_ki DATE, ngay_ket_thuc_bao_cao_cuoi_ki DATE,
+    ngay_lap_HD_BCCK INT, ngay_nop_tai_lieu_BCCK INT, ngay_cong_bo_kq_BCCK INT,
+    ngay_bat_dau_bao_cao_giua_ki DATE, ngay_ket_thuc_bao_cao_giua_ki DATE,
+    ngay_lap_HD_BCGK INT, ngay_nop_tai_lieu_BCGK INT,
     trang_thai
 ) VALUES (
     N'Đợt ĐATN K27 - HK2 2025-2026', @id_k27, @id_hk_active, 
@@ -1082,5 +1067,5 @@ PRINT N'=====================================================================';
 PRINT N'DATABASE CREATED & DATA INSERTED SUCCESSFULLY!';
 PRINT N'Database: QuanLyDoAnTotNghiep';
 PRINT N'Tables: 32 | Sample Data: Complete';
-PRINT N'=====================================================================';
+PRINT N'=====================================================================
 
