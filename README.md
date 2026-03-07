@@ -124,26 +124,26 @@ CREATE TABLE ChuongTrinhDaoTao (
     ngay_tao DATETIME DEFAULT GETDATE()
 );
 
+CREATE TABLE KhoiKienThuc (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    id_ctdt INT,
+    ten_khoi NVARCHAR(200),
+    tong_tin_chi INT,
+    ghi_chu NVARCHAR(500)
+);
+
 CREATE TABLE ChiTiet_CTDT (
     id INT IDENTITY(1,1) PRIMARY KEY,
     id_ctdt INT,
+    id_khoi_kien_thuc INT,
     stt INT,
     ma_hoc_phan VARCHAR(50),
     ten_hoc_phan NVARCHAR(150),
     so_tin_chi INT,
     loai_hoc_phan NVARCHAR(50),
     dieu_kien_tien_quyet NVARCHAR(255),
-    hoc_ki_to_chuc INT
-);
-
-
-CREATE TABLE KhoiKienThuc (
-    id INT IDENTITY(1,1) PRIMARY KEY,
-    id_ctdt INT,
-    ten_khoi NVARCHAR(200),
-    tong_tin_chi INT,
-    ghi_chu NVARCHAR(500),
-    FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id)
+    hoc_ki_to_chuc INT,
+    ghi_chu NVARCHAR(500)
 );
 
 CREATE TABLE MonHoc (
@@ -151,15 +151,15 @@ CREATE TABLE MonHoc (
     id_khoi_kien_thuc INT,
     id_ctdt INT,
     ma_mon VARCHAR(50),
-    ten_mon NVARCHAR(255),
+    ten_mon NVARCHAR(150),
     so_tin_chi INT,
     loai_hoc_phan NVARCHAR(50),
     dieu_kien_tien_quyet NVARCHAR(255),
     hoc_ki_to_chuc INT,
-    ghi_chu NVARCHAR(500),
-    FOREIGN KEY (id_khoi_kien_thuc) REFERENCES KhoiKienThuc(id),
-    FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id)
+    ghi_chu NVARCHAR(500)
 );
+
+
 
 CREATE TABLE SinhVien (
     id_nguoi_dung INT PRIMARY KEY, 
@@ -486,7 +486,7 @@ CREATE TABLE BaoCaoThongKe (
     ti_le_hoan_thanh FLOAT NULL,         -- % hoàn thành đề tài hoặc task
     ngay_tinh DATETIME NOT NULL DEFAULT(getdate()),
     -- nếu cần lưu chi tiết theo tuần dạng JSON:
-    chi_tiet_tuan NVARCHAR(MAX) NULL     -- JSON: [{tuan:1, so_task:..., ti_le_hoan_thanh:...}, ...]
+    chi_tiet_tuan NVARCHAR(MAX) NULL,    -- JSON: [{tuan:1, so_task:..., ti_le_hoan_thanh:...}, ...]
     FOREIGN KEY (id_dot) REFERENCES DotDoAn(id)
 );
 
@@ -518,6 +518,7 @@ ALTER TABLE KetQuaHocTap ADD CONSTRAINT FK_KQHT_SinhVien FOREIGN KEY (id_sinh_vi
 ALTER TABLE ChuongTrinhDaoTao ADD CONSTRAINT FK_CTDT_Nganh FOREIGN KEY (id_nganh) REFERENCES Nganh(id);
 ALTER TABLE ChuongTrinhDaoTao ADD CONSTRAINT FK_CTDT_KhoaHoc FOREIGN KEY (id_khoa_hoc) REFERENCES KhoaHoc(id);
 ALTER TABLE ChiTiet_CTDT ADD CONSTRAINT FK_CTDT_ChiTiet FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id);
+ALTER TABLE ChiTiet_CTDT ADD CONSTRAINT FK_CTDT_KhoiKienThuc FOREIGN KEY (id_khoi_kien_thuc) REFERENCES KhoiKienThuc(id);
 ALTER TABLE KhoiKienThuc ADD CONSTRAINT FK_KhoiKienThuc_CTDT FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id);
 ALTER TABLE MonHoc ADD CONSTRAINT FK_MonHoc_KhoiKienThuc FOREIGN KEY (id_khoi_kien_thuc) REFERENCES KhoiKienThuc(id);
 ALTER TABLE MonHoc ADD CONSTRAINT FK_MonHoc_CTDT FOREIGN KEY (id_ctdt) REFERENCES ChuongTrinhDaoTao(id);
@@ -750,6 +751,11 @@ INSERT INTO ChiTiet_CTDT (id_ctdt, stt, ma_hoc_phan, ten_hoc_phan, so_tin_chi, l
 (@id_k28, 4, 'MATH1002', N'Toán rời rạc', 3, N'Bắt buộc', NULL, 2),
 (@id_k28, 5, 'COMP2001', N'Cấu trúc dữ liệu và Giải thuật', 4, N'Bắt buộc', N'COMP1002', 3);
 
+
+
+
+
+
 -- 3.12B KHỐI KIẾN THỨC & MÔN HỌC (mẫu theo logic import)
 DECLARE @khoi_cb INT, @khoi_chuyen INT, @khoi_tuchon INT;
 INSERT INTO KhoiKienThuc (id_ctdt, ten_khoi, tong_tin_chi, ghi_chu)
@@ -763,6 +769,14 @@ SET @khoi_chuyen = SCOPE_IDENTITY();
 INSERT INTO KhoiKienThuc (id_ctdt, ten_khoi, tong_tin_chi, ghi_chu)
 VALUES (@id_k27, N'Khối tự chọn (tính từ cột B)', 4, N'Case C: tổng tín chỉ cộng dồn từ cột B');
 SET @khoi_tuchon = SCOPE_IDENTITY();
+
+
+
+
+
+
+
+
 
 INSERT INTO MonHoc (id_khoi_kien_thuc, id_ctdt, ma_mon, ten_mon, so_tin_chi, loai_hoc_phan, hoc_ki_to_chuc)
 VALUES
@@ -813,7 +827,7 @@ INSERT INTO DotDoAn (
     ngay_lap_HD_BCGK INT, ngay_nop_tai_lieu_BCGK INT,
     trang_thai
 ) VALUES (
-    N'Đợt ĐATN K27 - HK2 2025-2026', @id_k27, @id_hk_active, 
+    N'Đợt ĐATN K27 - HK2 2025-2026', @id_k27, @id_hk_active,
     '2026-01-15', '2026-06-15',
     '2026-02-01', '2026-02-05',
     '2026-02-06', '2026-02-10',
@@ -1010,6 +1024,7 @@ DECLARE @id_dt_ddos INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_004');
 INSERT INTO BaoCaoNop (id_dot, id_de_tai, id_sinh_vien, stt, ten_bao_cao, file_baocao, ngay_nop, nhan_xet, trang_thai) VALUES 
 (@id_dot_active, @id_dt_rfid, 13, 1, N'Báo cáo tiến độ giữa kỳ', '/uploads/2026/HK2/DT001/midterm_report.pdf', '2026-03-20 08:00:00', N'Tiến độ tốt, đã hoàn thành phần cứng RFID.', 'DA_DUYET'),
 (@id_dot_active, @id_dt_rfid, 13, 2, N'Báo cáo toàn văn Khóa luận', '/uploads/2026/HK2/DT001/final_thesis_v1.pdf', '2026-05-20 09:00:00', N'Đạt yêu cầu ra hội đồng bảo vệ.', 'DA_DUYET'),
+(@id_dot_active, @id_dt_rfid, 13, 3, N'Báo cáo bổ sung phụ lục', '/uploads/2026/HK2/DT001/appendix_v1.pdf', '2026-05-25 10:00:00', NULL, 'CHO_DUYET'),
 (@id_dot_active, @id_dt_ddos, 16, 1, N'Báo cáo tiến độ giữa kỳ', '/uploads/2026/HK2/DT004/midterm_v1.pdf', '2026-03-20 14:00:00', N'Cần bổ sung thêm dữ liệu thực nghiệm.', 'YEU_CAU_SUA'),
 (@id_dot_active, @id_dt_ddos, 16, 2, N'Báo cáo toàn văn Khóa luận', '/uploads/2026/HK2/DT004/final_thesis_submission.pdf', '2026-05-20 15:30:00', N'Đồng ý cho bảo vệ.', 'DA_DUYET');
 
@@ -1046,11 +1061,11 @@ INSERT INTO NhanXetHoiDongDeTai (id_de_tai, id_giang_vien, trang_thai, nhan_xet,
 DECLARE @id_dt_rfid INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_001');
 DECLARE @id_bcn_rfid_mid INT = (SELECT id FROM BaoCaoNop WHERE id_de_tai = @id_dt_rfid AND ten_bao_cao LIKE N'%tiến độ giữa kỳ%');
 INSERT INTO KeHoachCongViec (
-    stt, id_sinh_vien, id_dot, tuan, thu_trong_tuan, gio_bat_dau, gio_ket_thuc, gio_bat_dau_thuc_te, gio_ket_thuc_thuc_te,
-    ten_cong_viec, mo_ta_cong_viec, trang_thai, id_file_minh_chung
+    stt, id_sinh_vien, id_dot, ngay_bat_dau, ngay_ket_thuc, ngay_bat_dau_thuc_te, ngay_ket_thuc_thuc_te,
+    ten_cong_viec, mo_ta_cong_viec, trang_thai, ghi_chu, id_file_minh_chung
 ) VALUES (
-    1, 13, @id_dot_active, 8, 2, '08:00', '10:00', '08:15', '10:05',
-    N'Hoàn thiện tích hợp RFID', N'Tích hợp đầu đọc RFID với module mượn trả', 'DA_HOAN_THANH', @id_bcn_rfid_mid
+    1, 13, @id_dot_active, '2026-03-01', '2026-03-15', '2026-03-02', '2026-03-14',
+    N'Hoàn thiện tích hợp RFID', N'Tích hợp đầu đọc RFID với module mượn trả', 'DA_HOAN_THANH', NULL, @id_bcn_rfid_mid
 );
 
 DECLARE @id_khcv INT = SCOPE_IDENTITY();
@@ -1063,9 +1078,91 @@ VALUES (14, N'Đề tài DT_27_002 đã được duyệt', N'Hội đồng đã 
 
 GO
 
+-- 3.30 HỘI ĐỒNG GIỮA KỲ + PHIÊN BẢO VỆ + ĐIỂM CHI TIẾT + KẾT QUẢ BẢO VỆ
+DECLARE @id_dot_active INT = (SELECT TOP 1 id FROM DotDoAn WHERE trang_thai = 1);
+
+-- Hội đồng giữa kỳ
+DECLARE @id_hd_giuaky INT;
+INSERT INTO HoiDongBaoCao (ma_hoi_dong, ten_hoi_dong, loai_hoi_dong, id_dot, id_nguoi_tao, id_bo_mon, ngay_bao_cao, dia_diem, thoi_gian_du_kien, trang_thai, ngay_bat_dau, ngay_ket_thuc)
+VALUES ('HD_GK_CNPM_01', N'Hội đồng báo cáo giữa kỳ KTPM', 'GIUA_KY', @id_dot_active, 1, 1, '2026-03-25', N'Phòng A.05.01', '08:00:00', 1, '2026-03-25', '2026-03-25');
+SET @id_hd_giuaky = SCOPE_IDENTITY();
+
+-- Thành viên hội đồng giữa kỳ
+INSERT INTO ThanhVien_HD_BaoCao (id_hd_baocao, id_giang_vien, vai_tro) VALUES
+(@id_hd_giuaky, 1, 'CHU_TICH'),
+(@id_hd_giuaky, 2, 'THU_KY'),
+(@id_hd_giuaky, 5, 'PHAN_BIEN');
+
+-- Phiên bảo vệ cho SV 13 (đề tài RFID) — giữa kỳ
+DECLARE @id_svdt_rfid INT = (SELECT TOP 1 id FROM SinhVien_DeTai WHERE id_sinh_vien = 13 AND trang_thai = 'DA_DUYET');
+DECLARE @id_pbv_gk INT;
+INSERT INTO PhienBaoVe (id_hd_baocao, id_sinh_vien_de_tai, stt_bao_cao, link_tai_lieu)
+VALUES (@id_hd_giuaky, @id_svdt_rfid, 1, '/uploads/2026/HK2/DT001/midterm_report.pdf');
+SET @id_pbv_gk = SCOPE_IDENTITY();
+
+-- Phiên bảo vệ cho SV 13 — cuối kỳ (hội đồng HD_CNPM_01)
+DECLARE @id_hd_cuoiky INT = (SELECT id FROM HoiDongBaoCao WHERE ma_hoi_dong = 'HD_CNPM_01');
+DECLARE @id_pbv_ck INT;
+INSERT INTO PhienBaoVe (id_hd_baocao, id_sinh_vien_de_tai, stt_bao_cao, link_tai_lieu)
+VALUES (@id_hd_cuoiky, @id_svdt_rfid, 1, '/uploads/2026/HK2/DT001/final_thesis_v1.pdf');
+SET @id_pbv_ck = SCOPE_IDENTITY();
+
+-- Phiên bảo vệ cho SV 16 (đề tài DDoS) — cuối kỳ (hội đồng HD_AI_01)
+DECLARE @id_svdt_ddos INT = (SELECT TOP 1 id FROM SinhVien_DeTai WHERE id_sinh_vien = 16 AND trang_thai = 'DA_DUYET');
+DECLARE @id_hd_ai INT = (SELECT id FROM HoiDongBaoCao WHERE ma_hoi_dong = 'HD_AI_01');
+DECLARE @id_pbv_ck2 INT;
+INSERT INTO PhienBaoVe (id_hd_baocao, id_sinh_vien_de_tai, stt_bao_cao, link_tai_lieu)
+VALUES (@id_hd_ai, @id_svdt_ddos, 1, '/uploads/2026/HK2/DT004/final_thesis_submission.pdf');
+SET @id_pbv_ck2 = SCOPE_IDENTITY();
+
+-- Lấy ID tiêu chí phiếu GVHD và Hội đồng
+DECLARE @tc_gvhd_1 INT = (SELECT TOP 1 id FROM TieuChiChamDiem WHERE ten_tieu_chi LIKE N'%Tinh thần%');
+DECLARE @tc_gvhd_2 INT = (SELECT TOP 1 id FROM TieuChiChamDiem WHERE ten_tieu_chi LIKE N'%Kỹ năng giải quyết%');
+DECLARE @tc_gvhd_3 INT = (SELECT TOP 1 id FROM TieuChiChamDiem WHERE ten_tieu_chi LIKE N'%Kết quả thực hiện%');
+DECLARE @tc_gvhd_4 INT = (SELECT TOP 1 id FROM TieuChiChamDiem WHERE ten_tieu_chi LIKE N'%Chất lượng báo cáo%');
+
+DECLARE @tc_hd_1 INT = (SELECT TOP 1 id FROM TieuChiChamDiem WHERE ten_tieu_chi LIKE N'%Hình thức%');
+DECLARE @tc_hd_2 INT = (SELECT TOP 1 id FROM TieuChiChamDiem WHERE ten_tieu_chi LIKE N'%Nội dung và kết quả%');
+DECLARE @tc_hd_3 INT = (SELECT TOP 1 id FROM TieuChiChamDiem WHERE ten_tieu_chi LIKE N'%trình bày và Demo%');
+DECLARE @tc_hd_4 INT = (SELECT TOP 1 id FROM TieuChiChamDiem WHERE ten_tieu_chi LIKE N'%phản biện%');
+
+-- Điểm chi tiết — SV 13, giữa kỳ (GV 1 chấm)
+INSERT INTO DiemChiTiet (id_phien_bao_ve, id_nguoi_cham, id_sinh_vien, id_tieu_chi, diem_so, nhan_xet) VALUES
+(@id_pbv_gk, 1, 13, @tc_hd_1, 0.8, N'Bố cục tốt'),
+(@id_pbv_gk, 1, 13, @tc_hd_2, 3.5, N'Nội dung đầy đủ, cần bổ sung demo'),
+(@id_pbv_gk, 1, 13, @tc_hd_3, 1.6, N'Trình bày rõ ràng'),
+(@id_pbv_gk, 1, 13, @tc_hd_4, 2.4, N'Trả lời tốt');
+
+-- Điểm chi tiết — SV 13, cuối kỳ (GV 1 chấm)
+INSERT INTO DiemChiTiet (id_phien_bao_ve, id_nguoi_cham, id_sinh_vien, id_tieu_chi, diem_so, nhan_xet) VALUES
+(@id_pbv_ck, 1, 13, @tc_hd_1, 0.9, N'Hình thức chuẩn'),
+(@id_pbv_ck, 1, 13, @tc_hd_2, 3.8, N'Sản phẩm hoàn thiện, demo tốt'),
+(@id_pbv_ck, 1, 13, @tc_hd_3, 1.8, N'Tự tin, demo mượt'),
+(@id_pbv_ck, 1, 13, @tc_hd_4, 2.7, N'Trả lời chính xác, thuyết phục');
+
+-- Điểm chi tiết — SV 16, cuối kỳ (GV 3 chấm)
+INSERT INTO DiemChiTiet (id_phien_bao_ve, id_nguoi_cham, id_sinh_vien, id_tieu_chi, diem_so, nhan_xet) VALUES
+(@id_pbv_ck2, 3, 16, @tc_hd_1, 0.7, N'Cần cải thiện format'),
+(@id_pbv_ck2, 3, 16, @tc_hd_2, 3.0, N'Kết quả thực nghiệm đạt yêu cầu'),
+(@id_pbv_ck2, 3, 16, @tc_hd_3, 1.5, N'Demo ổn'),
+(@id_pbv_ck2, 3, 16, @tc_hd_4, 2.0, N'Cần chuẩn bị kỹ hơn');
+
+-- Kết quả bảo vệ — SV 13, giữa kỳ
+INSERT INTO KetQuaBaoVe_SinhVien (id_phien_bao_ve, id_sinh_vien, diem_tong_ket, diem_chu, ket_qua)
+VALUES (@id_pbv_gk, 13, 8.3, 'B+', 'DAT');
+
+-- Kết quả bảo vệ — SV 13, cuối kỳ
+INSERT INTO KetQuaBaoVe_SinhVien (id_phien_bao_ve, id_sinh_vien, diem_tong_ket, diem_chu, ket_qua)
+VALUES (@id_pbv_ck, 13, 9.2, 'A', 'DAT');
+
+-- Kết quả bảo vệ — SV 16, cuối kỳ
+INSERT INTO KetQuaBaoVe_SinhVien (id_phien_bao_ve, id_sinh_vien, diem_tong_ket, diem_chu, ket_qua)
+VALUES (@id_pbv_ck2, 16, 7.2, 'B', 'DAT');
+
+GO
+
 PRINT N'=====================================================================';
 PRINT N'DATABASE CREATED & DATA INSERTED SUCCESSFULLY!';
 PRINT N'Database: QuanLyDoAnTotNghiep';
 PRINT N'Tables: 32 | Sample Data: Complete';
-PRINT N'=====================================================================
-
+PRINT N'=====================================================================';

@@ -1,0 +1,316 @@
+@model KetQuaBaoCaoViewModel
+@{
+    ViewData["Title"] = "Kết quả báo cáo hội đồng";
+}
+
+<style>
+    .content-card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    .page-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 20px 0;
+        text-transform: uppercase;
+    }
+
+    .alert-info-box {
+        background: #d1ecf1;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #0c5460;
+        font-size: 13px;
+    }
+
+    .alert-warning-box {
+        background: #fff3cd;
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        color: #856404;
+        font-size: 13px;
+    }
+
+    .section {
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #484BE0;
+        display: inline-block;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .field-full {
+        grid-column: 1 / -1;
+    }
+
+    .field label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #333;
+        font-size: 13px;
+    }
+
+    .field .value {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        background-color: #f8f9fa;
+        color: #333;
+        min-height: 36px;
+        box-sizing: border-box;
+    }
+
+    .score-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+    .score-table thead th {
+        background: #f3f4f6;
+        font-weight: 700;
+        padding: 10px 12px;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+        color: #444;
+        white-space: nowrap;
+    }
+
+    .score-table tbody td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: middle;
+        color: #333;
+    }
+
+    .score-table tbody tr:hover {
+        background: #f9f9f9;
+    }
+
+    .score-summary {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        padding: 14px 18px;
+        background: #f0f4ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        font-size: 13px;
+    }
+
+    .score-summary strong {
+        color: #1e3a5f;
+    }
+
+    .badge {
+        padding: 4px 12px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #fff;
+        display: inline-block;
+    }
+
+    .badge-pass {
+        background: #28a745;
+    }
+
+    .badge-fail {
+        background: #dc3545;
+    }
+
+    .badge-none {
+        background: #6b7280;
+    }
+
+    .member-list {
+        list-style: none;
+        padding: 0;
+        margin: 8px 0 0 0;
+        font-size: 13px;
+    }
+
+    .member-list li {
+        padding: 6px 0;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        gap: 8px;
+    }
+
+    .member-list li:last-child {
+        border-bottom: none;
+    }
+
+    .member-role {
+        color: #484BE0;
+        font-weight: 600;
+        min-width: 90px;
+    }
+
+    .hd-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .hd-info-item label {
+        display: block;
+        font-weight: 600;
+        color: #444;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .hd-info-item .val {
+        font-size: 13px;
+        color: #333;
+    }
+
+    .tab-group {
+        display: flex;
+        gap: 0;
+        margin-bottom: 0;
+    }
+
+    .tab-btn {
+        padding: 10px 24px;
+        border: 1px solid #ddd;
+        border-bottom: none;
+        background: #f3f4f6;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 6px 6px 0 0;
+        color: #666;
+        transition: 0.15s;
+    }
+
+    .tab-btn.active {
+        background: #fff;
+        color: #484BE0;
+        border-color: #484BE0;
+        border-bottom: 2px solid #fff;
+        margin-bottom: -1px;
+        z-index: 1;
+    }
+
+    .tab-content {
+        border: 1px solid #ddd;
+        border-radius: 0 8px 8px 8px;
+        padding: 20px;
+        background: #fff;
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+</style>
+
+<div class="content-body">
+    <div class="content-card">
+        <h2 class="page-title">Kết quả báo cáo hội đồng</h2>
+
+        @if (string.IsNullOrEmpty(Model.MaSinhVien))
+        {
+            <div class="alert-warning-box">
+                <i class="fa-solid fa-triangle-exclamation"></i> Không tìm thấy thông tin sinh viên. Vui lòng đăng nhập lại.
+            </div>
+        }
+        else
+        {
+            <div class="section">
+                <div class="grid">
+                    <div class="field">
+                        <label>MSSV</label>
+                        <div class="value">@(Model.MaSinhVien ?? "---")</div>
+                    </div>
+                    <div class="field">
+                        <label>Họ tên</label>
+                        <div class="value">@(Model.HoTen ?? "---")</div>
+                    </div>
+                    <div class="field">
+                        <label>Mã đề tài</label>
+                        <div class="value">@(Model.MaDeTai ?? "---")</div>
+                    </div>
+                    <div class="field">
+                        <label>GVHD</label>
+                        <div class="value">@(Model.TenGVHD ?? "---")</div>
+                    </div>
+                    <div class="field field-full">
+                        <label>Tên đề tài</label>
+                        <div class="value">@(Model.TenDeTai ?? "---")</div>
+                    </div>
+                    <div class="field field-full">
+                        <label>Đợt đồ án</label>
+                        <div class="value">@(Model.TenDot ?? "---")</div>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.TenDeTai == null)
+            {
+                <div class="alert-info-box">
+                    <i class="fa-solid fa-circle-info"></i> Bạn chưa được duyệt đề tài trong đợt hiện tại.
+                </div>
+            }
+            else
+            {
+                <div class="tab-group">
+                    <button type="button" class="tab-btn active" onclick="switchTab('giuaky', this)">
+                        <i class="fa-solid fa-file-lines"></i> Báo cáo Giữa kỳ
+                    </button>
+                    <button type="button" class="tab-btn" onclick="switchTab('cuoiky', this)">
+                        <i class="fa-solid fa-file-circle-check"></i> Báo cáo Cuối kỳ
+                    </button>
+                </div>
+
+                <div id="tab-giuaky" class="tab-content active">
+                    @{ await Html.RenderPartialAsync("_KetQuaHoiDongSection", Model.KetQuaGiuaKy); }
+                </div>
+                <div id="tab-cuoiky" class="tab-content">
+                    @{ await Html.RenderPartialAsync("_KetQuaHoiDongSection", Model.KetQuaCuoiKy); }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(function (el) { el.classList.remove('active'); });
+        document.querySelectorAll('.tab-btn').forEach(function (el) { el.classList.remove('active'); });
+        document.getElementById('tab-' + tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+</script>

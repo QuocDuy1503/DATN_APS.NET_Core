@@ -50,7 +50,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="X.PagedList.Mvc.Core" Version="10.5.9" />
-    <PackageReference Include="ClosedXML" Version="0.104.0" />
   </ItemGroup>
 
   <ItemGroup>

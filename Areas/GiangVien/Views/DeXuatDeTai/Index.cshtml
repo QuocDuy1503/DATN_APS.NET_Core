@@ -1,6 +1,6 @@
-@model DATN_TMS.Areas.GiangVien.Models.DeXuatDeTaiViewModel
+﻿@model DATN_TMS.Areas.GiangVien.Models.DeXuatDeTaiViewModel
 @{
-    ViewData["Title"] = "?? xu?t ?? t�i";
+    ViewData["Title"] = "Đề xuất đề tài";
 }
 
 <style>
@@ -50,58 +50,66 @@
     }
 
     /* ===============================================
-       TOOLBAR � FILTER + SEARCH
+       TOOLBAR – FILTER + SEARCH
     =============================================== */
     .toolbar-row {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 16px 18px;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
+        align-items: flex-end;
         margin-bottom: 20px;
         gap: 15px;
+        flex-wrap: wrap;
     }
 
-    .toolbar-left {
+    .filter-wrapper {
         display: flex;
-        align-items: center;
-        gap: 10px;
+        gap: 12px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        background: transparent;
+        padding: 0;
     }
 
     .toolbar-right {
         display: flex;
-        align-items: center;
+        align-items: flex-end;
         gap: 10px;
     }
 
     .filter-item {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .search-box {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
     }
 
     .filter-label {
+        font-weight: 500;
         font-size: 13px;
-        font-weight: 600;
         color: #333;
-        white-space: nowrap;
+        display: block;
+        margin-bottom: 4px;
     }
 
     .toolbar-input {
-        height: 36px;
-        padding: 8px 12px;
-        border-radius: 4px;
-        border: 1px solid #ddd;
+        background: #fff;
         font-size: 13px;
-        background: #ffffff;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        height: 36px;
     }
 
     .toolbar-input:focus {
-        outline: none;
         border-color: #484BE0;
         box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1);
+        outline: none;
     }
 
     /* ===============================================
@@ -379,32 +387,31 @@
 <div class="content-body">
     <div class="content-card">
         <div class="page-header-row">
-            <h2 class="page-title">?? xu?t ?? t�i</h2>
+            <h2 class="page-title">Đề xuất đề tài</h2>
         </div>
 
         @if (Model.IdDot.HasValue)
         {
             <div class="alert-info-box">
-                <i class="fas fa-info-circle"></i> ??t ?? xu?t: <strong>@Model.TenDot</strong>
+                <i class="fas fa-info-circle"></i> Đợt đề xuất: <strong>@Model.TenDot</strong>
             </div>
         }
         else
         {
             <div class="alert-warning-box">
-                <i class="fas fa-exclamation-triangle"></i> Hi?n t?i ch?a c� ??t ?? xu?t ?? t�i n�o ?ang m?.
+                <i class="fas fa-exclamation-triangle"></i> Hiện tại chưa có đợt đề xuất đề tài nào đang mở.
             </div>
         }
 
         <div class="toolbar-row">
-            <div class="toolbar-left">
-                <div class="filter-item">
-                    <span class="filter-label">T�m ki?m:</span>
-                    <input type="text" id="txtSearch" class="toolbar-input" placeholder="Nh?p t? kh�a..." style="width: 250px;">
-                </div>
-            </div>
+            <div class="filter-wrapper"></div>
             <div class="toolbar-right">
+                <div class="search-box">
+                    <span class="filter-label">Tìm kiếm</span>
+                    <input type="text" id="txtSearch" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 240px;">
+                </div>
                 <button type="button" class="btn btn-primary" id="btnOpenModal" @(Model.IdDot.HasValue ? "" : "disabled")>
-                    <i class="fa-solid fa-plus"></i> ?? xu?t ?? t�i
+                    <i class="fa-solid fa-plus"></i> Đề xuất đề tài
                 </button>
             </div>
         </div>
@@ -413,11 +420,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>M� ?? t�i</th>
-                        <th>T�n ?? t�i</th>
-                        <th>Chuy�n ng�nh</th>
-                        <th>Tr?ng th�i</th>
-                        <th>Thao t�c</th>
+                        <th>Mã đề tài</th>
+                        <th>Tên đề tài</th>
+                        <th>Chuyên ngành</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -432,15 +439,15 @@
                                 <td>
                                     @if (dt.TrangThai == "CHO_DUYET")
                                     {
-                                        <span class="status-badge status-pending">Ch? duy?t</span>
+                                        <span class="status-badge status-pending">Chờ duyệt</span>
                                     }
                                     else if (dt.TrangThai == "DA_DUYET")
                                     {
-                                        <span class="status-badge status-running">?� duy?t</span>
+                                        <span class="status-badge status-running">Đã duyệt</span>
                                     }
                                     else if (dt.TrangThai == "TU_CHOI")
                                     {
-                                        <span class="status-badge status-rejected">T? ch?i</span>
+                                        <span class="status-badge status-rejected">Từ chối</span>
                                     }
                                     else
                                     {
@@ -448,7 +455,7 @@
                                     }
                                 </td>
                                 <td>
-                                    <a href="javascript:void(0);" class="action-btn btn-edit-icon" onclick="chinhSua(@dt.Id)" title="Ch?nh s?a">
+                                    <a href="javascript:void(0);" class="action-btn btn-edit-icon" onclick="chinhSua(@dt.Id)" title="Chỉnh sửa">
                                         <i class="fa-regular fa-pen-to-square"></i>
                                     </a>
                                 </td>
@@ -458,7 +465,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="5" class="text-center">Ch?a c� ?? t�i n�o</td>
+                            <td colspan="5" class="text-center">Chưa có đề tài nào</td>
                         </tr>
                     }
                 </tbody>
@@ -467,11 +474,11 @@
     </div>
 </div>
 
-<!-- MODAL ?? XU?T ?? T�I -->
+<!-- MODAL ĐỀ XUẤT ĐỀ TÀI -->
 <div class="modal-overlay" id="addModal">
     <div class="modal-dialog">
         <div class="modal-header">
-            <div class="modal-title" id="formModalTitle">?? xu?t ?? t�i</div>
+            <div class="modal-title" id="formModalTitle">Đề xuất đề tài</div>
             <button type="button" class="btn-close close-modal">&times;</button>
         </div>
 
@@ -484,13 +491,13 @@
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>M� ?? t�i <span class="required">*</span></label>
-                        <input asp-for="MaDeTai" type="text" class="form-control" placeholder="Nh?p m� ?? t�i" required />
+                        <label>Mã đề tài <span class="required">*</span></label>
+                        <input asp-for="MaDeTai" type="text" class="form-control" placeholder="Nhập mã đề tài" required />
                     </div>
                     <div class="form-group">
-                        <label>Chuy�n ng�nh <span class="required">*</span></label>
+                        <label>Chuyên ngành <span class="required">*</span></label>
                         <select asp-for="IdChuyenNganh" class="form-control" required>
-                            <option value="">-- Ch?n chuy�n ng�nh --</option>
+                            <option value="">-- Chọn chuyên ngành --</option>
                             @if (Model.DanhSachChuyenNganh != null)
                             {
                                 foreach (var cn in Model.DanhSachChuyenNganh)
@@ -503,44 +510,44 @@
                 </div>
 
                 <div class="form-group">
-                    <label>T�n ?? t�i <span class="required">*</span></label>
-                    <input asp-for="TenDeTai" type="text" class="form-control" placeholder="Nh?p t�n ?? t�i" required />
+                    <label>Tên đề tài <span class="required">*</span></label>
+                    <input asp-for="TenDeTai" type="text" class="form-control" placeholder="Nhập tên đề tài" required />
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>M?c ti�u ch�nh <span class="required">*</span></label>
-                        <textarea asp-for="MucTieuChinh" class="form-control" rows="3" placeholder="Nh?p m?c ti�u ch�nh" required></textarea>
+                        <label>Mục tiêu chính <span class="required">*</span></label>
+                        <textarea asp-for="MucTieuChinh" class="form-control" rows="3" placeholder="Nhập mục tiêu chính" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Ph?m vi v� ch?c n?ng</label>
-                        <textarea asp-for="PhamViChucNang" class="form-control" rows="3" placeholder="Nh?p ph?m vi v� ch?c n?ng"></textarea>
+                        <label>Phạm vi và chức năng</label>
+                        <textarea asp-for="PhamViChucNang" class="form-control" rows="3" placeholder="Nhập phạm vi và chức năng"></textarea>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>C�ng ngh? s? d?ng</label>
-                        <textarea asp-for="CongNgheSuDung" class="form-control" rows="2" placeholder="Nh?p c�ng ngh? s? d?ng"></textarea>
+                        <label>Công nghệ sử dụng</label>
+                        <textarea asp-for="CongNgheSuDung" class="form-control" rows="2" placeholder="Nhập công nghệ sử dụng"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Y�u c?u t�nh m?i</label>
-                        <textarea asp-for="YeuCauTinhMoi" class="form-control" rows="2" placeholder="Nh?p y�u c?u t�nh m?i"></textarea>
+                        <label>Yêu cầu tính mới</label>
+                        <textarea asp-for="YeuCauTinhMoi" class="form-control" rows="2" placeholder="Nhập yêu cầu tính mới"></textarea>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>S?n ph?m k?t qu? d? ki?n</label>
-                    <input asp-for="SanPhamKetQuaDuKien" type="text" class="form-control" placeholder="Nh?p s?n ph?m k?t qu? d? ki?n" />
+                    <label>Sản phẩm kết quả dự kiến</label>
+                    <input asp-for="SanPhamKetQuaDuKien" type="text" class="form-control" placeholder="Nhập sản phẩm kết quả dự kiến" />
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary close-modal">H?y</button>
+                <button type="button" class="btn btn-secondary close-modal">Hủy</button>
                 <button type="submit" class="btn btn-primary" id="btnSave">
-                    <span class="btn-text">L?u</span>
+                    <span class="btn-text">Lưu</span>
                     <span class="btn-loading" style="display: none;">
-                        <i class="fas fa-spinner fa-spin"></i> ?ang x? l�...
+                        <i class="fas fa-spinner fa-spin"></i> Đang xử lý...
                     </span>
                 </button>
             </div>
@@ -548,14 +555,14 @@
     </div>
 </div>
 
-<!-- MODAL TH�NG B�O -->
+<!-- MODAL THÔNG BÁO -->
 <div id="successModal" class="modal-overlay">
     <div class="modal-box modal-success">
         <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
-        <h3 class="modal-title">Th�nh c�ng!</h3>
+        <h3 class="modal-title">Thành công!</h3>
         <p class="modal-message" id="successMessage"></p>
         <div class="modal-actions">
-            <button type="button" class="btn btn-primary" onclick="closeModalAndReload()">?�ng</button>
+            <button type="button" class="btn btn-primary" onclick="closeModalAndReload()">Đóng</button>
         </div>
     </div>
 </div>
@@ -563,10 +570,10 @@
 <div id="warningModal" class="modal-overlay">
     <div class="modal-box modal-warning">
         <div class="modal-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <h3 class="modal-title">Kh�ng th? ?? xu?t</h3>
+        <h3 class="modal-title">Không thể đề xuất</h3>
         <p class="modal-message" id="warningMessage"></p>
         <div class="modal-actions">
-            <button type="button" class="btn btn-primary" onclick="closeModal('warningModal')">?� hi?u</button>
+            <button type="button" class="btn btn-primary" onclick="closeModal('warningModal')">Đã hiểu</button>
         </div>
     </div>
 </div>
@@ -574,10 +581,10 @@
 <div id="errorModal" class="modal-overlay">
     <div class="modal-box modal-error">
         <div class="modal-icon"><i class="fas fa-times-circle"></i></div>
-        <h3 class="modal-title">C� l?i x?y ra</h3>
+        <h3 class="modal-title">Có lỗi xảy ra</h3>
         <p class="modal-message" id="errorMessage"></p>
         <div class="modal-actions">
-            <button type="button" class="btn btn-primary" onclick="closeModal('errorModal')">?�ng</button>
+            <button type="button" class="btn btn-primary" onclick="closeModal('errorModal')">Đóng</button>
         </div>
     </div>
 </div>
@@ -588,7 +595,7 @@
     document.getElementById('btnOpenModal').addEventListener('click', function() {
         if (!this.disabled) {
             isEditMode = false;
-            document.getElementById('formModalTitle').textContent = '?? xu?t ?? t�i';
+            document.getElementById('formModalTitle').textContent = 'Đề xuất đề tài';
             document.getElementById('formDeXuat').reset();
             document.getElementById('editId').value = '';
             showModal('addModal');
@@ -602,7 +609,7 @@
                 if (data.success) {
                     isEditMode = true;
                     var dt = data.data;
-                    document.getElementById('formModalTitle').textContent = 'Ch?nh s?a ?? t�i';
+                    document.getElementById('formModalTitle').textContent = 'Chỉnh sửa đề tài';
                     document.getElementById('editId').value = dt.id;
                     document.getElementById('MaDeTai').value = dt.maDeTai || '';
                     document.getElementById('TenDeTai').value = dt.tenDeTai || '';
@@ -657,7 +664,7 @@
                 if (data.success) {
                     document.getElementById('successMessage').textContent = data.message;
                     showModal('successModal');
-                } else if (data.message.indexOf('giai ?o?n') > -1 || data.message.indexOf('h?t h?n') > -1 || data.message.indexOf('Ch?a ??n') > -1) {
+                } else if (data.message.indexOf('giai đoạn') > -1 || data.message.indexOf('hết hạn') > -1 || data.message.indexOf('Chưa đến') > -1) {
                     document.getElementById('warningMessage').textContent = data.message;
                     showModal('warningModal');
                 } else {
@@ -669,7 +676,7 @@
                 btnText.style.display = 'inline';
                 btnLoading.style.display = 'none';
                 btnSave.disabled = false;
-                document.getElementById('errorMessage').textContent = 'C� l?i x?y ra. Vui l�ng th? l?i sau.';
+                document.getElementById('errorMessage').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
                 showModal('errorModal');
             });
     });
@@ -678,11 +685,16 @@
     function closeModal(id) { document.getElementById(id).classList.remove('show'); }
     function closeModalAndReload() { closeModal('successModal'); location.reload(); }
 
+    var searchTimeout = null;
     document.getElementById('txtSearch').addEventListener('input', function() {
-        var keyword = this.value.toLowerCase();
-        document.querySelectorAll('tbody tr').forEach(function(row) {
-            row.style.display = row.textContent.toLowerCase().indexOf(keyword) > -1 ? '' : 'none';
-        });
+        var self = this;
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            var keyword = self.value.toLowerCase();
+            document.querySelectorAll('tbody tr').forEach(function(row) {
+                row.style.display = row.textContent.toLowerCase().indexOf(keyword) > -1 ? '' : 'none';
+            });
+        }, 500);
     });
 
     document.addEventListener('keydown', function(e) {

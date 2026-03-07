@@ -1,432 +1,161 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout_SV.cshtml";
-}
+@model DATN_TMS.Models.KeHoachCongViec
 @{
-    ViewData["Title"] = "Sinh viên";
+    ViewData["Title"] = "Chi tiết kế hoạch";
+    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+
+    var statusText = Model.TrangThai switch
+    {
+        "DA_HOAN_THANH" => "Đã hoàn thành",
+        "DANG_THUC_HIEN" => "Đang thực hiện",
+        "CHO_DUYET" => "Chờ duyệt",
+        "CHUA_THUC_HIEN" => "Chưa thực hiện",
+        _ => Model.TrangThai ?? "---"
+    };
+    var statusClass = Model.TrangThai switch
+    {
+        "DA_HOAN_THANH" => "status-completed",
+        "DANG_THUC_HIEN" => "status-running",
+        "CHO_DUYET" => "status-waiting",
+        _ => "status-pending"
+    };
 }
-<div class="content-body">
+
+<style>
+    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dotdoan-page .content-card {
+        background: #fff; border-radius: 8px; padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 140px); font-family: inherit;
+    }
+
+    .form-header {
+        display: flex; align-items: center; gap: 15px;
+        margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee;
+    }
+    .btn-back-circle {
+        display: flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; background-color: #f3f4f6; color: #555;
+        border-radius: 50%; text-decoration: none; transition: 0.2s; font-size: 14px;
+    }
+    .btn-back-circle:hover { background-color: #e5e7eb; color: #2563eb; transform: translateX(-2px); }
+    .form-title { font-size: 18px; font-weight: 700; color: #1f2937; margin: 0; }
+
+    .detail-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    .detail-item { margin-bottom: 0; }
+    .detail-item.full-width { grid-column: 1 / -1; }
+    .detail-label {
+        display: block; font-weight: 600; color: #444; margin-bottom: 6px; font-size: 13px;
+    }
+    .detail-value {
+        width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 6px;
+        background-color: #f9fafb; color: #333; font-size: 13px; min-height: 38px;
+        display: flex; align-items: center;
+    }
+    .detail-value.multiline {
+        min-height: 70px; align-items: flex-start; white-space: pre-wrap;
+    }
+
+    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
+    .status-completed { background: #16a34a; }
+    .status-running { background: #2563eb; }
+    .status-waiting { background: #f59e0b; }
+    .status-pending { background: #6b7280; }
+
+    .meta-card {
+        background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 8px;
+        padding: 14px 18px; margin-bottom: 24px;
+        display: flex; gap: 24px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #333;
+    }
+    .meta-card strong { color: #1e3a5f; }
+
+    .file-link { color: #2563eb; text-decoration: none; font-weight: 500; }
+    .file-link:hover { text-decoration: underline; }
+
+    .btn-row { margin-top: 24px; display: flex; justify-content: flex-start; }
+    .btn-secondary {
+        padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 600;
+        cursor: pointer; border: 1px solid #d1d5db; background: #f3f4f6; color: #333;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;
+    }
+    .btn-secondary:hover { background: #e5e7eb; }
+</style>
+
+<div class="content-body dotdoan-page">
     <div class="content-card">
         <div class="form-header">
-            <a href="QLDA_Kehoach.html" class="btn-back-circle" title="Quay lại danh sách">
+            <a asp-action="Index" class="btn-back-circle" title="Quay lại danh sách">
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
-            <h3 class="form-title">Chi tiết bảng kế hoạch</h3>
+            <h3 class="form-title">Chi tiết kế hoạch công việc</h3>
         </div>
 
-        <div class="topic-box">
-            <div class="topic-grid">
-                <div class="topic-section full-width">
-                    <strong>Tên công việc</strong>
-                    <div class="editable multiline" contenteditable="true">
-                        Nhập tên công việc...
-                    </div>
-                </div>
+        <div class="meta-card">
+            <div><strong>Đợt:</strong> @(Model.IdDotNavigation?.TenDot ?? "---")</div>
+            <div>
+                <strong>Trạng thái:</strong>
+                <span class="status-badge @statusClass">@statusText</span>
+            </div>
+        </div>
 
-                <div class="topic-section">
-                    <strong>Người thực hiện</strong>
-                    <div class="editable multiline" contenteditable="true">
-                        Nhập tên người thực hiện...
-                    </div>
-                </div>
-
-
-                <div class="topic-section">
-                    <strong>Trạng thái</strong>
-                    <ul>
-                        <select class="status-select" style="width: 150px;">
-                            <option value="todo">Chưa thực hiện</option>
-                            <option value="doing">Đang thực hiện</option>
-                            <option value="wait">Chờ giảng viên duyệt</option>
-                            <option value="done">Đã duyệt</option>
-
-                        </select>
-
-                    </ul>
-                </div>
-
-                <div class="topic-section">
-                    <strong>Ngày kết thúc ước tính</strong>
-                    <input type="date" class="form-input">
-                </div>
-
-                <div class="topic-section">
-                    <strong>Ngày kết thúc thực tế</strong>
-                    <input type="date" class="form-input">
-                </div>
-
-                <div class="topic-section full-width">
-                    <strong>Mô tả</strong>
-                    <div class="editable multiline" contenteditable="true">
-                        Nhập mô tả công việc...
-                    </div>
-                </div>
-                <div class="topic-section full-width">
-                    <strong>File minh chứng</strong>
-                    <input type="file" class="form-input file-input">
-                </div>
-                <div class="btn-wrapper-right">
-                    <button class="btn-confirm btn-small">Xác nhận</button>
-                </div>
-
-
-
+        <div class="detail-grid">
+            <div class="detail-item full-width">
+                <span class="detail-label">Tên công việc</span>
+                <div class="detail-value">@(Model.TenCongViec ?? "---")</div>
             </div>
 
+            <div class="detail-item">
+                <span class="detail-label">Ngày bắt đầu (dự kiến)</span>
+                <div class="detail-value">@(Model.NgayBatDau.HasValue ? Model.NgayBatDau.Value.ToString("dd/MM/yyyy") : "---")</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Ngày kết thúc (dự kiến)</span>
+                <div class="detail-value">@(Model.NgayKetThuc.HasValue ? Model.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "---")</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Ngày bắt đầu thực tế</span>
+                <div class="detail-value">@(Model.NgayBatDauThucTe.HasValue ? Model.NgayBatDauThucTe.Value.ToString("dd/MM/yyyy") : "---")</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Ngày kết thúc thực tế</span>
+                <div class="detail-value">@(Model.NgayKetThucThucTe.HasValue ? Model.NgayKetThucThucTe.Value.ToString("dd/MM/yyyy") : "---")</div>
+            </div>
+
+            <div class="detail-item full-width">
+                <span class="detail-label">Mô tả công việc</span>
+                <div class="detail-value multiline">@(Model.MoTaCongViec ?? "---")</div>
+            </div>
+
+            <div class="detail-item full-width">
+                <span class="detail-label">Ghi chú</span>
+                <div class="detail-value multiline">@(Model.GhiChu ?? "---")</div>
+            </div>
+
+            <div class="detail-item full-width">
+                <span class="detail-label">File minh chứng</span>
+                <div class="detail-value">
+                    @if (Model.IdFileMinhChungNavigation != null && !string.IsNullOrEmpty(Model.IdFileMinhChungNavigation.FileBaocao))
+                    {
+                        <a href="@Model.IdFileMinhChungNavigation.FileBaocao" class="file-link" target="_blank">
+                            <i class="fa-solid fa-paperclip"></i> @Model.IdFileMinhChungNavigation.TenBaoCao
+                        </a>
+                    }
+                    else
+                    {
+                        <span>Không có file</span>
+                    }
+                </div>
+            </div>
         </div>
 
+        <div class="btn-row">
+            <a asp-action="Index" class="btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
     </div>
-
 </div>
-<style>
-        .topic-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr); /* 2 cột */
-        gap: 16px;
-    }
-    .editable {
-        padding: 6px 8px;
-        border: 1px dashed #b0b0b0;
-        border-radius: 6px;
-        min-height: 32px;
-        font-size: 13px;
-        color: #374151;
-        cursor: text;
-    }
-
-    .editable:focus {
-        outline: none;
-        border-color: #2563eb;
-        background: #ffffff;
-    }
-
-    .editable.multiline {
-        min-height: 60px;
-    }
-    .form-input {
-        width: 100%;
-        height: 34px;
-        padding: 6px 8px;
-        font-size: 13px;
-        border-radius: 6px;
-        border: 1px solid #b0b0b0;
-        color: #474747;
-    }
-
-    .form-input:focus {
-        outline: none;
-        border-color: #2563eb;
-        background: #f9fafb;
-    }
-    .file-input {
-        padding: 4px;
-        font-size: 13px;
-        border: 1px dashed #d1d5db;
-        border-radius: 6px;
-        background: #f9fafb;
-        cursor: pointer;
-    }
-
-    .file-input:hover {
-        border-color: #2563eb;
-    }
-
-    /* Container */
-    .topic-section ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    /* Select trạng thái */
-    .status-select {
-        width: 150px;
-        height: 34px;
-        padding: 4px 8px;
-        font-size: 13px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background-color: #ffffff;
-        color: #374151;
-        cursor: pointer;
-    }
-
-    /* Focus */
-    .status-select:focus {
-        outline: none;
-        border-color: #2563eb;
-        background: #ffffff;
-    }
-    .btn-confirm {
-        padding: 8px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #ffffff;
-
-        background-color: #2563eb;   /* xanh */
-        border: none;
-        border-radius: 6px;
-
-        cursor: pointer;
-    }
-
-    /* Hover */
-    .btn-confirm:hover {
-        background-color: #2563eb;
-    }
-
-    /* Active */
-    .btn-confirm:active {
-        background-color: #2b3ddd;
-    }
-    /* Form đang dùng grid 2 cột */
-    .topic-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    /* Wrapper của nút */
-    .btn-wrapper-right {
-        grid-column: 1 / -1;      /* ⬅️ CHIẾM CẢ HÀNG GRID */
-        display: flex;
-        justify-content: flex-end;/* ⬅️ ÉP SÁT PHẢI */
-        margin-top: 12px;
-    }
-
-    /* Nút */
-    .btn-confirm {
-        background-color: #2563eb;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .btn-confirm.btn-small {
-        width: auto !important;
-        min-width: 120px;
-        height: 38px;
-        padding: 8px 18px;
-    }
-
-
-
-    /* Disable (khi không cho xác nhận) */
-    .btn-confirm:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-    }
-    /* Ô chiếm full hàng */
-    .full-width {
-        grid-column: 1 / -1; /* chiếm toàn bộ grid */
-    }
-
-    /* File input full width */
-    .file-input {
-        width: 100%;
-        height: 38px;
-        padding: 6px;
-        border: 1px dashed #d1d5db;
-        border-radius: 6px;
-        background: #ffffff;
-        cursor: pointer;
-    }
-    .form-header {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .btn-back-circle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        background-color: #f3f4f6;
-        color: #555;
-        border-radius: 50%;
-        text-decoration: none;
-        transition: 0.2s;
-        font-size: 14px;
-    }
-
-    .btn-back-circle:hover {
-        background-color: #e5e7eb;
-        color: var(--primary-red);
-        transform: translateX(-2px);
-    }
-        .filter-wrapper {
-        display: flex;
-        gap: 20px;
-        align-items: flex-end;
-        flex-wrap: wrap;
-        align-items: flex-end;
-    }
-
-    .filter-item {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .filter-item label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #555;
-    }
-
-    .filter-item select {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 13px;
-        min-width: 200px;
-        background-color: white;
-        cursor: pointer;
-    }
-
-    .filter-item select:focus {
-        border-color: var(--primary-red);
-        outline: none;
-    }
-    .status-text {
-        font-weight: 600;
-    }
-    .status-approved { color: #1e7e34; }
-    .status-rejected { color: #dc3545; }
-    .status-pending { color: #856404; }
-
-    .link-detail {
-        color: #007bff;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 13px;
-    }
-    .link-detail:hover {
-        text-decoration: underline;
-    }
-    /* ===== TOPIC BOX (DỌC) ===== */
-    .topic-box {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 16px 18px;
-        margin-bottom: 20px;
-        border: 1px solid #e5e7eb;
-    }
-
-    /* Tiêu đề đề tài */
-    .topic-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: #111827;
-        line-height: 1.4;
-        margin-bottom: 12px;
-
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    /* Badge số lượng */
-    .topic-title .count {
-        font-size: 13px;
-        font-weight: 500;
-        color: #374151;
-        background: #f3f4f6;
-        padding: 4px 10px;
-        border-radius: 6px;
-        white-space: nowrap;
-    }
-
-    /* BỎ GRID → CHUYỂN DỌC */
-    .topic-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    /* Mỗi khối thông tin */
-    .topic-section {
-        background: #f9fafb;
-        border-radius: 8px;
-        padding: 12px 14px;
-        border: 1px solid #e5e7eb;
-    }
-
-    /* Tiêu đề từng khối */
-    .topic-section strong {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 6px;
-    }
-
-    /* Danh sách */
-    .topic-section ul {
-        margin: 0;
-        padding-left: 18px;
-    }
-
-    .topic-section li {
-        font-size: 13px;
-        color: #374151;
-        line-height: 1.5;
-    }
-
-    /* ===== BUTTON ACTION ===== */
-    .icon-btn {
-        width: 34px;
-        height: 34px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-
-        display: inline-flex;
-        align-items: center;
-
-        font-size: 14px;
-        color: #ffffff; /* ICON KHÔNG MÀU */
-        margin-right: 6px;
-    }
-
-    /* Đồng ý */
-    .icon-btn.approve {
-        background-color: #22c55e;
-    }
-
-    /* Từ chối */
-    .icon-btn.reject {
-        background-color: #ef4444;
-    }
-
-    /* Hover */
-    .icon-btn:hover {
-        opacity: 0.85;
-    }
-
-    /* Disable (sau khi duyệt) */
-    .icon-btn:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-    }
-    /* Icon xem kết quả học tập */
-    .view-score i {
-        font-size: 20px;          /* TO HƠN */
-        color: #6b7280;           /* XÁM */
-        cursor: pointer;
-    }
-
-    /* Hover (nên có) */
-    .view-score i:hover {
-        color: #374151;
-    }
-
-
-</style>

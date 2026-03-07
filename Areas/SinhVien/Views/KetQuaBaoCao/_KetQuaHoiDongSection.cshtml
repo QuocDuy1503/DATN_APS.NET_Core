@@ -1,0 +1,105 @@
+@model KetQuaHoiDongItem?
+
+@if (Model == null)
+{
+    <div class="alert-info-box" style="margin-top:0;">
+        <i class="fa-solid fa-circle-info"></i> Chưa có kết quả cho phần này.
+    </div>
+}
+else
+{
+    <div class="hd-info-grid">
+        <div class="hd-info-item">
+            <label>Hội đồng</label>
+            <div class="val">@(Model.TenHoiDong ?? "---")</div>
+        </div>
+        <div class="hd-info-item">
+            <label>Ngày báo cáo</label>
+            <div class="val">@(Model.NgayBaoCao ?? "---")</div>
+        </div>
+        <div class="hd-info-item">
+            <label>Thời gian</label>
+            <div class="val">@(Model.ThoiGian ?? "---")</div>
+        </div>
+        <div class="hd-info-item">
+            <label>Địa điểm</label>
+            <div class="val">@(Model.DiaDiem ?? "---")</div>
+        </div>
+    </div>
+
+    @if (Model.DanhSachDiemTieuChi.Any())
+    {
+        <table class="score-table">
+            <thead>
+                <tr>
+                    <th style="width:45px;">STT</th>
+                    <th>Tiêu chí</th>
+                    <th style="width:80px; text-align:center;">Trọng số</th>
+                    <th style="width:85px; text-align:center;">Điểm tối đa</th>
+                    <th style="width:70px; text-align:center;">Điểm</th>
+                    <th style="width:130px;">Người chấm</th>
+                    <th>Nhận xét</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model.DanhSachDiemTieuChi)
+                {
+                    <tr>
+                        <td>@d.Stt</td>
+                        <td>@(d.TenTieuChi ?? "---")</td>
+                        <td style="text-align:center;">@(d.TrongSo?.ToString("0.##") ?? "---")</td>
+                        <td style="text-align:center;">@(d.DiemToiDa?.ToString("0.##") ?? "---")</td>
+                        <td style="text-align:center; font-weight:700;">@(d.DiemSo?.ToString("0.##") ?? "---")</td>
+                        <td>@(d.TenNguoiCham ?? "---")</td>
+                        <td>@(d.NhanXet ?? "---")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="alert-info-box" style="margin-top:0; margin-bottom:14px;">
+            <i class="fa-solid fa-circle-info"></i> Chưa có điểm chi tiết.
+        </div>
+    }
+
+    <div class="score-summary">
+        <div><strong>Điểm tổng kết:</strong> @(Model.DiemTongKet?.ToString("0.##") ?? "---")</div>
+        <div><strong>Điểm chữ:</strong> @(Model.DiemChu ?? "---")</div>
+        <div>
+            <strong>Kết quả:</strong>
+            @{
+                var badgeClass = Model.KetQua switch
+                {
+                    "DAT" => "badge-pass",
+                    "KHONG_DAT" => "badge-fail",
+                    _ => "badge-none"
+                };
+                var ketQuaText = Model.KetQua switch
+                {
+                    "DAT" => "ĐẠT",
+                    "KHONG_DAT" => "KHÔNG ĐẠT",
+                    _ => "CHƯA CÓ"
+                };
+            }
+            <span class="badge @badgeClass">@ketQuaText</span>
+        </div>
+    </div>
+
+    @if (Model.DanhSachThanhVien.Any())
+    {
+        <div style="margin-top:18px;">
+            <label style="font-weight:700; font-size:13px; color:#2c3e50; margin-bottom:6px; display:block;">Thành viên hội đồng</label>
+            <ul class="member-list">
+                @foreach (var tv in Model.DanhSachThanhVien)
+                {
+                    <li>
+                        <span class="member-role">@(tv.VaiTro ?? "---")</span>
+                        <span>@(tv.HoTen ?? "---")</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+}
