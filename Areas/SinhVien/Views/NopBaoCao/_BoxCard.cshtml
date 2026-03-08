@@ -1,0 +1,32 @@
+@model NopBaoCaoBoxItem
+
+<a asp-action="Detail" asp-route-loai="@Model.LoaiBaoCao" class="box-card">
+    @if (Model.DangMo)
+    {
+        <span class="box-open-tag"><i class="fa-solid fa-unlock"></i> Đang mở</span>
+    }
+    else
+    {
+        <span class="box-closed-tag"><i class="fa-solid fa-lock"></i> Chưa mở</span>
+    }
+
+    <div class="box-icon @ViewData["IconClass"]">
+        <i class="@ViewData["Icon"]"></i>
+    </div>
+
+    <div class="box-title">@Model.TieuDe</div>
+
+    <div class="box-time">
+        <i class="fa-regular fa-clock"></i>
+        @if (Model.ThoiGianBatDau != null && Model.ThoiGianKetThuc != null)
+        {
+            <span>@Model.ThoiGianBatDau — @Model.ThoiGianKetThuc</span>
+        }
+        else
+        {
+            <span>Chưa cấu hình thời gian</span>
+        }
+    </div>
+
+    <span class="status-badge @Model.TrangThaiCss">@Model.TrangThaiText</span>
+</a>

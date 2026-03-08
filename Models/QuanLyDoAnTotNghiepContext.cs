@@ -119,6 +119,14 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.TrangThai)
                 .HasMaxLength(20)
                 .HasColumnName("trang_thai");
+            entity.Property(e => e.LoaiBaoCao)
+                .HasMaxLength(20)
+                .HasColumnName("loai_bao_cao");
+            entity.Property(e => e.GhiChuGui)
+                .HasColumnName("ghi_chu_gui");
+            entity.Property(e => e.NgaySuaDoiCuoi)
+                .HasColumnType("datetime")
+                .HasColumnName("ngay_sua_doi_cuoi");
 
             entity.HasOne(d => d.IdDeTaiNavigation).WithMany(p => p.BaoCaoNops)
                 .HasForeignKey(d => d.IdDeTai)
@@ -524,6 +532,7 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.NgayBatDauDkNguyenVong).HasColumnName("ngay_bat_dau_dk_nguyen_vong");
             entity.Property(e => e.NgayBatDauDot).HasColumnName("ngay_bat_dau_dot");
             entity.Property(e => e.NgayBatDauDuyetDeXuatDeTai).HasColumnName("ngay_bat_dau_duyet_de_xuat_de_tai");
+            entity.Property(e => e.NgayBatDauDkDeTai).HasColumnName("ngay_bat_dau_dk_de_tai");
             entity.Property(e => e.NgayBatDauNopDeCuong).HasColumnName("ngay_bat_dau_nop_de_cuong");
             entity.Property(e => e.NgayCongBoKqBcck).HasColumnName("ngay_cong_bo_kq_BCCK");
             entity.Property(e => e.NgayDuyetDxdt).HasColumnName("ngay_duyet_DXDT");
@@ -534,6 +543,7 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.NgayKetThucDkNguyenVong).HasColumnName("ngay_ket_thuc_dk_nguyen_vong");
             entity.Property(e => e.NgayKetThucDot).HasColumnName("ngay_ket_thuc_dot");
             entity.Property(e => e.NgayKetThucDuyetDeXuatDeTai).HasColumnName("ngay_ket_thuc_duyet_de_xuat_de_tai");
+            entity.Property(e => e.NgayKetThucDkDeTai).HasColumnName("ngay_ket_thuc_dk_de_tai");
             entity.Property(e => e.NgayKetThucNopDeCuong).HasColumnName("ngay_ket_thuc_nop_de_cuong");
             entity.Property(e => e.NgayLapHdBcck).HasColumnName("ngay_lap_HD_BCCK");
             entity.Property(e => e.NgayLapHdBcgk).HasColumnName("ngay_lap_HD_BCGK");

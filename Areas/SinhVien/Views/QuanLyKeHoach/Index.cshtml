@@ -1,161 +1,363 @@
-@model IEnumerable<DATN_TMS.Models.KeHoachCongViec>
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model DATN_TMS.Areas.SinhVien.Models.KeHoachIndexViewModel
 @{
-    ViewData["Title"] = "Bảng kế hoạch";
-    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+    ViewData["Title"] = "Bảng kế hoạch công việc";
+    var daMo = Model.GiaiDoan == "DA_MO";
+    var hasData = Model.DanhSachCongViec != null && Model.DanhSachCongViec.Any();
 }
 
 <style>
-    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
-    .dotdoan-page .content-card {
+    .content-body.kh-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .kh-page .content-card {
         background: #fff; border-radius: 8px; padding: 20px;
         box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;
         min-height: calc(100vh - 140px); font-family: inherit;
     }
-
     .page-header-row { margin-bottom: 15px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
+    .alert-warning-box {
+        background: #fff3cd; padding: 14px 18px; border-radius: 6px;
+        margin-bottom: 20px; color: #856404; font-size: 13px;
+        display: flex; align-items: center; gap: 10px; border: 1px solid #ffecb5;
+    }
+    .alert-warning-box i { font-size: 16px; flex-shrink: 0; }
+
+    .topic-info-bar {
+        background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 8px;
+        padding: 12px 18px; margin-bottom: 20px;
+        display: flex; gap: 24px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #333;
+    }
+    .topic-info-bar strong { color: #1e3a5f; }
+
     .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-    .filter-wrapper { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-wrapper { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
     .filter-item { display: flex; flex-direction: column; gap: 4px; }
     .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
     .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
     .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
 
-    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
-    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
-    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    tbody tr:hover { background: #f9f9f9; }
+    .btn-add {
+        padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+        border: none; background: #484BE0; color: #fff; display: flex; align-items: center; gap: 6px; transition: 0.15s;
+    }
+    .btn-add:hover { background: #3538b2; }
 
-    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
-    .status-completed { background: #16a34a; }
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; }
+    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    tbody tr:hover { background: #f9f9f9; }
+    td.td-ten { max-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #fff; display: inline-block; white-space: nowrap; }
+    .status-pending { background: #6b7280; }
     .status-running { background: #2563eb; }
     .status-waiting { background: #f59e0b; }
-    .status-pending { background: #6b7280; }
+    .status-completed { background: #16a34a; }
 
-    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #2980b9; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; }
-    .action-btn:hover { background: #eef2ff; color: #1d4ed8; }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .action-btn:hover { background: #eef2ff; color: #3538b2; }
 
     .text-center-empty { text-align: center; color: #6b7280; padding: 40px !important; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: #fff; border-radius: 10px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+    .modal-header { padding: 18px 24px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: #1f2937; }
+    .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7280; padding: 4px 8px; border-radius: 4px; }
+    .modal-close:hover { background: #f3f4f6; }
+    .modal-body { padding: 20px 24px; }
+    .modal-footer { padding: 14px 24px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 600; font-size: 13px; color: #444; margin-bottom: 6px; }
+    .form-group label .required { color: #dc3545; }
+    .form-group input, .form-group textarea, .form-group select {
+        width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px;
+        font-size: 13px; background: #fff; color: #333; box-sizing: border-box;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: #484BE0; outline: none; box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: flex; gap: 16px; }
+    .form-row .form-group { flex: 1; }
+
+    .btn-submit {
+        padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+        border: none; background: #484BE0; color: #fff; transition: 0.15s;
+    }
+    .btn-submit:hover { background: #3538b2; }
+    .btn-cancel-modal {
+        padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+        border: 1px solid #d1d5db; background: #fff; color: #333; transition: 0.15s;
+    }
+    .btn-cancel-modal:hover { background: #f3f4f6; }
+
+    .suggest-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 6px 6px; max-height: 160px; overflow-y: auto; z-index: 10; display: none; }
+    .suggest-list.active { display: block; }
+    .suggest-item { padding: 8px 12px; font-size: 13px; cursor: pointer; }
+    .suggest-item:hover { background: #f0f4ff; }
+
+    /* Pagination */
+    .pagination-container { display: flex; justify-content: center; margin-top: auto; padding-top: 12px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; font-size: 13px; }
+    .pagination li a:hover { border-color: #484BE0; color: #484BE0; }
+    .pagination li.active span { background: #484BE0; border-color: #484BE0; color: #fff; box-shadow: 0 4px 12px rgba(72, 75, 224, 0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
 </style>
 
-<div class="content-body dotdoan-page">
+<div class="content-body kh-page">
     <div class="content-card">
         <div class="page-header-row">
-            <h2 class="page-title">Bảng kế hoạch</h2>
+            <h2 class="page-title">Bảng kế hoạch công việc</h2>
         </div>
 
-        <div class="toolbar-row">
-            <div class="filter-wrapper">
-                <div class="filter-item">
-                    <span class="filter-label">Trạng thái</span>
-                    <select id="filterStatus" class="form-control" style="width: 160px;">
-                        <option value="">-- Tất cả --</option>
-                        <option value="CHUA_THUC_HIEN">Chưa thực hiện</option>
-                        <option value="DANG_THUC_HIEN">Đang thực hiện</option>
-                        <option value="DA_HOAN_THANH">Đã hoàn thành</option>
-                        <option value="CHO_DUYET">Chờ duyệt</option>
-                    </select>
+        @if (!daMo)
+        {
+            <div class="alert-warning-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>@Model.ThongBao</span>
+            </div>
+        }
+        else
+        {
+            <div class="topic-info-bar">
+                <div><strong>Đề tài:</strong> @Model.MaDeTai — @Model.TenDeTai</div>
+                <div><strong>GVHD:</strong> @(Model.TenGVHD ?? "---")</div>
+                <div><strong>Đợt:</strong> @(Model.TenDot ?? "---")</div>
+            </div>
+
+            <div class="toolbar-row">
+                <div class="filter-wrapper">
+                    <div class="filter-item">
+                        <span class="filter-label">Trạng thái</span>
+                        <select id="filterStatus" class="form-control" style="width:170px;">
+                            <option value="">-- Tất cả --</option>
+                            <option value="Chưa thực hiện">Chưa thực hiện</option>
+                            <option value="Đang thực hiện">Đang thực hiện</option>
+                            <option value="Chờ GV duyệt">Chờ GV duyệt</option>
+                            <option value="Đã duyệt">Đã duyệt</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:flex-end; gap:10px;">
+                    <div class="filter-item">
+                        <span class="filter-label">Tìm kiếm</span>
+                        <input type="text" id="txtSearch" class="toolbar-input" placeholder="Tên công việc..." style="width:220px;">
+                    </div>
+                    <button type="button" class="btn-add" id="btnOpenCreate">
+                        <i class="fa-solid fa-plus"></i> Thêm kế hoạch
+                    </button>
                 </div>
             </div>
 
-            <div style="display:flex; align-items:flex-end; gap:10px;">
-                <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                    <span class="filter-label">Tìm kiếm</span>
-                    <input type="text" id="txtSearch" class="toolbar-input" placeholder="Tên công việc..." style="width: 240px;" />
-                </div>
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <div class="table-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:50px;">STT</th>
-                            <th>Tên công việc</th>
-                            <th style="text-align:center;">Ngày bắt đầu</th>
-                            <th style="text-align:center;">Ngày kết thúc</th>
-                            <th style="text-align:center;">Ngày BĐ thực tế</th>
-                            <th style="text-align:center;">Ngày KT thực tế</th>
-                            <th style="text-align:center; width:130px;">Trạng thái</th>
-                            <th style="text-align:center; width:80px;">Chi tiết</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model != null && Model.Any())
-                        {
-                            var stt = 0;
-                            foreach (var item in Model)
+            <div class="table-responsive">
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:50px;">STT</th>
+                                <th>Tên công việc</th>
+                                <th style="width:145px;">Người phụ trách</th>
+                                <th style="width:190px;">Thời gian dự kiến</th>
+                                <th style="width:190px;">Thời gian thực tế</th>
+                                <th style="text-align:center; width:120px;">Trạng thái</th>
+                                <th style="text-align:center; width:70px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            @if (hasData)
                             {
-                                stt++;
-                                var statusClass = item.TrangThai switch
+                                foreach (var item in Model.DanhSachCongViec)
                                 {
-                                    "DA_HOAN_THANH" => "status-completed",
-                                    "DANG_THUC_HIEN" => "status-running",
-                                    "CHO_DUYET" => "status-waiting",
-                                    _ => "status-pending"
-                                };
-                                var statusText = item.TrangThai switch
-                                {
-                                    "DA_HOAN_THANH" => "Đã hoàn thành",
-                                    "DANG_THUC_HIEN" => "Đang thực hiện",
-                                    "CHO_DUYET" => "Chờ duyệt",
-                                    "CHUA_THUC_HIEN" => "Chưa thực hiện",
-                                    _ => item.TrangThai ?? "---"
-                                };
-                                <tr data-status="@item.TrangThai">
-                                    <td>@stt</td>
-                                    <td title="@item.TenCongViec">@item.TenCongViec</td>
-                                    <td style="text-align:center;">@(item.NgayBatDau.HasValue ? item.NgayBatDau.Value.ToString("dd/MM/yyyy") : "---")</td>
-                                    <td style="text-align:center;">@(item.NgayKetThuc.HasValue ? item.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "---")</td>
-                                    <td style="text-align:center;">@(item.NgayBatDauThucTe.HasValue ? item.NgayBatDauThucTe.Value.ToString("dd/MM/yyyy") : "---")</td>
-                                    <td style="text-align:center;">@(item.NgayKetThucThucTe.HasValue ? item.NgayKetThucThucTe.Value.ToString("dd/MM/yyyy") : "---")</td>
-                                    <td style="text-align:center;">
-                                        <span class="status-badge @statusClass">@statusText</span>
-                                    </td>
-                                    <td style="text-align:center;">
-                                        <a asp-action="Detail" asp-route-id="@item.Id" class="action-btn" title="Xem chi tiết">
-                                            <i class="fa-solid fa-eye"></i>
-                                        </a>
-                                    </td>
+                                    <tr data-status="@item.TrangThai">
+                                        <td>@item.Stt</td>
+                                        <td class="td-ten" title="@item.TenCongViec">@item.TenCongViec</td>
+                                        <td>@(item.NguoiPhuTrach ?? "---")</td>
+                                        <td>@(item.ThoiGianDuKien ?? "---")</td>
+                                        <td>@(string.IsNullOrEmpty(item.ThoiGianThucTe) ? "" : item.ThoiGianThucTe)</td>
+                                        <td style="text-align:center;">
+                                            <span class="status-badge @item.StatusCss">@item.StatusText</span>
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <a asp-action="Detail" asp-route-id="@item.Id" class="action-btn" title="Xem chi tiết">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center-empty">Chưa có kế hoạch công việc nào. Nhấn "Thêm kế hoạch" để bắt đầu.</td>
                                 </tr>
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="8" class="text-center-empty">Chưa có kế hoạch công việc nào</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+
+            @if (hasData && Model.DanhSachCongViec!.PageCount > 1)
+            {
+                <div class="pagination-container">
+                    @Html.PagedListPager(Model.DanhSachCongViec!, p => Url.Action("Index", new { page = p }),
+                        new PagedListRenderOptions
+                        {
+                            LiElementClasses = new string[] { "page-item" },
+                            PageClasses = new string[] { "page-link" },
+                            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                            DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                            LinkToPreviousPageFormat = "«",
+                            LinkToNextPageFormat = "»",
+                            EllipsesFormat = "...",
+                            MaximumPageNumbersToDisplay = 5
+                        })
+                </div>
+            }
+
+            <!-- MODAL THÊM KẾ HOẠCH -->
+            <div class="modal-overlay" id="createModal">
+                <div class="modal-box">
+                    <div class="modal-header">
+                        <h3><i class="fa-solid fa-plus-circle"></i> Thêm kế hoạch công việc</h3>
+                        <button class="modal-close" id="btnCloseModal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Tên công việc <span class="required">*</span></label>
+                            <input type="text" id="fTenCongViec" maxlength="200" placeholder="Nhập tên công việc...">
+                        </div>
+                        <div class="form-group">
+                            <label>Mô tả công việc <span class="required">*</span></label>
+                            <textarea id="fMoTa" placeholder="Nhập mô tả..."></textarea>
+                        </div>
+                        <div class="form-group" style="position:relative;">
+                            <label>Người phụ trách <span class="required">*</span></label>
+                            <input type="text" id="fNguoiPhuTrach" placeholder="Nhập MSSV hoặc họ tên..." autocomplete="off">
+                            <div class="suggest-list" id="suggestList"></div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ngày bắt đầu (dự kiến) <span class="required">*</span></label>
+                                <input type="date" id="fNgayBD">
+                            </div>
+                            <div class="form-group">
+                                <label>Ngày kết thúc (dự kiến) <span class="required">*</span></label>
+                                <input type="date" id="fNgayKT">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel-modal" id="btnCancelModal">Hủy</button>
+                        <button type="button" class="btn-submit" id="btnSubmitCreate">
+                            <i class="fa-solid fa-check"></i> Thêm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
+@if (daMo)
+{
+@Html.AntiForgeryToken()
 <script>
-    var searchTimeout = null;
+    // --- Filter ---
+    var timeout = null;
     var searchInput = document.getElementById('txtSearch');
     var filterStatus = document.getElementById('filterStatus');
 
     function filterTable() {
-        var keyword = searchInput.value.toLowerCase();
-        var status = filterStatus.value;
-        document.querySelectorAll('tbody tr').forEach(function (row) {
-            var matchText = row.textContent.toLowerCase().indexOf(keyword) > -1;
-            var matchStatus = !status || row.getAttribute('data-status') === status;
+        var kw = searchInput.value.toLowerCase();
+        var st = filterStatus.value;
+        document.querySelectorAll('#tableBody tr[data-status]').forEach(function (row) {
+            var matchText = row.textContent.toLowerCase().indexOf(kw) > -1;
+            var matchStatus = !st || row.getAttribute('data-status') === st;
             row.style.display = (matchText && matchStatus) ? '' : 'none';
         });
     }
-
-    searchInput.addEventListener('input', function () {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(filterTable, 500);
-    });
-
+    searchInput.addEventListener('input', function () { clearTimeout(timeout); timeout = setTimeout(filterTable, 400); });
     filterStatus.addEventListener('change', filterTable);
+
+    // --- Modal ---
+    var modal = document.getElementById('createModal');
+    document.getElementById('btnOpenCreate').addEventListener('click', function () { modal.classList.add('active'); });
+    document.getElementById('btnCloseModal').addEventListener('click', function () { modal.classList.remove('active'); });
+    document.getElementById('btnCancelModal').addEventListener('click', function () { modal.classList.remove('active'); });
+    modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('active'); });
+
+    // --- Auto-suggest người phụ trách ---
+    var inputNPT = document.getElementById('fNguoiPhuTrach');
+    var suggestList = document.getElementById('suggestList');
+    var suggestTimeout = null;
+    inputNPT.addEventListener('input', function () {
+        clearTimeout(suggestTimeout);
+        var val = this.value;
+        if (val.length < 1) { suggestList.classList.remove('active'); return; }
+        suggestTimeout = setTimeout(function () {
+            fetch('@Url.Action("TimSinhVien", "QuanLyKeHoach", new { area = "SinhVien" })' + '?keyword=' + encodeURIComponent(val))
+                .then(function (r) { return r.json(); })
+                .then(function (list) {
+                    suggestList.innerHTML = '';
+                    if (list.length === 0) { suggestList.classList.remove('active'); return; }
+                    list.forEach(function (sv) {
+                        var div = document.createElement('div');
+                        div.className = 'suggest-item';
+                        div.textContent = sv.mssv + ' - ' + sv.hoTen;
+                        div.addEventListener('click', function () {
+                            inputNPT.value = sv.mssv + ' - ' + sv.hoTen;
+                            suggestList.classList.remove('active');
+                        });
+                        suggestList.appendChild(div);
+                    });
+                    suggestList.classList.add('active');
+                });
+        }, 300);
+    });
+    document.addEventListener('click', function (e) { if (!inputNPT.contains(e.target) && !suggestList.contains(e.target)) suggestList.classList.remove('active'); });
+
+    // --- Submit ---
+    function getToken() { var el = document.querySelector('input[name="__RequestVerificationToken"]'); return el ? el.value : ''; }
+
+    document.getElementById('btnSubmitCreate').addEventListener('click', function () {
+        var ten = document.getElementById('fTenCongViec').value.trim();
+        var mota = document.getElementById('fMoTa').value.trim();
+        var npt = document.getElementById('fNguoiPhuTrach').value.trim();
+        var bd = document.getElementById('fNgayBD').value;
+        var kt = document.getElementById('fNgayKT').value;
+
+        if (!ten || !mota || !npt || !bd || !kt) {
+            Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ các trường bắt buộc.' });
+            return;
+        }
+
+        var body = 'tenCongViec=' + encodeURIComponent(ten) + '&moTaCongViec=' + encodeURIComponent(mota) +
+            '&nguoiPhuTrach=' + encodeURIComponent(npt) + '&ngayBatDau=' + encodeURIComponent(bd) +
+            '&ngayKetThuc=' + encodeURIComponent(kt) + '&__RequestVerificationToken=' + encodeURIComponent(getToken());
+
+        fetch('@Url.Action("Create", "QuanLyKeHoach", new { area = "SinhVien" })', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': getToken() },
+            body: body
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                modal.classList.remove('active');
+                Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false })
+                    .then(function () { location.reload(); });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+            }
+        })
+        .catch(function () { Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' }); });
+    });
 </script>
+}

@@ -210,6 +210,9 @@ CREATE TABLE DotDoAn (
     ngay_bat_dau_duyet_de_xuat_de_tai DATE,
     ngay_ket_thuc_duyet_de_xuat_de_tai DATE,
 
+    ngay_bat_dau_dk_de_tai DATE,
+    ngay_ket_thuc_dk_de_tai DATE,
+
     ngay_lap_hoi_dong_duyet_DXDT INT,
     ngay_duyet_DXDT INT,
 
@@ -439,6 +442,7 @@ CREATE TABLE KeHoachCongViec (
     mo_ta_cong_viec NVARCHAR(MAX),
     trang_thai NVARCHAR(20),
     ghi_chu NVARCHAR(MAX),
+    nguoi_phu_trach NVARCHAR(200) NULL,
     id_file_minh_chung INT NULL,
     FOREIGN KEY (id_sinh_vien) REFERENCES SinhVien(id_nguoi_dung),
     FOREIGN KEY (id_dot) REFERENCES DotDoAn(id)
@@ -454,7 +458,10 @@ CREATE TABLE BaoCaoNop (
     file_baocao VARCHAR(255),
     ngay_nop DATETIME,
     nhan_xet NVARCHAR(MAX),
-    trang_thai VARCHAR(20)
+    trang_thai VARCHAR(20),
+    loai_bao_cao VARCHAR(20),         -- DE_CUONG, GIUA_KY, CUOI_KY
+    ghi_chu_gui NVARCHAR(MAX),
+    ngay_sua_doi_cuoi DATETIME
 );
 
 CREATE TABLE NhatKyHuongDan (
@@ -586,6 +593,7 @@ ALTER TABLE BaoCaoNop ADD CONSTRAINT FK_BCN_SinhVien FOREIGN KEY (id_sinh_vien) 
 
 -- FK cho KeHoachCongViec
 ALTER TABLE KeHoachCongViec ADD CONSTRAINT FK_KHCV_SinhVien FOREIGN KEY (id_sinh_vien) REFERENCES SinhVien(id_nguoi_dung);
+ALTER TABLE KeHoachCongViec ADD CONSTRAINT FK_KHCV_Dot FOREIGN KEY (id_dot) REFERENCES DotDoAn(id);
 ALTER TABLE KeHoachCongViec ADD CONSTRAINT FK_KHCV_MinhChung FOREIGN KEY (id_file_minh_chung) REFERENCES BaoCaoNop(id);
 
 -- FK cho NhatKyHuongDan
@@ -817,27 +825,29 @@ INSERT INTO DotDoAn (
     ten_dot, id_khoa_hoc, id_hoc_ki, ngay_bat_dau_dot, ngay_ket_thuc_dot,
     ngay_bat_dau_dk_nguyen_vong, ngay_ket_thuc_dk_nguyen_vong,
     ngay_bat_dau_dk_duyet_nguyen_vong, ngay_ket_thuc_dk_duyet_nguyen_vong,
-    ngay_bat_dau_de_xuat_de_tai DATE, ngay_ket_thuc_de_xuat_de_tai DATE,
-    ngay_bat_dau_duyet_de_xuat_de_tai DATE, ngay_ket_thuc_duyet_de_xuat_de_tai DATE,
-    ngay_lap_hoi_dong_duyet_DXDT INT, ngay_duyet_DXDT INT,
-    ngay_bat_dau_nop_de_cuong DATE, ngay_ket_thuc_nop_de_cuong DATE,
-    ngay_bat_dau_bao_cao_cuoi_ki DATE, ngay_ket_thuc_bao_cao_cuoi_ki DATE,
-    ngay_lap_HD_BCCK INT, ngay_nop_tai_lieu_BCCK INT, ngay_cong_bo_kq_BCCK INT,
-    ngay_bat_dau_bao_cao_giua_ki DATE, ngay_ket_thuc_bao_cao_giua_ki DATE,
-    ngay_lap_HD_BCGK INT, ngay_nop_tai_lieu_BCGK INT,
+    ngay_bat_dau_de_xuat_de_tai, ngay_ket_thuc_de_xuat_de_tai,
+    ngay_bat_dau_duyet_de_xuat_de_tai, ngay_ket_thuc_duyet_de_xuat_de_tai,
+    ngay_bat_dau_dk_de_tai, ngay_ket_thuc_dk_de_tai,
+    ngay_lap_hoi_dong_duyet_DXDT, ngay_duyet_DXDT,
+    ngay_bat_dau_nop_de_cuong, ngay_ket_thuc_nop_de_cuong,
+    ngay_bat_dau_bao_cao_cuoi_ki, ngay_ket_thuc_bao_cao_cuoi_ki,
+    ngay_lap_HD_BCCK, ngay_nop_tai_lieu_BCCK, ngay_cong_bo_kq_BCCK,
+    ngay_bat_dau_bao_cao_giua_ki, ngay_ket_thuc_bao_cao_giua_ki,
+    ngay_lap_HD_BCGK, ngay_nop_tai_lieu_BCGK,
     trang_thai
 ) VALUES (
     N'Đợt ĐATN K27 - HK2 2025-2026', @id_k27, @id_hk_active,
-    '2026-01-15', '2026-06-15',
-    '2026-02-01', '2026-02-05',
-    '2026-02-06', '2026-02-10',
-    '2026-01-15', '2026-01-25',
-    '2026-01-26', '2026-01-30',
+    '2025-01-15', '2025-08-30',
+    '2025-01-20', '2025-01-25',
+    '2025-01-26', '2025-01-31',
+    '2025-02-01', '2025-02-15',
+    '2025-02-16', '2025-02-28',
+    '2025-03-01', '2025-03-15',
     3, 5,
-    '2026-02-15', '2026-02-20',
-    '2026-05-20', '2026-05-30',
+    '2025-03-20', '2025-04-05',
+    '2025-07-01', '2025-07-20',
     7, 3, 2,
-    '2026-03-20', '2026-03-25',
+    '2025-05-15', '2025-05-25',
     5, 3,
     1
 );
@@ -871,7 +881,7 @@ INSERT INTO DeTai (
     N'Python, PyTorch, Flask, PostgreSQL',
     N'Web app chẩn đoán bệnh',
     14, 3, @id_dot_active, 10, 
-    'CHO_DUYET', NULL, NULL
+    'DA_DUYET', N'Đề tài có hướng tiếp cận tốt, đồng ý cho thực hiện.', 1
 ),
 (
     'DT_27_003', N'Xây dựng ứng dụng nghe nhạc trực tuyến',
@@ -900,10 +910,10 @@ GO
 DECLARE @id_dot_active INT = (SELECT TOP 1 id FROM DotDoAn WHERE trang_thai = 1);
 
 INSERT INTO DangKyNguyenVong (id_dot, id_sinh_vien, so_tin_chi_tich_luy_hien_tai, trang_thai, ngay_dang_ky) VALUES 
-(@id_dot_active, 13, 110, 1, '2026-02-02 08:30:00'),  -- 1 = Đạt
-(@id_dot_active, 14, 85, 2, '2026-02-02 09:15:00'),   -- 2 = Không đạt
-(@id_dot_active, 15, 45, 2, '2026-02-02 10:00:00'),   -- 2 = Không đạt
-(@id_dot_active, 16, 15, 2, '2026-02-02 10:30:00');   -- 2 = Không đạt
+(@id_dot_active, 13, 110, 1, '2025-01-22 08:30:00'),  -- 1 = Đạt
+(@id_dot_active, 14, 85, 1, '2025-01-22 09:15:00'),   -- 1 = Đạt (Trương Thị O đạt NV)
+(@id_dot_active, 15, 45, 2, '2025-01-22 10:00:00'),   -- 2 = Không đạt
+(@id_dot_active, 16, 15, 2, '2025-01-22 10:30:00');   -- 2 = Không đạt
 
 GO
 
@@ -914,10 +924,10 @@ DECLARE @id_dt3 INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_003');
 DECLARE @id_dt4 INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_004');
 
 INSERT INTO SinhVien_DeTai (id_de_tai, id_sinh_vien, trang_thai, ngay_dang_ky, nhan_xet) VALUES 
-(@id_dt1, 13, 'DA_DUYET', '2026-02-16 08:00:00', N'Đã tham gia nhóm thực hiện.'),
-(@id_dt2, 14, 'CHO_DUYET', '2026-02-16 09:30:00', N'Đang chờ giảng viên xác nhận.'),
-(@id_dt3, 15, 'TU_CHOI', '2026-02-16 10:15:00', N'Đề tài không đạt yêu cầu chuyên môn.'),
-(@id_dt4, 16, 'DA_DUYET', '2026-02-16 11:00:00', N'Đã được phân công.');
+(@id_dt1, 13, 'DA_DUYET', '2025-03-05 08:00:00', N'Đã tham gia nhóm thực hiện.'),
+(@id_dt2, 14, 'DA_DUYET', '2025-03-05 09:30:00', N'Đã được duyệt vào đề tài.'),
+(@id_dt3, 15, 'TU_CHOI', '2025-03-05 10:15:00', N'Đề tài không đạt yêu cầu chuyên môn.'),
+(@id_dt4, 16, 'DA_DUYET', '2025-03-05 11:00:00', N'Đã được phân công.');
 
 GO
 
@@ -933,7 +943,7 @@ INSERT INTO DeCuong (id_de_tai, ly_do_chon_de_tai, gia_thuyet_nghien_cuu, doi_tu
     N'Quy trình nghiệp vụ thư viện và công nghệ thẻ thông minh RFID.',
     N'Xây dựng hệ thống phần mềm quản lý (Web App) và tích hợp đầu đọc thẻ RFID.',
     N'Sử dụng phương pháp phát triển phần mềm Agile Scrum.',
-    '2026-02-20 08:00:00',
+    '2025-03-25 08:00:00',
     'DA_DUYET'
 ),
 (
@@ -943,7 +953,7 @@ INSERT INTO DeCuong (id_de_tai, ly_do_chon_de_tai, gia_thuyet_nghien_cuu, doi_tu
     N'Lưu lượng mạng (Network Traffic) và các đặc trưng của gói tin TCP/IP.',
     N'Tập trung phát hiện tấn công lớp ứng dụng (HTTP Flood) và lớp giao vận (SYN Flood).',
     N'Thu thập dữ liệu mẫu (Dataset CICIDS2017), tiền xử lý dữ liệu, huấn luyện mô hình.',
-    '2026-02-20 09:30:00',
+    '2025-03-25 09:30:00',
     'CHO_DUYET'
 );
 
@@ -992,8 +1002,8 @@ IF COL_LENGTH('HoiDongBaoCao', 'ngay_ket_thuc') IS NULL
     ALTER TABLE HoiDongBaoCao ADD ngay_ket_thuc DATE NULL;
 
 INSERT INTO HoiDongBaoCao (ma_hoi_dong, ten_hoi_dong, loai_hoi_dong, id_dot, id_nguoi_tao, id_bo_mon, ngay_bao_cao, dia_diem, thoi_gian_du_kien, trang_thai, ngay_bat_dau, ngay_ket_thuc) VALUES 
-('HD_CNPM_01', N'Hội đồng tốt nghiệp Kỹ thuật phần mềm 1', 'CUOI_KY', @id_dot_active, 1, 1, '2026-05-25', N'Phòng A.05.01', '08:00:00', 1, '2026-05-25', '2026-05-25'),
-('HD_AI_01', N'Hội đồng tốt nghiệp AI & Khoa học dữ liệu', 'CUOI_KY', @id_dot_active, 1, 2, '2026-05-25', N'Phòng F.10.02', '13:30:00', 1, '2026-05-25', '2026-05-25');
+('HD_CNPM_01', N'Hội đồng tốt nghiệp Kỹ thuật phần mềm 1', 'CUOI_KY', @id_dot_active, 1, 1, '2025-07-15', N'Phòng A.05.01', '08:00:00', 1, '2025-07-15', '2025-07-15'),
+('HD_AI_01', N'Hội đồng tốt nghiệp AI & Khoa học dữ liệu', 'CUOI_KY', @id_dot_active, 1, 2, '2025-07-15', N'Phòng F.10.02', '13:30:00', 1, '2025-07-15', '2025-07-15');
 
 GO
 
@@ -1021,12 +1031,15 @@ DECLARE @id_dot_active INT = (SELECT TOP 1 id FROM DotDoAn WHERE trang_thai = 1)
 DECLARE @id_dt_rfid INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_001');
 DECLARE @id_dt_ddos INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_004');
 
-INSERT INTO BaoCaoNop (id_dot, id_de_tai, id_sinh_vien, stt, ten_bao_cao, file_baocao, ngay_nop, nhan_xet, trang_thai) VALUES 
-(@id_dot_active, @id_dt_rfid, 13, 1, N'Báo cáo tiến độ giữa kỳ', '/uploads/2026/HK2/DT001/midterm_report.pdf', '2026-03-20 08:00:00', N'Tiến độ tốt, đã hoàn thành phần cứng RFID.', 'DA_DUYET'),
-(@id_dot_active, @id_dt_rfid, 13, 2, N'Báo cáo toàn văn Khóa luận', '/uploads/2026/HK2/DT001/final_thesis_v1.pdf', '2026-05-20 09:00:00', N'Đạt yêu cầu ra hội đồng bảo vệ.', 'DA_DUYET'),
-(@id_dot_active, @id_dt_rfid, 13, 3, N'Báo cáo bổ sung phụ lục', '/uploads/2026/HK2/DT001/appendix_v1.pdf', '2026-05-25 10:00:00', NULL, 'CHO_DUYET'),
-(@id_dot_active, @id_dt_ddos, 16, 1, N'Báo cáo tiến độ giữa kỳ', '/uploads/2026/HK2/DT004/midterm_v1.pdf', '2026-03-20 14:00:00', N'Cần bổ sung thêm dữ liệu thực nghiệm.', 'YEU_CAU_SUA'),
-(@id_dot_active, @id_dt_ddos, 16, 2, N'Báo cáo toàn văn Khóa luận', '/uploads/2026/HK2/DT004/final_thesis_submission.pdf', '2026-05-20 15:30:00', N'Đồng ý cho bảo vệ.', 'DA_DUYET');
+INSERT INTO BaoCaoNop (id_dot, id_de_tai, id_sinh_vien, stt, ten_bao_cao, file_baocao, ngay_nop, nhan_xet, trang_thai, loai_bao_cao, ghi_chu_gui, ngay_sua_doi_cuoi) VALUES 
+-- SV 13 (đề tài RFID): Đề cương đã duyệt, Giữa kỳ đã duyệt, Cuối kỳ chờ duyệt
+(@id_dot_active, @id_dt_rfid, 13, 1, N'Đề cương đồ án', '/uploads/2025/HK2/DT001/de_cuong_v1.pdf', '2025-04-01 08:00:00', N'Đề cương đạt yêu cầu.', 'DA_DUYET', 'DE_CUONG', N'Em nộp đề cương phiên bản cuối.', '2025-04-01 08:00:00'),
+(@id_dot_active, @id_dt_rfid, 13, 2, N'Báo cáo giữa kỳ', '/uploads/2025/HK2/DT001/midterm_report.pdf', '2025-05-20 08:00:00', N'Tiến độ tốt, đã hoàn thành phần cứng RFID.', 'DA_DUYET', 'GIUA_KY', N'Báo cáo tiến độ giữa kỳ.', '2025-05-20 08:00:00'),
+(@id_dot_active, @id_dt_rfid, 13, 3, N'Báo cáo cuối kỳ', '/uploads/2025/HK2/DT001/final_thesis_v1.pdf', '2025-07-05 09:00:00', NULL, 'CHO_DUYET', 'CUOI_KY', N'Nộp báo cáo toàn văn.', '2025-07-05 09:00:00'),
+-- SV 16 (đề tài DDoS): Đề cương đã duyệt, Giữa kỳ yêu cầu sửa, Cuối kỳ chưa nộp
+(@id_dot_active, @id_dt_ddos, 16, 1, N'Đề cương đồ án', '/uploads/2025/HK2/DT004/de_cuong_v1.pdf', '2025-04-02 10:00:00', N'Chấp nhận.', 'DA_DUYET', 'DE_CUONG', NULL, '2025-04-02 10:00:00'),
+(@id_dot_active, @id_dt_ddos, 16, 2, N'Báo cáo giữa kỳ', '/uploads/2025/HK2/DT004/midterm_v1.pdf', '2025-05-20 14:00:00', N'Cần bổ sung thêm dữ liệu thực nghiệm.', 'TU_CHOI', 'GIUA_KY', N'Báo cáo giữa kỳ lần 1.', '2025-05-20 14:00:00'),
+(@id_dot_active, @id_dt_ddos, 16, 3, N'Báo cáo cuối kỳ', NULL, NULL, NULL, 'CHUA_NOP', 'CUOI_KY', NULL, NULL);
 
 GO
 
@@ -1041,7 +1054,7 @@ IF COL_LENGTH('HoiDongBaoCao', 'ngay_ket_thuc') IS NULL
 
 DECLARE @id_hd_duyet INT;
 INSERT INTO HoiDongBaoCao (ma_hoi_dong, ten_hoi_dong, loai_hoi_dong, id_dot, id_nguoi_tao, id_bo_mon, ngay_bao_cao, dia_diem, thoi_gian_du_kien, trang_thai, ngay_bat_dau, ngay_ket_thuc)
-VALUES ('HD_DUYET_DT_K27', N'Hội đồng duyệt đề tài K27', 'DUYET_DE_TAI', @id_dot_active, 1, 1, '2026-01-20', N'Văn phòng khoa', '08:00:00', 1, '2026-01-20', '2026-01-22');
+VALUES ('HD_DUYET_DT_K27', N'Hội đồng duyệt đề tài K27', 'DUYET_DE_TAI', @id_dot_active, 1, 1, '2025-02-20', N'Văn phòng khoa', '08:00:00', 1, '2025-02-20', '2025-02-22');
 SET @id_hd_duyet = SCOPE_IDENTITY();
 
 -- 3.26 THÀNH VIÊN HỘI ĐỒNG DUYỆT
@@ -1053,24 +1066,51 @@ INSERT INTO ThanhVien_HD_BaoCao (id_hd_baocao, id_giang_vien, vai_tro) VALUES
 -- 3.27 NHẬN XÉT HỘI ĐỒNG DUYỆT ĐỀ TÀI
 DECLARE @id_dt002 INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_002');
 INSERT INTO NhanXetHoiDongDeTai (id_de_tai, id_giang_vien, trang_thai, nhan_xet, ngay_tao) VALUES
-(@id_dt002, 1, 'DA_DUYET', N'Đề tài đủ tính mới, đề nghị duyệt.', '2026-01-27 08:00:00'),
-(@id_dt002, 2, 'DA_DUYET', N'Nội dung rõ, phạm vi khả thi.', '2026-01-27 09:00:00'),
-(@id_dt002, 5, 'DA_DUYET', N'Chấp nhận cho thực hiện.', '2026-01-27 10:00:00');
+(@id_dt002, 1, 'DA_DUYET', N'Đề tài đủ tính mới, đề nghị duyệt.', '2025-02-22 08:00:00'),
+(@id_dt002, 2, 'DA_DUYET', N'Nội dung rõ, phạm vi khả thi.', '2025-02-22 09:00:00'),
+(@id_dt002, 5, 'DA_DUYET', N'Chấp nhận cho thực hiện.', '2025-02-22 10:00:00');
 
 -- 3.28 KẾ HOẠCH CÔNG VIỆC & NHẬT KÝ (minh chứng liên kết BaoCaoNop)
 DECLARE @id_dt_rfid INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_001');
+DECLARE @id_dt_ai INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_002');
 DECLARE @id_bcn_rfid_mid INT = (SELECT id FROM BaoCaoNop WHERE id_de_tai = @id_dt_rfid AND ten_bao_cao LIKE N'%tiến độ giữa kỳ%');
+-- Kế hoạch SV 13 (đề tài RFID)
 INSERT INTO KeHoachCongViec (
     stt, id_sinh_vien, id_dot, ngay_bat_dau, ngay_ket_thuc, ngay_bat_dau_thuc_te, ngay_ket_thuc_thuc_te,
-    ten_cong_viec, mo_ta_cong_viec, trang_thai, ghi_chu, id_file_minh_chung
+    ten_cong_viec, mo_ta_cong_viec, trang_thai, ghi_chu, nguoi_phu_trach, id_file_minh_chung
 ) VALUES (
-    1, 13, @id_dot_active, '2026-03-01', '2026-03-15', '2026-03-02', '2026-03-14',
-    N'Hoàn thiện tích hợp RFID', N'Tích hợp đầu đọc RFID với module mượn trả', 'DA_HOAN_THANH', NULL, @id_bcn_rfid_mid
+    1, 13, @id_dot_active, '2025-04-10', '2025-04-25', '2025-04-11', '2025-04-24',
+    N'Hoàn thiện tích hợp RFID', N'Tích hợp đầu đọc RFID với module mượn trả', N'Đã duyệt', NULL, N'2111001 - Lý Văn N', @id_bcn_rfid_mid
+),
+(
+    2, 13, @id_dot_active, '2025-04-26', '2025-05-10', NULL, NULL,
+    N'Viết tài liệu hướng dẫn sử dụng', N'Soạn tài liệu User Guide cho hệ thống RFID', N'Chưa thực hiện', NULL, N'2111001 - Lý Văn N', NULL
+);
+
+-- Kế hoạch SV 14 - Trương Thị O (đề tài AI X-Quang)
+INSERT INTO KeHoachCongViec (
+    stt, id_sinh_vien, id_dot, ngay_bat_dau, ngay_ket_thuc, ngay_bat_dau_thuc_te, ngay_ket_thuc_thuc_te,
+    ten_cong_viec, mo_ta_cong_viec, trang_thai, ghi_chu, nguoi_phu_trach, id_file_minh_chung
+) VALUES (
+    1, 14, @id_dot_active, '2025-04-10', '2025-04-30', '2025-04-12', '2025-04-28',
+    N'Thu thập và tiền xử lý dữ liệu X-Quang', N'Download dataset ChestXray14, lọc ảnh viêm phổi, augmentation dữ liệu.', N'Đã duyệt', N'Dữ liệu đã được chuẩn hóa 224x224.', N'2211002 - Trương Thị O', NULL
+),
+(
+    2, 14, @id_dot_active, '2025-05-01', '2025-05-20', '2025-05-02', '2025-05-18',
+    N'Huấn luyện mô hình EfficientNet', N'Fine-tune EfficientNet-B3 trên tập dữ liệu phổi, đánh giá accuracy/F1.', N'Chờ GV duyệt', N'Đạt accuracy 94.2% trên tập test.', N'2211002 - Trương Thị O', NULL
+),
+(
+    3, 14, @id_dot_active, '2025-05-21', '2025-06-10', NULL, NULL,
+    N'Xây dựng giao diện web Flask', N'Tạo trang upload ảnh X-Quang, hiển thị kết quả chẩn đoán, lưu hồ sơ.', N'Đang thực hiện', NULL, N'2211002 - Trương Thị O', NULL
+),
+(
+    4, 14, @id_dot_active, '2025-06-11', '2025-06-30', NULL, NULL,
+    N'Viết báo cáo cuối kỳ', N'Soạn toàn bộ báo cáo đồ án tốt nghiệp theo mẫu khoa.', N'Chưa thực hiện', NULL, N'2211002 - Trương Thị O', NULL
 );
 
 DECLARE @id_khcv INT = SCOPE_IDENTITY();
 INSERT INTO NhatKyHuongDan (id_dot, ngay_hop, thoi_gian_hop, hinh_thuc_hop, dia_diem_hop, thanh_vien_tham_du, ten_gvhd, muc_tieu_buoi_hop, noi_dung_hop, action_list)
-VALUES (@id_dot_active, '2026-03-05', '09:00', N'Trực tiếp', N'Phòng A.05.01', N'GVHD, SV nhóm RFID', N'TS. Nguyễn Văn A', N'Rà soát tiến độ tích hợp RFID', N'Trao đổi vướng mắc kỹ thuật, thống nhất kế hoạch kiểm thử thiết bị.', N'[{"task":"Kiểm thử đầu đọc RFID","owner":"SV","deadline":"2026-03-10"}]');
+VALUES (@id_dot_active, '2025-04-15', '09:00', N'Trực tiếp', N'Phòng A.05.01', N'GVHD, SV nhóm RFID', N'TS. Nguyễn Văn A', N'Rà soát tiến độ tích hợp RFID', N'Trao đổi vướng mắc kỹ thuật, thống nhất kế hoạch kiểm thử thiết bị.', N'[{"task":"Kiểm thử đầu đọc RFID","owner":"SV","deadline":"2025-04-25"}]');
 
 -- 3.29 THÔNG BÁO MẪU (phát sinh khi duyệt/từ chối đề tài)
 INSERT INTO ThongBao (id_nguoi_nhan, tieu_de, noi_dung, link_lien_ket, trang_thai_xem, ngay_tao)
@@ -1084,7 +1124,7 @@ DECLARE @id_dot_active INT = (SELECT TOP 1 id FROM DotDoAn WHERE trang_thai = 1)
 -- Hội đồng giữa kỳ
 DECLARE @id_hd_giuaky INT;
 INSERT INTO HoiDongBaoCao (ma_hoi_dong, ten_hoi_dong, loai_hoi_dong, id_dot, id_nguoi_tao, id_bo_mon, ngay_bao_cao, dia_diem, thoi_gian_du_kien, trang_thai, ngay_bat_dau, ngay_ket_thuc)
-VALUES ('HD_GK_CNPM_01', N'Hội đồng báo cáo giữa kỳ KTPM', 'GIUA_KY', @id_dot_active, 1, 1, '2026-03-25', N'Phòng A.05.01', '08:00:00', 1, '2026-03-25', '2026-03-25');
+VALUES ('HD_GK_CNPM_01', N'Hội đồng báo cáo giữa kỳ KTPM', 'GIUA_KY', @id_dot_active, 1, 1, '2025-05-25', N'Phòng A.05.01', '08:00:00', 1, '2025-05-25', '2025-05-25');
 SET @id_hd_giuaky = SCOPE_IDENTITY();
 
 -- Thành viên hội đồng giữa kỳ
@@ -1097,14 +1137,14 @@ INSERT INTO ThanhVien_HD_BaoCao (id_hd_baocao, id_giang_vien, vai_tro) VALUES
 DECLARE @id_svdt_rfid INT = (SELECT TOP 1 id FROM SinhVien_DeTai WHERE id_sinh_vien = 13 AND trang_thai = 'DA_DUYET');
 DECLARE @id_pbv_gk INT;
 INSERT INTO PhienBaoVe (id_hd_baocao, id_sinh_vien_de_tai, stt_bao_cao, link_tai_lieu)
-VALUES (@id_hd_giuaky, @id_svdt_rfid, 1, '/uploads/2026/HK2/DT001/midterm_report.pdf');
+VALUES (@id_hd_giuaky, @id_svdt_rfid, 1, '/uploads/2025/HK2/DT001/midterm_report.pdf');
 SET @id_pbv_gk = SCOPE_IDENTITY();
 
 -- Phiên bảo vệ cho SV 13 — cuối kỳ (hội đồng HD_CNPM_01)
 DECLARE @id_hd_cuoiky INT = (SELECT id FROM HoiDongBaoCao WHERE ma_hoi_dong = 'HD_CNPM_01');
 DECLARE @id_pbv_ck INT;
 INSERT INTO PhienBaoVe (id_hd_baocao, id_sinh_vien_de_tai, stt_bao_cao, link_tai_lieu)
-VALUES (@id_hd_cuoiky, @id_svdt_rfid, 1, '/uploads/2026/HK2/DT001/final_thesis_v1.pdf');
+VALUES (@id_hd_cuoiky, @id_svdt_rfid, 1, '/uploads/2025/HK2/DT001/final_thesis_v1.pdf');
 SET @id_pbv_ck = SCOPE_IDENTITY();
 
 -- Phiên bảo vệ cho SV 16 (đề tài DDoS) — cuối kỳ (hội đồng HD_AI_01)
@@ -1112,7 +1152,7 @@ DECLARE @id_svdt_ddos INT = (SELECT TOP 1 id FROM SinhVien_DeTai WHERE id_sinh_v
 DECLARE @id_hd_ai INT = (SELECT id FROM HoiDongBaoCao WHERE ma_hoi_dong = 'HD_AI_01');
 DECLARE @id_pbv_ck2 INT;
 INSERT INTO PhienBaoVe (id_hd_baocao, id_sinh_vien_de_tai, stt_bao_cao, link_tai_lieu)
-VALUES (@id_hd_ai, @id_svdt_ddos, 1, '/uploads/2026/HK2/DT004/final_thesis_submission.pdf');
+VALUES (@id_hd_ai, @id_svdt_ddos, 1, '/uploads/2025/HK2/DT004/final_thesis_submission.pdf');
 SET @id_pbv_ck2 = SCOPE_IDENTITY();
 
 -- Lấy ID tiêu chí phiếu GVHD và Hội đồng

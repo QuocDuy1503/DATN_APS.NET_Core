@@ -32,6 +32,10 @@ public partial class DotDoAn
 
     public DateOnly? NgayKetThucDuyetDeXuatDeTai { get; set; }
 
+    public DateOnly? NgayBatDauDkDeTai { get; set; }
+
+    public DateOnly? NgayKetThucDkDeTai { get; set; }
+
     public int? NgayLapHoiDongDuyetDxdt { get; set; }
 
     public int? NgayDuyetDxdt { get; set; }

@@ -3,6 +3,8 @@ using DATN_TMS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList;
+using X.PagedList.Extensions;
 
 namespace DATN_TMS.Areas.SinhVien.Controllers
 {
@@ -33,8 +35,13 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
 
         // GET: Danh sách đề tài + form đề xuất
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page, string? searchString)
         {
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+
+            ViewBag.CurrentFilter = searchString;
+
             var viewModel = new DeXuatDeTaiViewModel();
 
             // Lấy danh sách chuyên ngành
@@ -67,10 +74,21 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             }
 
             // Lấy danh sách đề tài của sinh viên
-            viewModel.DanhSachDeTai = await _context.DeTais
+            var query = _context.DeTais
                 .Include(dt => dt.IdChuyenNganhNavigation)
                 .Include(dt => dt.IdNguoiDeXuatNavigation)
                 .Where(dt => dt.IdNguoiDeXuat == sinhVien.IdNguoiDung)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(dt =>
+                    (dt.MaDeTai != null && dt.MaDeTai.Contains(searchString)) ||
+                    (dt.TenDeTai != null && dt.TenDeTai.Contains(searchString)) ||
+                    (dt.IdChuyenNganhNavigation != null && dt.IdChuyenNganhNavigation.TenChuyenNganh != null && dt.IdChuyenNganhNavigation.TenChuyenNganh.Contains(searchString)));
+            }
+
+            viewModel.DanhSachDeTai = query
                 .OrderByDescending(dt => dt.Id)
                 .Select(dt => new DeTaiItem
                 {
@@ -81,7 +99,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                     TrangThai = dt.TrangThai,
                     TenNguoiDeXuat = dt.IdNguoiDeXuatNavigation != null ? dt.IdNguoiDeXuatNavigation.HoTen : ""
                 })
-                .ToListAsync();
+                .ToPagedList(pageNumber, pageSize);
 
             return View(viewModel);
         }

@@ -25,6 +25,12 @@ public partial class BaoCaoNop
 
     public string? TrangThai { get; set; }
 
+    public string? LoaiBaoCao { get; set; }
+
+    public string? GhiChuGui { get; set; }
+
+    public DateTime? NgaySuaDoiCuoi { get; set; }
+
     public virtual DeTai? IdDeTaiNavigation { get; set; }
 
     public virtual DotDoAn? IdDotNavigation { get; set; }

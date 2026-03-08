@@ -1,246 +1,209 @@
-﻿@model IEnumerable<DATN_TMS.Areas.SinhVien.Models.DangKyDeTaiViewModel>
-
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model IPagedList<DATN_TMS.Areas.SinhVien.Models.DangKyDeTaiViewModel>
 @{
     ViewData["Title"] = "Đăng ký đề tài";
-    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+    var giaiDoan = ViewBag.GiaiDoan as string ?? "CHUA_MO";
+    var chuyenNganhs = ViewBag.ChuyenNganhs as List<string> ?? new List<string>();
+    var hasData = Model != null && Model.Any();
+    var currentCN = ViewBag.CurrentChuyenNganh as string;
+    var currentFilter = ViewBag.CurrentFilter as string;
 }
 
 <style>
-    .content-card {
-        background-color: #fff;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.05);
-        display: flex;
-        flex-direction: column;
-        min-height: calc(100vh - 140px);
+    .content-body.dkdt-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dkdt-page .content-card {
+        background: #fff; border-radius: 8px; padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+        min-height: calc(100vh - 140px); font-family: inherit;
     }
 
-    .page-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #2c3e50;
-        margin: 0;
-        text-transform: uppercase;
-    }
+    .page-header-row { margin-bottom: 15px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
-    .page-header-row { margin-bottom: 20px; }
+    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
+    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
 
-    .alert-info-box {
-        background: #d1ecf1;
-        padding: 12px 16px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        color: #0c5460;
-        font-size: 13px;
-    }
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; }
+    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    tbody tr:hover { background: #f9f9f9; }
 
-    .alert-warning-box {
-        background: #fff3cd;
-        padding: 12px 16px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        color: #856404;
-        font-size: 13px;
-    }
+    td.td-ten-detai { max-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .toolbar-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 20px;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-
-    .filter-wrapper {
-        display: flex;
-        gap: 12px;
-        align-items: flex-end;
-        flex-wrap: wrap;
-        background: transparent;
-        padding: 0;
-    }
-
-    .toolbar-right {
-        display: flex;
-        align-items: flex-end;
-        gap: 10px;
-    }
-
-    .filter-item {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .search-box {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        align-items: flex-start;
-    }
-
-    .filter-label {
-        font-weight: 500;
-        font-size: 13px;
-        color: #333;
-        display: block;
-        margin-bottom: 4px;
-    }
-
-    .toolbar-input {
-        background: #fff;
-        font-size: 13px;
-        padding: 8px 12px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        height: 36px;
-    }
-
-    .toolbar-input:focus {
-        border-color: #484BE0;
-        box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1);
-        outline: none;
-    }
-
-    .table-responsive {
-        width: 100%;
-        overflow-x: auto;
-        background: white;
-        border-radius: 4px;
-        border: 1px solid #eee;
-        flex: 1;
-        margin-bottom: 20px;
-    }
-
-    table { width: 100%; border-collapse: collapse; min-width: 800px; }
-    th {
-        background: #f8f9fa;
-        font-size: 13px;
-        font-weight: 600;
-        padding: 12px 15px;
-        text-align: left;
-        color: #555;
-        border-bottom: 2px solid #eee;
-    }
-    td {
-        padding: 12px 15px;
-        border-bottom: 1px solid #eee;
-        font-size: 13px;
-        color: #333;
-    }
-
-    .ellipsis-cell {
-        max-width: 300px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .status-badge {
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-        color: #fff;
-    }
-    .badge-gray { background-color: #95a5a6; }
-    .badge-blue { background-color: #3498db; }
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #fff; display: inline-block; white-space: nowrap; }
+    .badge-green { background-color: #27ae60; }
+    .badge-orange { background-color: #f39c12; }
     .badge-red { background-color: #e74c3c; }
-    .badge-orange { background-color: #e67e22; }
-    .badge-green { background-color: #2ecc71; }
     .badge-dark { background-color: #7f8c8d; }
 
-    .action-cell { display: flex; gap: 10px; align-items: center; }
-    .action-btn { border: none; background: none; cursor: pointer; padding: 5px; font-size: 16px; color: #007bff; }
-    .action-btn:hover { color: #0056b3; }
+    .registered-tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #e8f4fd; color: #484BE0; border: 1px solid #b6d4fe; margin-left: 6px; white-space: nowrap; }
 
-    .text-center-empty { text-align: center; color: #6b7280; padding: 40px !important; }
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .action-btn:hover { background: #eef2ff; color: #3538b2; }
+
+    /* In-table message rows */
+    .table-msg-row td { text-align: center; padding: 50px 20px !important; white-space: normal !important; }
+    .table-msg-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+    .table-msg-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 6px; }
+    .table-msg-text { font-size: 13px; color: #6b7280; line-height: 1.6; }
+    .table-msg-row.msg-warning .table-msg-icon { color: #f59e0b; }
+    .table-msg-row.msg-info .table-msg-icon { color: #484BE0; }
+
+    /* Pagination */
+    .pagination-container { display: flex; justify-content: center; margin-top: auto; padding-top: 12px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; font-size: 13px; }
+    .pagination li a:hover { border-color: #484BE0; color: #484BE0; }
+    .pagination li.active span { background: #484BE0; border-color: #484BE0; color: #fff; box-shadow: 0 4px 12px rgba(72, 75, 224, 0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
 </style>
 
-<div class="content-body">
+<div class="content-body dkdt-page">
     <div class="content-card">
         <div class="page-header-row">
             <h2 class="page-title">Đăng ký đề tài</h2>
         </div>
 
-        @if (!string.IsNullOrEmpty(ViewBag.Message))
-        {
-            <div class="alert-warning-box">
-                <i class="fas fa-exclamation-triangle"></i> @ViewBag.Message
-            </div>
-        }
-
         <div class="toolbar-row">
-            <div class="filter-wrapper"></div>
-            <div class="toolbar-right">
-                <div class="search-box">
-                    <span class="filter-label">Tìm kiếm</span>
-                    <input type="text" id="txtSearch" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 240px;">
+            <div class="filter-wrapper">
+                <div class="filter-item">
+                    <span class="filter-label">Chuyên ngành</span>
+                    <select id="filterNganh" class="form-control" style="width:180px;">
+                        <option value="">-- Tất cả --</option>
+                        @foreach (var cn in chuyenNganhs)
+                        {
+                            <option value="@cn" selected="@(cn == currentCN)">@cn</option>
+                        }
+                    </select>
                 </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                <span class="filter-label">Tìm kiếm</span>
+                <input type="text" id="txtSearch" class="toolbar-input" placeholder="Mã, tên đề tài, GVHD..." style="width:260px;" value="@currentFilter">
             </div>
         </div>
 
         <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Mã đề tài</th>
-                        <th>Tên đề tài</th>
-                        <th>Chuyên ngành</th>
-                        <th>GVHD</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var item in Model)
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">STT</th>
+                            <th style="width:120px;">Mã đề tài</th>
+                            <th>Tên đề tài</th>
+                            <th style="width:160px;">Chuyên ngành</th>
+                            <th style="width:160px;">GVHD</th>
+                            <th style="text-align:center; width:100px;">Trạng thái</th>
+                            <th style="text-align:center; width:70px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (giaiDoan == "CHUA_MO")
                         {
-                            <tr>
-                                <td>@item.MaDeTai</td>
-                                <td class="ellipsis-cell" title="@item.TenDeTai">@item.TenDeTai</td>
-                                <td>@item.Nganh</td>
-                                <td>@item.GVHD</td>
-                                <td><span class="status-badge @item.StatusCss">@item.TrangThai</span></td>
-                                <td class="action-cell">
-                                    <a asp-area="SinhVien"
-                                       asp-controller="QL_DotDoAn"
-                                       asp-action="XCT_DT"
-                                       asp-route-id="@item.IdDeTai"
-                                       title="Xem chi tiết"
-                                       class="action-btn">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </a>
+                            <tr class="table-msg-row msg-warning">
+                                <td colspan="7">
+                                    <span class="table-msg-icon"><i class="fa-regular fa-clock"></i></span>
+                                    <div class="table-msg-title">Chưa đến giai đoạn đăng ký</div>
+                                    <div class="table-msg-text">@ViewBag.Message</div>
                                 </td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="6" class="text-center-empty">Không có đề tài nào trong đợt hiện tại</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                        else if (hasData)
+                        {
+                            var stt = (Model.PageNumber - 1) * Model.PageSize;
+                            foreach (var item in Model)
+                            {
+                                stt++;
+                                <tr>
+                                    <td>@stt</td>
+                                    <td>
+                                        @item.MaDeTai
+                                        @if (item.DaDangKy)
+                                        {
+                                            <span class="registered-tag">Đã đăng ký</span>
+                                        }
+                                    </td>
+                                    <td class="td-ten-detai" title="@item.TenDeTai">@item.TenDeTai</td>
+                                    <td>@item.Nganh</td>
+                                    <td>@item.GVHD</td>
+                                    <td style="text-align:center;">
+                                        <span class="status-badge @item.StatusCss">
+                                            @(item.TrangThai == "DA_DUYET" ? "Đã duyệt" : item.TrangThai == "CHO_DUYET" ? "Chờ duyệt" : item.TrangThai == "TU_CHOI" ? "Từ chối" : item.TrangThai)
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <a asp-action="Details" asp-route-id="@item.IdDeTai" class="action-btn" title="Xem chi tiết">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="table-msg-row msg-info">
+                                <td colspan="7">
+                                    <span class="table-msg-icon"><i class="fa-solid fa-folder-open"></i></span>
+                                    <div class="table-msg-title">Không có đề tài</div>
+                                    <div class="table-msg-text">Không có đề tài nào phù hợp.</div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
+
+        @if (hasData && Model.PageCount > 1)
+        {
+            <div class="pagination-container">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page, chuyenNganh = ViewBag.CurrentChuyenNganh, searchString = ViewBag.CurrentFilter }),
+                    new PagedListRenderOptions
+                    {
+                        LiElementClasses = new string[] { "page-item" },
+                        PageClasses = new string[] { "page-link" },
+                        DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                        DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                        LinkToPreviousPageFormat = "«",
+                        LinkToNextPageFormat = "»",
+                        EllipsesFormat = "...",
+                        MaximumPageNumbersToDisplay = 5
+                    })
+            </div>
+        }
     </div>
 </div>
 
 <script>
-var searchTimeout = null;
-document.getElementById('txtSearch').addEventListener('input', function () {
-    var self = this;
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(function () {
-        var keyword = self.value.toLowerCase();
-        document.querySelectorAll('tbody tr').forEach(function (row) {
-            row.style.display = row.textContent.toLowerCase().indexOf(keyword) > -1 ? '' : 'none';
-        });
-    }, 500);
-});
-</script>
+    var timeout = null;
+    var searchInput = document.getElementById('txtSearch');
+    var filterNganh = document.getElementById('filterNganh');
 
+    function performSearch() {
+        var keyword = searchInput.value;
+        var nganh = filterNganh.value;
+        var url = '@Url.Action("Index")' + '?searchString=' + encodeURIComponent(keyword) + '&chuyenNganh=' + encodeURIComponent(nganh);
+        window.location.href = url;
+    }
+
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(performSearch, 800);
+    });
+
+    filterNganh.addEventListener('change', performSearch);
+</script>

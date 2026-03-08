@@ -1,3 +1,5 @@
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
 @model DATN_TMS.Areas.SinhVien.Models.DeXuatDeTaiViewModel
 @{
     ViewData["Title"] = "Đề xuất đề tài";
@@ -297,6 +299,14 @@
     .required { color: #dc3545; }
     .readonly-field { background-color: #f8f9fa !important; color: #666; }
 
+    /* Pagination */
+    .pagination-container { display: flex; justify-content: center; margin-top: auto; padding-top: 12px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; font-size: 13px; }
+    .pagination li a:hover { border-color: #484BE0; color: #484BE0; }
+    .pagination li.active span { background: #484BE0; border-color: #484BE0; color: #fff; box-shadow: 0 4px 12px rgba(72, 75, 224, 0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
+
     /* Modal thông báo */
     .modal-box {
         background: #fff;
@@ -364,7 +374,7 @@
             <div class="toolbar-right">
                 <div class="search-box">
                     <span class="filter-label">Tìm kiếm</span>
-                    <input type="text" id="txtSearch" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 240px;">
+                    <input type="text" id="txtSearch" class="toolbar-input" placeholder="Nhập từ khóa..." style="width: 240px;" value="@ViewBag.CurrentFilter">
                 </div>
                 <button type="button" class="btn btn-primary" id="btnOpenModal" @(Model.IdDot.HasValue ? "" : "disabled")>
                     <i class="fa-solid fa-plus"></i> Đề xuất đề tài
@@ -376,6 +386,7 @@
             <table>
                 <thead>
                     <tr>
+                        <th style="width:50px;">STT</th>
                         <th>Mã đề tài</th>
                         <th>Tên đề tài</th>
                         <th>Chuyên ngành</th>
@@ -386,9 +397,12 @@
                 <tbody>
                     @if (Model.DanhSachDeTai != null && Model.DanhSachDeTai.Any())
                     {
+                        var stt = (Model.DanhSachDeTai.PageNumber - 1) * Model.DanhSachDeTai.PageSize;
                         foreach (var dt in Model.DanhSachDeTai)
                         {
+                            stt++;
                             <tr>
+                                <td>@stt</td>
                                 <td>@dt.MaDeTai</td>
                                 <td class="ellipsis-cell" title="@dt.TenDeTai">@dt.TenDeTai</td>
                                 <td>@dt.TenChuyenNganh</td>
@@ -421,12 +435,30 @@
                     else
                     {
                         <tr>
-                            <td colspan="5" class="text-center">Chưa có đề tài nào</td>
+                            <td colspan="6" class="text-center">Chưa có đề tài nào</td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+
+        @if (Model.DanhSachDeTai != null && Model.DanhSachDeTai.PageCount > 1)
+        {
+            <div class="pagination-container">
+                @Html.PagedListPager(Model.DanhSachDeTai, p => Url.Action("Index", new { page = p, searchString = ViewBag.CurrentFilter }),
+                    new PagedListRenderOptions
+                    {
+                        LiElementClasses = new string[] { "page-item" },
+                        PageClasses = new string[] { "page-link" },
+                        DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                        DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                        LinkToPreviousPageFormat = "«",
+                        LinkToNextPageFormat = "»",
+                        EllipsesFormat = "...",
+                        MaximumPageNumbersToDisplay = 5
+                    })
+            </div>
+        }
     </div>
 </div>
 
@@ -658,11 +690,9 @@ document.getElementById('txtSearch').addEventListener('input', function() {
     var self = this;
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(function() {
-        var keyword = self.value.toLowerCase();
-        document.querySelectorAll('tbody tr').forEach(function(row) {
-            row.style.display = row.textContent.toLowerCase().indexOf(keyword) > -1 ? '' : 'none';
-        });
-    }, 500);
+        var keyword = self.value;
+        window.location.href = '@Url.Action("Index")' + '?searchString=' + encodeURIComponent(keyword);
+    }, 600);
 });
 
 document.addEventListener('keydown', function(e) {

@@ -1,88 +1,87 @@
-@model DATN_TMS.Models.KeHoachCongViec
+@model DATN_TMS.Areas.SinhVien.Models.KeHoachDetailViewModel
 @{
     ViewData["Title"] = "Chi tiết kế hoạch";
-    Layout = "~/Views/Shared/_Layout_SV.cshtml";
-
-    var statusText = Model.TrangThai switch
-    {
-        "DA_HOAN_THANH" => "Đã hoàn thành",
-        "DANG_THUC_HIEN" => "Đang thực hiện",
-        "CHO_DUYET" => "Chờ duyệt",
-        "CHUA_THUC_HIEN" => "Chưa thực hiện",
-        _ => Model.TrangThai ?? "---"
-    };
-    var statusClass = Model.TrangThai switch
-    {
-        "DA_HOAN_THANH" => "status-completed",
-        "DANG_THUC_HIEN" => "status-running",
-        "CHO_DUYET" => "status-waiting",
-        _ => "status-pending"
-    };
+    var editable = Model.IsEditable;
+    var readonlyAttr = editable ? "" : "readonly";
+    var disabledAttr = editable ? "" : "disabled";
 }
 
 <style>
-    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
-    .dotdoan-page .content-card {
+    .content-body.kh-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .kh-page .content-card {
         background: #fff; border-radius: 8px; padding: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.05);
-        min-height: calc(100vh - 140px); font-family: inherit;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); font-family: inherit;
     }
-
-    .form-header {
-        display: flex; align-items: center; gap: 15px;
-        margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee;
-    }
+    .form-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
     .btn-back-circle {
         display: flex; align-items: center; justify-content: center;
-        width: 36px; height: 36px; background-color: #f3f4f6; color: #555;
+        width: 36px; height: 36px; background: #f3f4f6; color: #555;
         border-radius: 50%; text-decoration: none; transition: 0.2s; font-size: 14px;
     }
-    .btn-back-circle:hover { background-color: #e5e7eb; color: #2563eb; transform: translateX(-2px); }
+    .btn-back-circle:hover { background: #e5e7eb; color: #484BE0; transform: translateX(-2px); }
     .form-title { font-size: 18px; font-weight: 700; color: #1f2937; margin: 0; }
-
-    .detail-grid {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-    }
-    .detail-item { margin-bottom: 0; }
-    .detail-item.full-width { grid-column: 1 / -1; }
-    .detail-label {
-        display: block; font-weight: 600; color: #444; margin-bottom: 6px; font-size: 13px;
-    }
-    .detail-value {
-        width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 6px;
-        background-color: #f9fafb; color: #333; font-size: 13px; min-height: 38px;
-        display: flex; align-items: center;
-    }
-    .detail-value.multiline {
-        min-height: 70px; align-items: flex-start; white-space: pre-wrap;
-    }
-
-    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
-    .status-completed { background: #16a34a; }
-    .status-running { background: #2563eb; }
-    .status-waiting { background: #f59e0b; }
-    .status-pending { background: #6b7280; }
 
     .meta-card {
         background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 8px;
-        padding: 14px 18px; margin-bottom: 24px;
+        padding: 12px 18px; margin-bottom: 24px;
         display: flex; gap: 24px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #333;
     }
     .meta-card strong { color: #1e3a5f; }
 
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #fff; display: inline-block; }
+    .status-pending { background: #6b7280; }
+    .status-running { background: #2563eb; }
+    .status-waiting { background: #f59e0b; }
+    .status-completed { background: #16a34a; }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .detail-item { margin-bottom: 0; }
+    .detail-item.full-width { grid-column: 1 / -1; }
+    .detail-label { display: block; font-weight: 600; color: #444; margin-bottom: 6px; font-size: 13px; }
+    .detail-input {
+        width: 100%; padding: 9px 14px; border: 1px solid #d1d5db; border-radius: 6px;
+        background: #fff; color: #333; font-size: 13px; box-sizing: border-box;
+    }
+    .detail-input:read-only, .detail-input[disabled] { background: #f9fafb; color: #555; }
+    .detail-input:focus { border-color: #484BE0; outline: none; box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
+    textarea.detail-input { resize: vertical; min-height: 80px; }
+    select.detail-input { height: 38px; }
+
+    .section-divider {
+        margin: 28px 0 20px; padding-top: 20px; border-top: 1px solid #eee;
+        font-size: 15px; font-weight: 700; color: #1f2937;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .section-divider i { color: #484BE0; }
+
     .file-link { color: #2563eb; text-decoration: none; font-weight: 500; }
     .file-link:hover { text-decoration: underline; }
+    .file-upload-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .file-upload-row input[type="file"] { font-size: 13px; }
 
-    .btn-row { margin-top: 24px; display: flex; justify-content: flex-start; }
-    .btn-secondary {
-        padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 600;
-        cursor: pointer; border: 1px solid #d1d5db; background: #f3f4f6; color: #333;
-        text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s;
+    .btn-primary-sm {
+        padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+        border: none; background: #484BE0; color: #fff; transition: 0.15s;
+        display: inline-flex; align-items: center; gap: 6px;
     }
-    .btn-secondary:hover { background: #e5e7eb; }
+    .btn-primary-sm:hover { background: #3538b2; }
+    .btn-primary-sm:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    .nhanxet-box {
+        padding: 14px 18px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
+        font-size: 13px; color: #333; white-space: pre-wrap; min-height: 60px;
+    }
+    .nhanxet-empty { color: #9ca3af; font-style: italic; }
+
+    .suggest-list-detail { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 6px 6px; max-height: 160px; overflow-y: auto; z-index: 10; display: none; }
+    .suggest-list-detail.active { display: block; }
+    .suggest-item-d { padding: 8px 12px; font-size: 13px; cursor: pointer; }
+    .suggest-item-d:hover { background: #f0f4ff; }
+
+    .btn-row { margin-top: 24px; display: flex; gap: 12px; }
 </style>
 
-<div class="content-body dotdoan-page">
+<div class="content-body kh-page">
     <div class="content-card">
         <div class="form-header">
             <a asp-action="Index" class="btn-back-circle" title="Quay lại danh sách">
@@ -92,70 +91,200 @@
         </div>
 
         <div class="meta-card">
-            <div><strong>Đợt:</strong> @(Model.IdDotNavigation?.TenDot ?? "---")</div>
+            <div><strong>Đợt:</strong> @(Model.TenDot ?? "---")</div>
             <div>
                 <strong>Trạng thái:</strong>
-                <span class="status-badge @statusClass">@statusText</span>
+                <span class="status-badge @Model.StatusCss">@Model.StatusText</span>
             </div>
+            @if (!editable)
+            {
+                <div style="margin-left:auto; font-size:12px; color:#6b7280;">
+                    <i class="fa-solid fa-lock"></i> Công việc đã được duyệt — chỉ xem
+                </div>
+            }
         </div>
 
-        <div class="detail-grid">
+        <!-- THÔNG TIN CÔNG VIỆC -->
+        <div class="detail-grid" id="detailForm">
             <div class="detail-item full-width">
                 <span class="detail-label">Tên công việc</span>
-                <div class="detail-value">@(Model.TenCongViec ?? "---")</div>
+                <input type="text" class="detail-input" id="dTenCongViec" value="@Model.TenCongViec" @readonlyAttr>
             </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Ngày bắt đầu (dự kiến)</span>
-                <div class="detail-value">@(Model.NgayBatDau.HasValue ? Model.NgayBatDau.Value.ToString("dd/MM/yyyy") : "---")</div>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Ngày kết thúc (dự kiến)</span>
-                <div class="detail-value">@(Model.NgayKetThuc.HasValue ? Model.NgayKetThuc.Value.ToString("dd/MM/yyyy") : "---")</div>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Ngày bắt đầu thực tế</span>
-                <div class="detail-value">@(Model.NgayBatDauThucTe.HasValue ? Model.NgayBatDauThucTe.Value.ToString("dd/MM/yyyy") : "---")</div>
-            </div>
-
-            <div class="detail-item">
-                <span class="detail-label">Ngày kết thúc thực tế</span>
-                <div class="detail-value">@(Model.NgayKetThucThucTe.HasValue ? Model.NgayKetThucThucTe.Value.ToString("dd/MM/yyyy") : "---")</div>
-            </div>
-
             <div class="detail-item full-width">
                 <span class="detail-label">Mô tả công việc</span>
-                <div class="detail-value multiline">@(Model.MoTaCongViec ?? "---")</div>
+                <textarea class="detail-input" id="dMoTa" @readonlyAttr>@Model.MoTaCongViec</textarea>
             </div>
-
-            <div class="detail-item full-width">
-                <span class="detail-label">Ghi chú</span>
-                <div class="detail-value multiline">@(Model.GhiChu ?? "---")</div>
+            <div class="detail-item" style="position:relative;">
+                <span class="detail-label">Người phụ trách</span>
+                <input type="text" class="detail-input" id="dNguoiPhuTrach" value="@Model.NguoiPhuTrach" @readonlyAttr autocomplete="off">
+                @if (editable)
+                {
+                    <div class="suggest-list-detail" id="suggestListDetail"></div>
+                }
             </div>
-
-            <div class="detail-item full-width">
-                <span class="detail-label">File minh chứng</span>
-                <div class="detail-value">
-                    @if (Model.IdFileMinhChungNavigation != null && !string.IsNullOrEmpty(Model.IdFileMinhChungNavigation.FileBaocao))
-                    {
-                        <a href="@Model.IdFileMinhChungNavigation.FileBaocao" class="file-link" target="_blank">
-                            <i class="fa-solid fa-paperclip"></i> @Model.IdFileMinhChungNavigation.TenBaoCao
-                        </a>
-                    }
-                    else
-                    {
-                        <span>Không có file</span>
-                    }
-                </div>
+            <div class="detail-item">
+                <span class="detail-label">Trạng thái</span>
+                @if (editable)
+                {
+                    <select class="detail-input" id="dTrangThai">
+                        <option value="Chưa thực hiện" selected="@(Model.TrangThai == "Chưa thực hiện")">Chưa thực hiện</option>
+                        <option value="Đang thực hiện" selected="@(Model.TrangThai == "Đang thực hiện")">Đang thực hiện</option>
+                        <option value="Chờ GV duyệt" selected="@(Model.TrangThai == "Chờ GV duyệt")">Chờ GV duyệt</option>
+                    </select>
+                }
+                else
+                {
+                    <input type="text" class="detail-input" value="@Model.StatusText" readonly>
+                }
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Ngày bắt đầu (dự kiến)</span>
+                <input type="date" class="detail-input" id="dNgayBD" value="@Model.NgayBatDau" @readonlyAttr>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Ngày kết thúc (dự kiến)</span>
+                <input type="date" class="detail-input" id="dNgayKT" value="@Model.NgayKetThuc" @readonlyAttr>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Ngày bắt đầu thực tế</span>
+                <input type="date" class="detail-input" id="dNgayBDTT" value="@Model.NgayBatDauThucTe" @readonlyAttr>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Ngày kết thúc thực tế</span>
+                <input type="date" class="detail-input" id="dNgayKTTT" value="@Model.NgayKetThucThucTe" @readonlyAttr>
             </div>
         </div>
 
-        <div class="btn-row">
-            <a asp-action="Index" class="btn-secondary">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại danh sách
-            </a>
+        <!-- GHI CHÚ SINH VIÊN -->
+        <div class="section-divider"><i class="fa-solid fa-sticky-note"></i> Ghi chú của sinh viên</div>
+        <textarea class="detail-input" id="dGhiChu" style="min-height:80px;" @readonlyAttr>@Model.GhiChu</textarea>
+
+        @if (editable)
+        {
+            <div class="btn-row">
+                <button type="button" class="btn-primary-sm" id="btnSave">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+                </button>
+            </div>
+        }
+
+        <!-- NỘP FILE MINH CHỨNG -->
+        <div class="section-divider"><i class="fa-solid fa-paperclip"></i> File minh chứng</div>
+        @if (Model.IdFileMinhChung != null && !string.IsNullOrEmpty(Model.LinkFileMinhChung))
+        {
+            <div style="margin-bottom:12px; font-size:13px;">
+                <a href="@Model.LinkFileMinhChung" class="file-link" target="_blank">
+                    <i class="fa-solid fa-file-arrow-down"></i> @(Model.TenFileMinhChung ?? "Tải file")
+                </a>
+            </div>
+        }
+        @if (editable)
+        {
+            <div class="file-upload-row">
+                <input type="file" id="fileUpload">
+                <button type="button" class="btn-primary-sm" id="btnUpload">
+                    <i class="fa-solid fa-upload"></i> Nộp file
+                </button>
+            </div>
+        }
+        else if (Model.IdFileMinhChung == null)
+        {
+            <div style="font-size:13px; color:#9ca3af;">Không có file minh chứng.</div>
+        }
+
+        <!-- NHẬN XÉT GIẢNG VIÊN -->
+        <div class="section-divider"><i class="fa-solid fa-comment-dots"></i> Nhận xét của giảng viên hướng dẫn</div>
+        <div class="nhanxet-box">
+            @if (!string.IsNullOrEmpty(Model.NhanXetGiangVien))
+            {
+                @Model.NhanXetGiangVien
+            }
+            else
+            {
+                <span class="nhanxet-empty">Chưa có nhận xét từ giảng viên.</span>
+            }
         </div>
     </div>
 </div>
+
+@Html.AntiForgeryToken()
+<script>
+    function getToken() { var el = document.querySelector('input[name="__RequestVerificationToken"]'); return el ? el.value : ''; }
+
+    @if (editable)
+    {
+        @:// --- Set selected for dropdown ---
+        @:var selTT = document.getElementById('dTrangThai');
+        @:if (selTT) { selTT.value = '@Model.TrangThai'; }
+
+        @:// --- Auto-suggest người phụ trách ---
+        @:var inputNPT = document.getElementById('dNguoiPhuTrach');
+        @:var suggestD = document.getElementById('suggestListDetail');
+        @:var sTimeout = null;
+        @:if (inputNPT && suggestD) {
+        @:    inputNPT.addEventListener('input', function () {
+        @:        clearTimeout(sTimeout);
+        @:        var val = this.value;
+        @:        if (val.length < 1) { suggestD.classList.remove('active'); return; }
+        @:        sTimeout = setTimeout(function () {
+        @:            fetch('@Url.Action("TimSinhVien", "QuanLyKeHoach", new { area = "SinhVien" })' + '?keyword=' + encodeURIComponent(val))
+        @:                .then(function (r) { return r.json(); })
+        @:                .then(function (list) {
+        @:                    suggestD.innerHTML = '';
+        @:                    if (!list.length) { suggestD.classList.remove('active'); return; }
+        @:                    list.forEach(function (sv) {
+        @:                        var div = document.createElement('div');
+        @:                        div.className = 'suggest-item-d';
+        @:                        div.textContent = sv.mssv + ' - ' + sv.hoTen;
+        @:                        div.addEventListener('click', function () { inputNPT.value = sv.mssv + ' - ' + sv.hoTen; suggestD.classList.remove('active'); });
+        @:                        suggestD.appendChild(div);
+        @:                    });
+        @:                    suggestD.classList.add('active');
+        @:                });
+        @:        }, 300);
+        @:    });
+        @:    document.addEventListener('click', function (e) { if (!inputNPT.contains(e.target) && !suggestD.contains(e.target)) suggestD.classList.remove('active'); });
+        @:}
+
+        @:// --- Save ---
+        @:document.getElementById('btnSave').addEventListener('click', function () {
+        @:    var body = 'id=@Model.Id'
+        @:        + '&tenCongViec=' + encodeURIComponent(document.getElementById('dTenCongViec').value)
+        @:        + '&moTaCongViec=' + encodeURIComponent(document.getElementById('dMoTa').value)
+        @:        + '&nguoiPhuTrach=' + encodeURIComponent(document.getElementById('dNguoiPhuTrach').value)
+        @:        + '&ngayBatDau=' + encodeURIComponent(document.getElementById('dNgayBD').value)
+        @:        + '&ngayKetThuc=' + encodeURIComponent(document.getElementById('dNgayKT').value)
+        @:        + '&ngayBatDauThucTe=' + encodeURIComponent(document.getElementById('dNgayBDTT').value)
+        @:        + '&ngayKetThucThucTe=' + encodeURIComponent(document.getElementById('dNgayKTTT').value)
+        @:        + '&trangThai=' + encodeURIComponent(document.getElementById('dTrangThai').value)
+        @:        + '&ghiChu=' + encodeURIComponent(document.getElementById('dGhiChu').value)
+        @:        + '&__RequestVerificationToken=' + encodeURIComponent(getToken());
+        @:    fetch('@Url.Action("Update", "QuanLyKeHoach", new { area = "SinhVien" })', {
+        @:        method: 'POST',
+        @:        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': getToken() },
+        @:        body: body
+        @:    }).then(function (r) { return r.json(); }).then(function (data) {
+        @:        if (data.success) Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false }).then(function () { location.reload(); });
+        @:        else Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+        @:    }).catch(function () { Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' }); });
+        @:});
+
+        @:// --- Upload file ---
+        @:document.getElementById('btnUpload').addEventListener('click', function () {
+        @:    var fileInput = document.getElementById('fileUpload');
+        @:    if (!fileInput.files.length) { Swal.fire({ icon: 'warning', title: 'Thiếu file', text: 'Vui lòng chọn file.' }); return; }
+        @:    var fd = new FormData();
+        @:    fd.append('id', '@Model.Id');
+        @:    fd.append('file', fileInput.files[0]);
+        @:    fd.append('__RequestVerificationToken', getToken());
+        @:    fetch('@Url.Action("UploadFile", "QuanLyKeHoach", new { area = "SinhVien" })', {
+        @:        method: 'POST',
+        @:        headers: { 'RequestVerificationToken': getToken() },
+        @:        body: fd
+        @:    }).then(function (r) { return r.json(); }).then(function (data) {
+        @:        if (data.success) Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false }).then(function () { location.reload(); });
+        @:        else Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+        @:    }).catch(function () { Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' }); });
+        @:});
+    }
+</script>

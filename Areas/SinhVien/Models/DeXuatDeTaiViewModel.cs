@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using X.PagedList;
 
 namespace DATN_TMS.Areas.SinhVien.Models
 {
@@ -50,7 +51,7 @@ namespace DATN_TMS.Areas.SinhVien.Models
         public List<ChuyenNganhItem>? DanhSachChuyenNganh { get; set; }
 
         // Danh sách đề tài đã đề xuất
-        public List<DeTaiItem>? DanhSachDeTai { get; set; }
+        public IPagedList<DeTaiItem>? DanhSachDeTai { get; set; }
 
         // Filter
         public string? NamHoc { get; set; }

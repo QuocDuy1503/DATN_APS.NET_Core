@@ -5,8 +5,8 @@
 }
 
 <style>
-    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
-    .dotdoan-page .content-card {
+    .content-body.nk-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .nk-page .content-card {
         background: #fff; border-radius: 8px; padding: 20px;
         box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;
         min-height: calc(100vh - 140px); font-family: inherit;
@@ -16,27 +16,36 @@
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
     .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-    .filter-wrapper { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-wrapper { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
     .filter-item { display: flex; flex-direction: column; gap: 4px; }
     .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
-    .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
-    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+    .toolbar-input, .nk-page .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
+    .toolbar-input:focus, .nk-page .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+
+    .btn-add {
+        padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+        border: none; background: #484BE0; color: #fff; display: flex; align-items: center; gap: 6px; transition: 0.15s; white-space: nowrap;
+    }
+    .btn-add:hover { background: #3538b2; }
 
     .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
-    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
-    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .table-scroll { flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; }
+    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
     tbody tr:hover { background: #f9f9f9; }
 
-    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #2980b9; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; }
-    .action-btn:hover { background: #eef2ff; color: #1d4ed8; }
+    /* Chỉ cột nội dung mới ellipsis */
+    .td-noiDung { max-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .action-btn:hover { background: #eef2ff; color: #3538b2; }
 
     .badge-task { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 10px; background: #e0e7ff; color: #3730a3; font-size: 12px; font-weight: 700; }
 
     .text-center-empty { text-align: center; color: #6b7280; padding: 40px !important; }
 
-    /* Modal */
+    /* Modal chi tiết */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 9999; }
     .modal-overlay.show { display: flex; }
     .modal-dialog { background: #fff; border-radius: 8px; width: 90%; max-width: 680px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
@@ -45,19 +54,53 @@
     .btn-close-modal { background: none; border: none; font-size: 22px; cursor: pointer; color: #666; line-height: 1; }
     .btn-close-modal:hover { color: #333; }
     .modal-body-content { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 14px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; background: #f8f9fa; }
     .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .detail-item { margin-bottom: 0; }
     .detail-item.full-width { grid-column: 1 / -1; }
     .detail-label { display: block; font-weight: 600; color: #444; margin-bottom: 5px; font-size: 13px; }
-    .detail-value { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; color: #333; font-size: 13px; min-height: 36px; }
+    .detail-value { width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; color: #333; font-size: 13px; min-height: 36px; box-sizing: border-box; }
     .detail-value.multiline { min-height: 60px; white-space: pre-wrap; }
 
     .action-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
     .action-table th, .action-table td { border: 1px solid #e5e7eb; padding: 8px 10px; text-align: left; }
     .action-table th { background: #f3f4f6; font-weight: 600; color: #444; }
+
+    /* Modal thêm */
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 600; font-size: 13px; color: #444; margin-bottom: 6px; }
+    .form-group label .required { color: #dc3545; }
+    .form-group input, .form-group textarea, .form-group select {
+        width: 100%; padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px;
+        font-size: 13px; background: #fff; color: #333; box-sizing: border-box;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #484BE0; outline: none; box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+    .form-row { display: flex; gap: 16px; }
+    .form-row .form-group { flex: 1; }
+    .btn-submit {
+        padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+        border: none; background: #484BE0; color: #fff; transition: 0.15s;
+    }
+    .btn-submit:hover { background: #3538b2; }
+    .btn-cancel-modal {
+        padding: 9px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+        border: 1px solid #d1d5db; background: #fff; color: #333; transition: 0.15s;
+    }
+    .btn-cancel-modal:hover { background: #f3f4f6; }
+
+    /* Action list builder */
+    .action-list-builder { margin-top: 8px; }
+    .action-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .action-row input { flex: 1; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; }
+    .action-row input:focus { border-color: #484BE0; outline: none; }
+    .btn-remove-action { background: none; border: none; color: #dc3545; font-size: 16px; cursor: pointer; padding: 4px; }
+    .btn-remove-action:hover { color: #a71d2a; }
+    .btn-add-action { background: none; border: 1px dashed #484BE0; color: #484BE0; padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s; }
+    .btn-add-action:hover { background: #f0f4ff; }
 </style>
 
-<div class="content-body dotdoan-page">
+<div class="content-body nk-page">
     <div class="content-card">
         <div class="page-header-row">
             <h2 class="page-title">Nhật ký hướng dẫn</h2>
@@ -76,10 +119,13 @@
             </div>
 
             <div style="display:flex; align-items:flex-end; gap:10px;">
-                <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                <div class="filter-item">
                     <span class="filter-label">Tìm kiếm</span>
                     <input type="text" id="txtSearch" class="toolbar-input" placeholder="Nội dung, địa điểm..." style="width: 240px;" />
                 </div>
+                <button type="button" class="btn-add" id="btnOpenCreate">
+                    <i class="fa-solid fa-plus"></i> Thêm nhật ký
+                </button>
             </div>
         </div>
 
@@ -88,42 +134,43 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width:150px;">Người tạo</th>
-                            <th style="width:110px; text-align:center;">Ngày họp</th>
-                            <th style="width:110px;">Hình thức họp</th>
-                            <th>Nội dung</th>
-                            <th style="width:70px; text-align:center;">Task</th>
-                            <th style="width:80px; text-align:center;">Thời gian</th>
+                            <th style="width:50px;">STT</th>
+                            <th style="width:140px;">GVHD</th>
+                            <th style="width:100px; text-align:center;">Ngày họp</th>
+                            <th style="width:80px; text-align:center;">Giờ họp</th>
+                            <th style="width:100px;">Hình thức</th>
                             <th style="width:140px;">Địa điểm</th>
+                            <th>Nội dung</th>
+                            <th style="width:55px; text-align:center;">Task</th>
                             <th style="width:70px; text-align:center;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (Model != null && Model.Any())
                         {
+                            var stt = 0;
                             foreach (var item in Model)
                             {
+                                stt++;
                                 var taskCount = 0;
                                 if (!string.IsNullOrEmpty(item.ActionList))
                                 {
                                     try
                                     {
                                         var actions = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(item.ActionList);
-                                        if (actions.ValueKind == System.Text.Json.JsonValueKind.Array)
-                                        {
-                                            taskCount = actions.GetArrayLength();
-                                        }
+                                        if (actions.ValueKind == System.Text.Json.JsonValueKind.Array) { taskCount = actions.GetArrayLength(); }
                                     }
                                     catch { }
                                 }
                                 <tr data-hinhthuc="@item.HinhThucHop">
-                                    <td title="@item.TenGvhd">@(item.TenGvhd ?? "---")</td>
+                                    <td>@stt</td>
+                                    <td>@(item.TenGvhd ?? "---")</td>
                                     <td style="text-align:center;">@(item.NgayHop.HasValue ? item.NgayHop.Value.ToString("dd/MM/yyyy") : "---")</td>
-                                    <td>@(item.HinhThucHop ?? "---")</td>
-                                    <td title="@item.NoiDungHop">@(item.NoiDungHop != null && item.NoiDungHop.Length > 60 ? item.NoiDungHop.Substring(0, 60) + "..." : item.NoiDungHop ?? "---")</td>
-                                    <td style="text-align:center;"><span class="badge-task">@taskCount</span></td>
                                     <td style="text-align:center;">@(item.ThoiGianHop.HasValue ? item.ThoiGianHop.Value.ToString("HH:mm") : "---")</td>
-                                    <td title="@item.DiaDiemHop">@(item.DiaDiemHop ?? "---")</td>
+                                    <td>@(item.HinhThucHop ?? "---")</td>
+                                    <td>@(item.DiaDiemHop ?? "---")</td>
+                                    <td class="td-noiDung" title="@item.NoiDungHop">@(item.NoiDungHop ?? "---")</td>
+                                    <td style="text-align:center;"><span class="badge-task">@taskCount</span></td>
                                     <td style="text-align:center;">
                                         <button type="button" class="action-btn btn-detail" data-id="@item.Id" title="Xem chi tiết">
                                             <i class="fa-solid fa-eye"></i>
@@ -135,7 +182,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center-empty">Chưa có nhật ký hướng dẫn nào</td>
+                                <td colspan="9" class="text-center-empty">Chưa có nhật ký hướng dẫn nào</td>
                             </tr>
                         }
                     </tbody>
@@ -195,8 +242,78 @@
     </div>
 </div>
 
+<!-- MODAL THÊM NHẬT KÝ -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal-dialog" style="max-width:720px;">
+        <div class="modal-header">
+            <div class="modal-title"><i class="fa-solid fa-plus-circle"></i> Thêm nhật ký hướng dẫn</div>
+            <button type="button" class="btn-close-modal" id="btnCloseCreate">&times;</button>
+        </div>
+        <div class="modal-body-content">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ngày họp <span class="required">*</span></label>
+                    <input type="date" id="fNgayHop">
+                </div>
+                <div class="form-group">
+                    <label>Thời gian họp <span class="required">*</span></label>
+                    <input type="time" id="fThoiGian">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Hình thức họp <span class="required">*</span></label>
+                    <select id="fHinhThuc">
+                        <option value="">-- Chọn --</option>
+                        <option value="Trực tiếp">Trực tiếp</option>
+                        <option value="Online">Online</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Địa điểm họp</label>
+                    <input type="text" id="fDiaDiem" placeholder="Phòng, link meeting...">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Thành viên tham dự</label>
+                <input type="text" id="fThanhVien" placeholder="VD: GVHD, SV nhóm 1...">
+            </div>
+            <div class="form-group">
+                <label>Tên GVHD</label>
+                <input type="text" id="fTenGvhd" placeholder="VD: TS. Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+                <label>Mục tiêu buổi họp <span class="required">*</span></label>
+                <textarea id="fMucTieu" rows="2" placeholder="Nhập mục tiêu buổi họp..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Nội dung họp <span class="required">*</span></label>
+                <textarea id="fNoiDung" rows="3" placeholder="Nhập nội dung chi tiết..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Action list</label>
+                <div class="action-list-builder" id="actionListBuilder">
+                    <div class="action-row">
+                        <input type="text" placeholder="Task" class="al-task">
+                        <input type="text" placeholder="Owner" class="al-owner" style="max-width:120px;">
+                        <input type="date" class="al-deadline" style="max-width:150px;">
+                        <button type="button" class="btn-remove-action" title="Xóa">&times;</button>
+                    </div>
+                </div>
+                <button type="button" class="btn-add-action" id="btnAddAction"><i class="fa-solid fa-plus"></i> Thêm task</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel-modal" id="btnCancelCreate">Hủy</button>
+            <button type="button" class="btn-submit" id="btnSubmitCreate"><i class="fa-solid fa-check"></i> Lưu</button>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
 <script>
-    // Data from server
+    // ===== DATA =====
     var nhatKyData = {
         @foreach (var item in Model ?? Enumerable.Empty<DATN_TMS.Models.NhatKyHuongDan>())
         {
@@ -216,7 +333,7 @@
         }
     };
 
-    // Detail modal
+    // ===== DETAIL MODAL =====
     document.querySelectorAll('.btn-detail').forEach(function(btn) {
         btn.addEventListener('click', function() {
             var id = this.getAttribute('data-id');
@@ -232,7 +349,6 @@
             document.getElementById('mdMucTieu').textContent = d.mucTieu;
             document.getElementById('mdNoiDung').textContent = d.noiDung;
 
-            // Action list
             var alContainer = document.getElementById('mdActionList');
             try {
                 var actions = JSON.parse(d.actionList);
@@ -254,17 +370,86 @@
         });
     });
 
-    document.getElementById('btnCloseDetail').addEventListener('click', function() {
-        document.getElementById('detailModal').classList.remove('show');
+    document.getElementById('btnCloseDetail').addEventListener('click', function() { document.getElementById('detailModal').classList.remove('show'); });
+    document.getElementById('detailModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+
+    // ===== CREATE MODAL =====
+    document.getElementById('btnOpenCreate').addEventListener('click', function() { document.getElementById('createModal').classList.add('show'); });
+    document.getElementById('btnCloseCreate').addEventListener('click', function() { document.getElementById('createModal').classList.remove('show'); });
+    document.getElementById('btnCancelCreate').addEventListener('click', function() { document.getElementById('createModal').classList.remove('show'); });
+    document.getElementById('createModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('show'); });
+
+    // Action list: add row
+    document.getElementById('btnAddAction').addEventListener('click', function() {
+        var row = document.createElement('div');
+        row.className = 'action-row';
+        row.innerHTML = '<input type="text" placeholder="Task" class="al-task"><input type="text" placeholder="Owner" class="al-owner" style="max-width:120px;"><input type="date" class="al-deadline" style="max-width:150px;"><button type="button" class="btn-remove-action" title="Xóa">&times;</button>';
+        document.getElementById('actionListBuilder').appendChild(row);
+        row.querySelector('.btn-remove-action').addEventListener('click', function() { row.remove(); });
     });
-    document.getElementById('detailModal').addEventListener('click', function(e) {
-        if (e.target === this) this.classList.remove('show');
-    });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') document.getElementById('detailModal').classList.remove('show');
+    // Action list: remove existing rows
+    document.querySelectorAll('.btn-remove-action').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var rows = document.querySelectorAll('.action-row');
+            if (rows.length > 1) this.closest('.action-row').remove();
+        });
     });
 
-    // Filter & search
+    // Submit create
+    document.getElementById('btnSubmitCreate').addEventListener('click', function() {
+        var ngayHop = document.getElementById('fNgayHop').value;
+        var thoiGian = document.getElementById('fThoiGian').value;
+        var hinhThuc = document.getElementById('fHinhThuc').value;
+        var mucTieu = document.getElementById('fMucTieu').value.trim();
+        var noiDung = document.getElementById('fNoiDung').value.trim();
+
+        if (!ngayHop || !thoiGian || !hinhThuc || !mucTieu || !noiDung) {
+            alert('Vui lòng điền đầy đủ các trường bắt buộc (*).');
+            return;
+        }
+
+        var actionList = [];
+        document.querySelectorAll('.action-row').forEach(function(row) {
+            var task = row.querySelector('.al-task').value.trim();
+            var owner = row.querySelector('.al-owner').value.trim();
+            var deadline = row.querySelector('.al-deadline').value;
+            if (task) actionList.push({ task: task, owner: owner, deadline: deadline });
+        });
+
+        var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        fetch('@Url.Action("Create", "NhatKyHuongDan", new { area = "SinhVien" })', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+            body: JSON.stringify({
+                ngayHop: ngayHop,
+                thoiGianHop: thoiGian,
+                hinhThucHop: hinhThuc,
+                diaDiemHop: document.getElementById('fDiaDiem').value.trim(),
+                thanhVienThamDu: document.getElementById('fThanhVien').value.trim(),
+                tenGvhd: document.getElementById('fTenGvhd').value.trim(),
+                mucTieuBuoiHop: mucTieu,
+                noiDungHop: noiDung,
+                actionList: JSON.stringify(actionList)
+            })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) { location.reload(); }
+            else { alert(data.message || 'Có lỗi xảy ra.'); }
+        })
+        .catch(function() { alert('Có lỗi xảy ra. Vui lòng thử lại.'); });
+    });
+
+    // ===== ESCAPE KEY =====
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.getElementById('detailModal').classList.remove('show');
+            document.getElementById('createModal').classList.remove('show');
+        }
+    });
+
+    // ===== FILTER & SEARCH =====
     var searchTimeout = null;
     var searchInput = document.getElementById('txtSearch');
     var filterHinhThuc = document.getElementById('filterHinhThuc');
@@ -272,7 +457,7 @@
     function filterTable() {
         var keyword = searchInput.value.toLowerCase();
         var hinhThuc = filterHinhThuc.value;
-        document.querySelectorAll('tbody tr').forEach(function(row) {
+        document.querySelectorAll('tbody tr[data-hinhthuc]').forEach(function(row) {
             var matchText = row.textContent.toLowerCase().indexOf(keyword) > -1;
             var matchHinhThuc = !hinhThuc || row.getAttribute('data-hinhthuc') === hinhThuc;
             row.style.display = (matchText && matchHinhThuc) ? '' : 'none';
