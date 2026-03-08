@@ -3,12 +3,14 @@ using DATN_TMS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList.Extensions;
 
 namespace DATN_TMS.Areas.GiangVien.Controllers
 {
     [Area("GiangVien")]
     public class QuanLyDangKyDeTaiController : Controller
     {
+        private const int MAX_SV_PER_DETAI = 2;
         private readonly QuanLyDoAnTotNghiepContext _context;
 
         public QuanLyDangKyDeTaiController(QuanLyDoAnTotNghiepContext context)
@@ -31,23 +33,50 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page, string? chuyenNganh, string? searchString)
         {
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+
+            ViewBag.CurrentChuyenNganh = chuyenNganh;
+            ViewBag.CurrentFilter = searchString;
+
             var maGV = HttpContext.Session.GetString("UserCode");
             var giangVien = await _context.GiangViens.FirstOrDefaultAsync(gv => gv.MaGv == maGV);
 
             if (giangVien == null)
-                return View(new List<DangKyDeTaiGVItem>());
+            {
+                ViewBag.ChuyenNganhs = new List<string>();
+                return View(new List<DangKyDeTaiGVItem>().ToPagedList(1, pageSize));
+            }
 
-            var data = await _context.DeTais
+            var baseQuery = _context.DeTais
                 .Include(dt => dt.IdChuyenNganhNavigation)
                 .Include(dt => dt.SinhVienDeTais)
-                    .ThenInclude(svdt => svdt.IdSinhVienNavigation)
-                        .ThenInclude(sv => sv!.IdNguoiDungNavigation)
-                .Include(dt => dt.SinhVienDeTais)
-                    .ThenInclude(svdt => svdt.IdSinhVienNavigation)
-                        .ThenInclude(sv => sv!.IdKhoaHocNavigation)
-                .Where(dt => dt.IdGvhd == giangVien.IdNguoiDung)
+                .Where(dt => dt.IdGvhd == giangVien.IdNguoiDung);
+
+            var allChuyenNganhs = await baseQuery
+                .Where(dt => dt.IdChuyenNganhNavigation != null)
+                .Select(dt => dt.IdChuyenNganhNavigation!.TenChuyenNganh)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToListAsync();
+            ViewBag.ChuyenNganhs = allChuyenNganhs;
+
+            var query = baseQuery.AsQueryable();
+
+            if (!string.IsNullOrEmpty(chuyenNganh))
+            {
+                query = query.Where(dt => dt.IdChuyenNganhNavigation != null && dt.IdChuyenNganhNavigation.TenChuyenNganh == chuyenNganh);
+            }
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                query = query.Where(dt => (dt.MaDeTai != null && dt.MaDeTai.Contains(searchString))
+                    || (dt.TenDeTai != null && dt.TenDeTai.Contains(searchString)));
+            }
+
+            var data = query
                 .OrderByDescending(dt => dt.Id)
                 .Select(dt => new DangKyDeTaiGVItem
                 {
@@ -55,22 +84,73 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                     MaDeTai = dt.MaDeTai,
                     TenDeTai = dt.TenDeTai,
                     ChuyenNganh = dt.IdChuyenNganhNavigation != null ? dt.IdChuyenNganhNavigation.TenChuyenNganh : "",
-                    SoLuongDangKy = dt.SinhVienDeTais.Count,
-                    DanhSachSV = dt.SinhVienDeTais.Select(svdt => new SinhVienDangKyItem
+                    SoLuongDangKy = dt.SinhVienDeTais.Count
+                });
+
+            var pagedList = data.ToPagedList(pageNumber, pageSize);
+            return View(pagedList);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Detail(int id)
+        {
+            var maGV = HttpContext.Session.GetString("UserCode");
+            var giangVien = await _context.GiangViens.FirstOrDefaultAsync(gv => gv.MaGv == maGV);
+            if (giangVien == null) return RedirectToAction("Index");
+
+            var deTai = await _context.DeTais
+                .Include(dt => dt.IdChuyenNganhNavigation)
+                .Include(dt => dt.IdNguoiDeXuatNavigation)
+                .Include(dt => dt.SinhVienDeTais)
+                    .ThenInclude(svdt => svdt.IdSinhVienNavigation)
+                        .ThenInclude(sv => sv!.IdNguoiDungNavigation)
+                .Include(dt => dt.SinhVienDeTais)
+                    .ThenInclude(svdt => svdt.IdSinhVienNavigation)
+                        .ThenInclude(sv => sv!.IdKhoaHocNavigation)
+                .FirstOrDefaultAsync(dt => dt.Id == id && dt.IdGvhd == giangVien.IdNguoiDung);
+
+            if (deTai == null) return NotFound();
+
+            var allDangKy = deTai.SinhVienDeTais.ToList();
+            var tongDaDuyet = allDangKy.Count(x => x.TrangThai == "DA_DUYET");
+
+            var vm = new ChiTietDangKyDeTaiGVViewModel
+            {
+                IdDeTai = deTai.Id,
+                MaDeTai = deTai.MaDeTai,
+                TenDeTai = deTai.TenDeTai,
+                TenChuyenNganh = deTai.IdChuyenNganhNavigation?.TenChuyenNganh,
+                NguoiDeXuat = deTai.IdNguoiDeXuatNavigation?.HoTen,
+                MucTieu = deTai.MucTieuChinh,
+                YeuCauTinhMoi = deTai.YeuCauTinhMoi,
+                PhamVi = deTai.PhamViChucNang,
+                CongNghe = deTai.CongNgheSuDung,
+                KetQuaDuKien = deTai.SanPhamKetQuaDuKien,
+                SoLuongDangKy = allDangKy.Count,
+                SoLuongDaDuyet = tongDaDuyet,
+                DanhSachSV = allDangKy
+                    .OrderBy(svdt => svdt.TrangThai == "DA_DUYET" ? 0 : svdt.TrangThai == "Chờ GVHD duyệt" ? 1 : 2)
+                    .Select(svdt => new SinhVienDangKyDetailGVItem
                     {
                         IdSvDeTai = svdt.Id,
-                        Mssv = svdt.IdSinhVienNavigation != null ? svdt.IdSinhVienNavigation.Mssv : "",
-                        HoTen = svdt.IdSinhVienNavigation != null && svdt.IdSinhVienNavigation.IdNguoiDungNavigation != null
-                            ? svdt.IdSinhVienNavigation.IdNguoiDungNavigation.HoTen : "",
-                        KhoaHoc = svdt.IdSinhVienNavigation != null && svdt.IdSinhVienNavigation.IdKhoaHocNavigation != null
-                            ? svdt.IdSinhVienNavigation.IdKhoaHocNavigation.TenKhoa : "",
+                        Mssv = svdt.IdSinhVienNavigation?.Mssv,
+                        HoTen = svdt.IdSinhVienNavigation?.IdNguoiDungNavigation?.HoTen,
+                        Email = svdt.IdSinhVienNavigation?.IdNguoiDungNavigation?.Email,
+                        KhoaHoc = svdt.IdSinhVienNavigation?.IdKhoaHocNavigation?.TenKhoa,
                         TrangThai = svdt.TrangThai,
-                        NgayDangKy = svdt.NgayDangKy.HasValue ? svdt.NgayDangKy.Value.ToString("dd/MM/yyyy") : ""
+                        StatusCss = svdt.TrangThai switch
+                        {
+                            "DA_DUYET" => "member-approved",
+                            "Chờ GVHD duyệt" => "member-pending",
+                            "TU_CHOI" => "member-rejected",
+                            _ => "member-default"
+                        },
+                        NgayDangKy = svdt.NgayDangKy?.ToString("dd/MM/yyyy HH:mm"),
+                        NhanXet = svdt.NhanXet
                     }).ToList()
-                })
-                .ToListAsync();
+            };
 
-            return View(data);
+            return View(vm);
         }
 
         [HttpPost]
@@ -94,8 +174,8 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
             {
                 var soSvDaDuyet = await _context.SinhVienDeTais
                     .CountAsync(s => s.IdDeTai == deTai.Id && s.TrangThai == "DA_DUYET");
-                if (soSvDaDuyet >= 2)
-                    return Json(new { success = false, message = "Đề tài đã đủ số lượng sinh viên (tối đa 2)." });
+                if (soSvDaDuyet >= MAX_SV_PER_DETAI)
+                    return Json(new { success = false, message = $"Đề tài đã đủ số lượng sinh viên (tối đa {MAX_SV_PER_DETAI})." });
 
                 svDeTai.TrangThai = "DA_DUYET";
             }

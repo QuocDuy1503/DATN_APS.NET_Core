@@ -80,7 +80,7 @@
                     <input type="text" id="searchInput" name="searchString" value="@ViewBag.CurrentFilter" class="toolbar-input search-input" placeholder="Nhập tên hội đồng..." style="width: 250px;" />
                 </div>
                 
-                <button type="button" class="btn-primary" onclick="openModal()">
+                <button type="button" class="btn-primary" onclick="checkAndOpenModal()">
                     <i class="fa-solid fa-plus"></i> Thêm hội đồng
                 </button>
             </div>
@@ -146,9 +146,23 @@
 </div>
 
 <partial name="_CreateModal" />
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // 1. Script Tìm kiếm Real-time (Giữ nguyên)
+    // Kiểm tra giai đoạn trước khi mở modal
+    function checkAndOpenModal() {
+        fetch('@Url.Action("CheckGiaiDoanDuyet")')
+            .then(r => r.json())
+            .then(data => {
+                if (data.allowed) {
+                    openModal();
+                } else {
+                    Swal.fire({ icon: 'warning', title: 'Không thể tạo hội đồng', text: data.message, confirmButtonColor: '#484BE0' });
+                }
+            })
+            .catch(() => openModal());
+    }
+
+    // 1. Script Tìm kiếm Real-time
     const searchInput = document.getElementById('searchInput');
     const tableContainer = document.querySelector('.table-responsive');
     const paginationContainer = document.querySelector('.pagination-container');

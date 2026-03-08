@@ -841,8 +841,8 @@ INSERT INTO DotDoAn (
     '2025-01-20', '2025-01-25',
     '2025-01-26', '2025-01-31',
     '2025-02-01', '2025-02-15',
-    '2025-02-16', '2025-02-28',
     '2025-03-01', '2025-03-15',
+    '2025-02-16', '2025-02-28',
     3, 5,
     '2025-03-20', '2025-04-05',
     '2025-07-01', '2025-07-20',
@@ -925,9 +925,12 @@ DECLARE @id_dt4 INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_004');
 
 INSERT INTO SinhVien_DeTai (id_de_tai, id_sinh_vien, trang_thai, ngay_dang_ky, nhan_xet) VALUES 
 (@id_dt1, 13, 'DA_DUYET', '2025-03-05 08:00:00', N'Đã tham gia nhóm thực hiện.'),
+(@id_dt1, 14, N'Chờ GVHD duyệt', '2025-03-06 14:00:00', NULL),
 (@id_dt2, 14, 'DA_DUYET', '2025-03-05 09:30:00', N'Đã được duyệt vào đề tài.'),
+(@id_dt2, 15, N'Chờ GVHD duyệt', '2025-03-07 10:00:00', NULL),
 (@id_dt3, 15, 'TU_CHOI', '2025-03-05 10:15:00', N'Đề tài không đạt yêu cầu chuyên môn.'),
-(@id_dt4, 16, 'DA_DUYET', '2025-03-05 11:00:00', N'Đã được phân công.');
+(@id_dt4, 16, 'DA_DUYET', '2025-03-05 11:00:00', N'Đã được phân công.'),
+(@id_dt4, 13, N'Chờ GVHD duyệt', '2025-03-08 09:00:00', NULL);
 
 GO
 
@@ -1054,7 +1057,7 @@ IF COL_LENGTH('HoiDongBaoCao', 'ngay_ket_thuc') IS NULL
 
 DECLARE @id_hd_duyet INT;
 INSERT INTO HoiDongBaoCao (ma_hoi_dong, ten_hoi_dong, loai_hoi_dong, id_dot, id_nguoi_tao, id_bo_mon, ngay_bao_cao, dia_diem, thoi_gian_du_kien, trang_thai, ngay_bat_dau, ngay_ket_thuc)
-VALUES ('HD_DUYET_DT_K27', N'Hội đồng duyệt đề tài K27', 'DUYET_DE_TAI', @id_dot_active, 1, 1, '2025-02-20', N'Văn phòng khoa', '08:00:00', 1, '2025-02-20', '2025-02-22');
+VALUES ('HD_DUYET_DT_K27', N'Hội đồng duyệt đề tài K27', 'DUYET_DE_TAI', @id_dot_active, 1, 1, '2025-03-05', N'Văn phòng khoa', '08:00:00', 1, '2025-03-05', '2025-03-07');
 SET @id_hd_duyet = SCOPE_IDENTITY();
 
 -- 3.26 THÀNH VIÊN HỘI ĐỒNG DUYỆT
@@ -1066,9 +1069,9 @@ INSERT INTO ThanhVien_HD_BaoCao (id_hd_baocao, id_giang_vien, vai_tro) VALUES
 -- 3.27 NHẬN XÉT HỘI ĐỒNG DUYỆT ĐỀ TÀI
 DECLARE @id_dt002 INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_002');
 INSERT INTO NhanXetHoiDongDeTai (id_de_tai, id_giang_vien, trang_thai, nhan_xet, ngay_tao) VALUES
-(@id_dt002, 1, 'DA_DUYET', N'Đề tài đủ tính mới, đề nghị duyệt.', '2025-02-22 08:00:00'),
-(@id_dt002, 2, 'DA_DUYET', N'Nội dung rõ, phạm vi khả thi.', '2025-02-22 09:00:00'),
-(@id_dt002, 5, 'DA_DUYET', N'Chấp nhận cho thực hiện.', '2025-02-22 10:00:00');
+(@id_dt002, 1, 'DA_DUYET', N'Đề tài đủ tính mới, đề nghị duyệt.', '2025-03-07 08:00:00'),
+(@id_dt002, 2, 'DA_DUYET', N'Nội dung rõ, phạm vi khả thi.', '2025-03-07 09:00:00'),
+(@id_dt002, 5, 'DA_DUYET', N'Chấp nhận cho thực hiện.', '2025-03-07 10:00:00');
 
 -- 3.28 KẾ HOẠCH CÔNG VIỆC & NHẬT KÝ (minh chứng liên kết BaoCaoNop)
 DECLARE @id_dt_rfid INT = (SELECT id FROM DeTai WHERE ma_de_tai = 'DT_27_001');

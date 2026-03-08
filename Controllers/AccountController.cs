@@ -20,6 +20,57 @@ namespace DATN_TMS.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+                return RedirectToAction("Login");
+
+            var user = await _context.NguoiDungs
+                .Include(u => u.SinhVien)
+                .Include(u => u.GiangVien)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null) return RedirectToAction("Login");
+
+            var role = HttpContext.Session.GetString("Role") ?? "";
+            string maSo = "";
+            if (user.SinhVien != null)
+                maSo = user.SinhVien.Mssv ?? "";
+            else if (user.GiangVien != null)
+                maSo = user.GiangVien.MaGv ?? "";
+
+            var vm = new HoSoCaNhanViewModel
+            {
+                MaSo = maSo,
+                HoTen = user.HoTen ?? "",
+                Email = user.Email,
+                Sdt = user.Sdt ?? ""
+            };
+
+            ViewBag.LayoutRole = role;
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdatePhone(string sdt)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn." });
+
+            var user = await _context.NguoiDungs.FindAsync(userId);
+            if (user == null)
+                return Json(new { success = false, message = "Không tìm thấy tài khoản." });
+
+            user.Sdt = sdt?.Trim();
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Cập nhật số điện thoại thành công!" });
+        }
+
+        [HttpGet]
         public IActionResult Login()
         {
             var role = HttpContext.User?.FindFirstValue(ClaimTypes.Role) ?? HttpContext.Session.GetString("Role");
@@ -176,5 +227,13 @@ namespace DATN_TMS.Controllers
             // stored có thể đang để lowercase/uppercase khác nhau
             return string.Equals(hashedInput, storedPassword, StringComparison.OrdinalIgnoreCase);
         }
+    }
+
+    public class HoSoCaNhanViewModel
+    {
+        public string MaSo { get; set; } = "";
+        public string HoTen { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Sdt { get; set; } = "";
     }
 }

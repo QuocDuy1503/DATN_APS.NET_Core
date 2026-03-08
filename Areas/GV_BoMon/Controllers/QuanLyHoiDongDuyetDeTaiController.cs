@@ -32,9 +32,32 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             }
 
             base.OnActionExecuting(context);
-        }
+            }
 
-        // --- DANH SÁCH HỘI ĐỒNG ---
+            // --- API: Kiểm tra giai đoạn duyệt đề tài ---
+            [HttpGet]
+            public IActionResult CheckGiaiDoanDuyet()
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+
+                // Tìm đợt đồ án đang trong giai đoạn duyệt đề tài (dựa trên mốc thời gian)
+                var dot = _context.DotDoAns.FirstOrDefault(d =>
+                    d.NgayBatDauDuyetDeXuatDeTai.HasValue &&
+                    d.NgayKetThucDuyetDeXuatDeTai.HasValue &&
+                    today >= d.NgayBatDauDuyetDeXuatDeTai.Value &&
+                    today <= d.NgayKetThucDuyetDeXuatDeTai.Value);
+
+                if (dot == null)
+                    return Json(new { allowed = false, message = "Hiện tại không có đợt đồ án nào đang trong giai đoạn duyệt đề tài." });
+
+                // Kiểm tra đăng ký đề tài đã kết thúc chưa
+                if (dot.NgayKetThucDkDeTai.HasValue && today <= dot.NgayKetThucDkDeTai.Value)
+                    return Json(new { allowed = false, message = "Giai đoạn đăng ký đề tài của đợt \"" + dot.TenDot + "\" chưa kết thúc. Vui lòng chờ đến sau ngày " + dot.NgayKetThucDkDeTai.Value.ToString("dd/MM/yyyy") + "." });
+
+                return Json(new { allowed = true, dotId = dot.Id, tenDot = dot.TenDot });
+            }
+
+            // --- DANH SÁCH HỘI ĐỒNG ---
         public IActionResult Index(int? page, int? dotId, int? namHoc, string searchString)
         {
             int pageSize = 10;
@@ -110,6 +133,26 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
         {
             try
             {
+                // Kiểm tra giai đoạn duyệt đề tài — tìm đợt theo mốc thời gian
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var dot = await _context.DotDoAns.FirstOrDefaultAsync(d =>
+                    d.NgayBatDauDuyetDeXuatDeTai.HasValue &&
+                    d.NgayKetThucDuyetDeXuatDeTai.HasValue &&
+                    today >= d.NgayBatDauDuyetDeXuatDeTai.Value &&
+                    today <= d.NgayKetThucDuyetDeXuatDeTai.Value);
+
+                if (dot == null)
+                {
+                    TempData["ErrorMessage"] = "Hiện tại không có đợt đồ án nào đang trong giai đoạn duyệt đề tài. Không thể tạo hội đồng mới.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (dot.NgayKetThucDkDeTai.HasValue && today <= dot.NgayKetThucDkDeTai.Value)
+                {
+                    TempData["ErrorMessage"] = "Giai đoạn đăng ký đề tài chưa kết thúc. Không thể tạo hội đồng duyệt.";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 // Lấy IdNguoiTao từ session
                 int idNguoiTao = 1;
                 var userEmail = HttpContext.Session.GetString("UserEmail");
@@ -125,6 +168,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                     MaHoiDong = model.MaHoiDong,
                     TenHoiDong = model.TenHoiDong,
                     IdBoMon = model.IdBoMon,
+                    IdDot = dot.Id,
                     LoaiHoiDong = "DUYET_DE_TAI",
                     NgayBatDau = model.NgayBatDau.HasValue ? DateOnly.FromDateTime(model.NgayBatDau.Value) : null,
                     NgayKetThuc = model.NgayKetThuc.HasValue ? DateOnly.FromDateTime(model.NgayKetThuc.Value) : null,

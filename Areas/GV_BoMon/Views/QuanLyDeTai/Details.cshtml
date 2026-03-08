@@ -1,7 +1,7 @@
-@model DATN_TMS.Areas.BCNKhoa.Models.ChiTietDeTaiViewModel
+Ôªø@model DATN_TMS.Areas.BCNKhoa.Models.ChiTietDeTaiViewModel
 
 @{
-    ViewData["Title"] = "Chi ti?t ?? t‡i: " + Model.MaDeTai;
+    ViewData["Title"] = "Chi ti?t ?? t√†i: " + Model.MaDeTai;
 }
 
 <style>
@@ -118,12 +118,12 @@
     <div class="content-card">
         
         <div class="page-header-row">
-            <h2 class="page-title">Chi ti?t ?? t‡i</h2>
+            <h2 class="page-title">Chi ti?t ?? t√†i</h2>
         </div>
 
         <nav aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a asp-action="Index">Danh s·ch ?? t‡i</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index">Danh s√°ch ?? t√†i</a></li>
                 <li class="breadcrumb-item active" aria-current="page">@Model.MaDeTai</li>
             </ol>
         </nav>
@@ -133,48 +133,48 @@
             <div class="info-section">
                 <div style="display: flex; gap: 20px;">
                     <div class="detail-group" style="width: 150px;">
-                        <label>M„ ?? t‡i:</label>
+                        <label>M√£ ?? t√†i:</label>
                         <input type="text" class="detail-control" value="@Model.MaDeTai" readonly>
                     </div>
                     <div class="detail-group" style="flex: 1;">
-                        <label>TÍn ?? t‡i:</label>
+                        <label>T√™n ?? t√†i:</label>
                         <input type="text" class="detail-control" value="@Model.TenDeTai" readonly>
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 20px;">
                     <div class="detail-group" style="flex: 1;">
-                        <label>Ng??i ?? xu?t ?? t‡i:</label>
+                        <label>Ng??i ?? xu?t ?? t√†i:</label>
                         <input type="text" class="detail-control" value="@Model.NguoiDeXuat" readonly>
                     </div>
                     <div class="detail-group" style="flex: 1;">
-                        <label>Gi?ng viÍn h??ng d?n:</label>
+                        <label>Gi?ng vi√™n h??ng d?n:</label>
                         <input type="text" class="detail-control" value="@Model.GVHD" readonly>
                     </div>
                 </div>
 
                 <div class="detail-group">
-                    <label>NhÛm th?c hi?n:</label>
+                    <label>Nh√≥m th?c hi?n:</label>
                     <input type="text" class="detail-control" value="@Model.NhomThucHien" readonly>
                 </div>
 
                 <div class="detail-group">
-                    <label>M?c tiÍu chÌnh:</label>
+                    <label>M?c ti√™u ch√≠nh:</label>
                     <textarea class="detail-control" readonly>@Model.MucTieu</textarea>
                 </div>
 
                 <div class="detail-group">
-                    <label>Ph?m vi v‡ ch?c n?ng:</label>
+                    <label>Ph?m vi v√† ch?c n?ng:</label>
                     <textarea class="detail-control" readonly style="height: 120px;">@Model.PhamVi</textarea>
                 </div>
 
                 <div class="detail-group">
-                    <label>CÙng ngh? s? d?ng:</label>
+                    <label>C√¥ng ngh? s? d?ng:</label>
                     <input type="text" class="detail-control" value="@Model.CongNghe" readonly>
                 </div>
 
                 <div class="detail-group">
-                    <label>YÍu c?u tÌnh m?i:</label>
+                    <label>Y√™u c?u t√≠nh m?i:</label>
                     <textarea class="detail-control" readonly>@Model.YeuCauTinhMoi</textarea>
                 </div>
 
@@ -186,19 +186,19 @@
 
             <div class="action-section">
                 <div class="action-title">
-                    <i class="fa-solid fa-gavel"></i> XÈt duy?t ?? t‡i
+                    <i class="fa-solid fa-gavel"></i> X√©t duy?t ?? t√†i
                 </div>
 
                 <div class="current-status">
-                    <span class="status-label">Tr?ng th·i hi?n t?i:</span>
+                    <span class="status-label">Tr?ng th√°i hi?n t?i:</span>
                     <div id="statusDisplay" class="status-badge 
                         @(Model.TrangThai == "DA_DUYET" ? "status-approved" : 
                           Model.TrangThai == "TU_CHOI" ? "status-rejected" : "status-waiting")">
-                        @(Model.TrangThai == "DA_DUYET" ? "?„ duy?t" : 
+                        @(Model.TrangThai == "DA_DUYET" ? "?√£ duy?t" : 
                           Model.TrangThai == "TU_CHOI" ? "T? ch?i" : "Ch? duy?t")
                     </div>
                     <div style="margin-top:6px; font-size:12px; color:#555;">
-                        ?„ nh?n @Model.Reviews.Count/@Model.CouncilMemberCount nh?n xÈt
+                        ?√£ nh?n @Model.Reviews.Count/@Model.CouncilMemberCount nh?n x√©t
                     </div>
                 </div>
 
@@ -206,11 +206,11 @@
                 {
                     <div class="feedback-area">
                         <label style="font-weight: 600; font-size: 13px; margin-bottom: 5px; display:block;">
-                            Nh?n xÈt c?a b?n:
+                            Nh?n x√©t c?a b?n:
                         </label>
-                        <textarea id="adminComment" class="feedback-input" placeholder="Nh?p nh?n xÈt (B?t bu?c n?u t? ch?i)...">@Model.NhanXet</textarea>
+                        <textarea id="adminComment" class="feedback-input" placeholder="Nh?p nh?n x√©t (B?t bu?c n?u t? ch?i)...">@Model.NhanXet</textarea>
                         <div id="feedbackError" class="feedback-required-msg">
-                            <i class="fa-solid fa-circle-exclamation"></i> Vui lÚng nh?p l˝ do t? ch?i!
+                            <i class="fa-solid fa-circle-exclamation"></i> Vui l√≤ng nh?p l√Ω do t? ch?i!
                         </div>
                     </div>
 
@@ -227,13 +227,13 @@
                 {
                     <div class="feedback-area">
                         <div style="font-size:13px; color:#555; line-height:1.5;">
-                            @(Model.IsProposer ? "B?n l‡ ng??i ?? xu?t, ch? xem ???c nh?n xÈt." : "Ch? th‡nh viÍn h?i ??ng m?i ???c duy?t/t? ch?i.")
+                            @(Model.IsProposer ? "B?n l√† ng??i ?? xu?t, ch? xem ???c nh?n x√©t." : "Ch? th√†nh vi√™n h?i ??ng m?i ???c duy?t/t? ch?i.")
                         </div>
                     </div>
                 }
 
                 <div class="review-list">
-                    <div style="font-weight:700; font-size:14px;">Nh?n xÈt h?i ??ng</div>
+                    <div style="font-weight:700; font-size:14px;">Nh?n x√©t h?i ??ng</div>
                     @if (Model.Reviews.Any())
                     {
                         foreach (var rv in Model.Reviews)
@@ -242,10 +242,10 @@
                                 <div class="review-header">
                                     <span>@rv.ReviewerName</span>
                                     <span class="status-badge @(rv.Status == "DA_DUYET" ? "status-approved" : rv.Status == "TU_CHOI" ? "status-rejected" : "status-waiting")">
-                                        @(rv.Status == "DA_DUYET" ? "?„ duy?t" : rv.Status == "TU_CHOI" ? "T? ch?i" : "Ch? duy?t")
+                                        @(rv.Status == "DA_DUYET" ? "?√£ duy?t" : rv.Status == "TU_CHOI" ? "T? ch?i" : "Ch? duy?t")
                                     </span>
                                 </div>
-                                <div class="review-comment">@(!string.IsNullOrWhiteSpace(rv.Comment) ? rv.Comment : "(Ch?a cÛ n?i dung)")</div>
+                                <div class="review-comment">@(!string.IsNullOrWhiteSpace(rv.Comment) ? rv.Comment : "(Ch?a c√≥ n?i dung)")</div>
                                 @if (rv.CreatedAt.HasValue)
                                 {
                                     <div style="font-size:12px; color:#666; margin-top:4px;">@rv.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm")</div>
@@ -255,7 +255,7 @@
                     }
                     else
                     {
-                        <div class="text-muted" style="font-size:13px;">Ch?a cÛ nh?n xÈt n‡o t? h?i ??ng.</div>
+                        <div class="text-muted" style="font-size:13px;">Ch?a c√≥ nh?n x√©t n√†o t? h?i ??ng.</div>
                     }
                 </div>
             </div>
@@ -270,12 +270,12 @@
         var comment = document.getElementById('adminComment') ? document.getElementById('adminComment').value : '';
         
         Swal.fire({
-            title: 'X·c nh?n duy?t?',
-            text: "?? t‡i n‡y s? ???c ch?p nh?n cho sinh viÍn ??ng k˝!",
+            title: 'X√°c nh?n duy?t?',
+            text: "?? t√†i n√†y s? ???c ch?p nh?n cho sinh vi√™n ??ng k√Ω!",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#059669',
-            confirmButtonText: '??ng ˝ duy?t',
+            confirmButtonText: '??ng √Ω duy?t',
             cancelButtonText: 'H?y'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -298,8 +298,8 @@
         if (errorMsg) errorMsg.style.display = 'none';
 
         Swal.fire({
-            title: 'X·c nh?n t? ch?i?',
-            text: "?? t‡i n‡y s? b? h?y b?. B?n ch?c ch?n ch??",
+            title: 'X√°c nh?n t? ch?i?',
+            text: "?? t√†i n√†y s? b? h?y b?. B?n ch?c ch?n ch??",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
@@ -324,14 +324,14 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                Swal.fire('Th‡nh cÙng!', data.message, 'success');
+                Swal.fire('Th√†nh c√¥ng!', data.message, 'success');
                 const statusDiv = document.getElementById('statusDisplay');
                 if(newStatus === "DA_DUYET") {
                     statusDiv.className = "status-value status-approved";
-                    statusDiv.innerText = "?„ duy?t";
+                    statusDiv.innerText = "?√£ duy?t";
                 } else {
                     statusDiv.className = "status-value status-rejected";
-                    statusDiv.innerText = "?„ t? ch?i";
+                    statusDiv.innerText = "?√£ t? ch?i";
                 }
             } else {
                 Swal.fire('L?i!', data.message, 'error');
@@ -339,7 +339,7 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            Swal.fire('L?i h? th?ng', 'KhÙng th? k?t n?i ??n server', 'error');
+            Swal.fire('L?i h? th?ng', 'Kh√¥ng th? k?t n?i ??n server', 'error');
         });
     }
 </script>

@@ -117,7 +117,44 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
         #endregion
 
-        #region Create
+            #region API - Phase Check
+
+            [HttpGet]
+            public IActionResult CheckGiaiDoanBaoCao(string loaiHoiDong)
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var dot = _context.DotDoAns.FirstOrDefault(d => d.TrangThai == true);
+
+                if (dot == null)
+                    return Json(new { allowed = false, message = "Không có đợt đồ án đang hoạt động." });
+
+                if (loaiHoiDong == "GIUA_KY")
+                {
+                    if (!dot.NgayBatDauBaoCaoGiuaKi.HasValue || !dot.NgayKetThucBaoCaoGiuaKi.HasValue)
+                        return Json(new { allowed = false, message = "Đợt đồ án chưa cấu hình thời gian báo cáo giữa kì." });
+
+                    if (today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
+                        return Json(new { allowed = false, message = "Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn. Thời gian: " + dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + "." });
+                }
+                else if (loaiHoiDong == "CUOI_KY")
+                {
+                    if (!dot.NgayBatDauBaoCaoCuoiKi.HasValue || !dot.NgayKetThucBaoCaoCuoiKi.HasValue)
+                        return Json(new { allowed = false, message = "Đợt đồ án chưa cấu hình thời gian báo cáo cuối kì." });
+
+                    if (today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
+                        return Json(new { allowed = false, message = "Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn. Thời gian: " + dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + "." });
+                }
+                else
+                {
+                    return Json(new { allowed = false, message = "Loại hội đồng không hợp lệ." });
+                }
+
+                return Json(new { allowed = true });
+            }
+
+            #endregion
+
+            #region Create
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -126,6 +163,31 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         {
             try
             {
+                // Kiểm tra giai đoạn báo cáo
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var dot = await _context.DotDoAns.FirstOrDefaultAsync(d => d.TrangThai == true);
+                if (dot != null && !string.IsNullOrEmpty(LoaiHoiDong))
+                {
+                    if (LoaiHoiDong == "GIUA_KY")
+                    {
+                        if (!dot.NgayBatDauBaoCaoGiuaKi.HasValue || !dot.NgayKetThucBaoCaoGiuaKi.HasValue
+                            || today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
+                        {
+                            TempData["ErrorMessage"] = "Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn.";
+                            return RedirectToAction(nameof(Index));
+                        }
+                    }
+                    else if (LoaiHoiDong == "CUOI_KY")
+                    {
+                        if (!dot.NgayBatDauBaoCaoCuoiKi.HasValue || !dot.NgayKetThucBaoCaoCuoiKi.HasValue
+                            || today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
+                        {
+                            TempData["ErrorMessage"] = "Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn.";
+                            return RedirectToAction(nameof(Index));
+                        }
+                    }
+                }
+
                 DateOnly? ngayBaoCao = null;
                 TimeOnly? gioBatDau = null;
 

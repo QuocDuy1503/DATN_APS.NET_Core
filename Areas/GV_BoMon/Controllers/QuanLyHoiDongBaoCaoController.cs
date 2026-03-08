@@ -106,7 +106,44 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
 
         #endregion
 
-        #region Create
+            #region API - Phase Check
+
+            [HttpGet]
+            public IActionResult CheckGiaiDoanBaoCao(string loaiHoiDong)
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var dot = _context.DotDoAns.FirstOrDefault(d => d.TrangThai == true);
+
+                if (dot == null)
+                    return Json(new { allowed = false, message = "Không có ??t ?? án ?ang ho?t ??ng." });
+
+                if (loaiHoiDong == "GIUA_KY")
+                {
+                    if (!dot.NgayBatDauBaoCaoGiuaKi.HasValue || !dot.NgayKetThucBaoCaoGiuaKi.HasValue)
+                        return Json(new { allowed = false, message = "??t ?? án ch?a c?u hình th?i gian báo cáo gi?a kì." });
+
+                    if (today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
+                        return Json(new { allowed = false, message = "Ch?a ??n giai ?o?n l?p h?i ??ng báo cáo gi?a kì ho?c ?ã h?t h?n. Th?i gian: " + dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + "." });
+                }
+                else if (loaiHoiDong == "CUOI_KY")
+                {
+                    if (!dot.NgayBatDauBaoCaoCuoiKi.HasValue || !dot.NgayKetThucBaoCaoCuoiKi.HasValue)
+                        return Json(new { allowed = false, message = "??t ?? án ch?a c?u hình th?i gian báo cáo cu?i kì." });
+
+                    if (today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
+                        return Json(new { allowed = false, message = "Ch?a ??n giai ?o?n l?p h?i ??ng báo cáo cu?i kì ho?c ?ã h?t h?n. Th?i gian: " + dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + "." });
+                }
+                else
+                {
+                    return Json(new { allowed = false, message = "Lo?i h?i ??ng không h?p l?." });
+                }
+
+                return Json(new { allowed = true });
+            }
+
+            #endregion
+
+            #region Create
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -115,6 +152,31 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
         {
             try
             {
+                // Ki?m tra giai ?o?n báo cáo
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var dot = await _context.DotDoAns.FirstOrDefaultAsync(d => d.TrangThai == true);
+                if (dot != null && !string.IsNullOrEmpty(LoaiHoiDong))
+                {
+                    if (LoaiHoiDong == "GIUA_KY")
+                    {
+                        if (!dot.NgayBatDauBaoCaoGiuaKi.HasValue || !dot.NgayKetThucBaoCaoGiuaKi.HasValue
+                            || today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
+                        {
+                            TempData["ErrorMessage"] = "Ch?a ??n giai ?o?n l?p h?i ??ng báo cáo gi?a kì ho?c ?ã h?t h?n.";
+                            return RedirectToAction(nameof(Index));
+                        }
+                    }
+                    else if (LoaiHoiDong == "CUOI_KY")
+                    {
+                        if (!dot.NgayBatDauBaoCaoCuoiKi.HasValue || !dot.NgayKetThucBaoCaoCuoiKi.HasValue
+                            || today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
+                        {
+                            TempData["ErrorMessage"] = "Ch?a ??n giai ?o?n l?p h?i ??ng báo cáo cu?i kì ho?c ?ã h?t h?n.";
+                            return RedirectToAction(nameof(Index));
+                        }
+                    }
+                }
+
                 DateOnly? ngayBaoCao = null;
                 TimeOnly? gioBatDau = null;
 

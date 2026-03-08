@@ -1,0 +1,200 @@
+@model DATN_TMS.Controllers.HoSoCaNhanViewModel
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân";
+    var role = ViewBag.LayoutRole as string ?? "";
+    if (role == "SINH_VIEN" || role == "SV")
+    {
+        Layout = "~/Views/Shared/_Layout_SV.cshtml";
+    }
+    else if (role == "GIANG_VIEN" || role == "GV")
+    {
+        Layout = "~/Views/Shared/_Layout_GV.cshtml";
+    }
+    else if (role == "BO_MON")
+    {
+        Layout = "~/Views/Shared/_LayoutGVBoMon.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_LayoutBCNKhoa.cshtml";
+    }
+
+    var labelMaSo = (role == "SINH_VIEN" || role == "SV") ? "MSSV" : "Mã GV";
+}
+
+<style>
+    :root { --primary: #484BE0; }
+
+    .profile-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+
+    .profile-card {
+        background: #fff; border-radius: 10px; padding: 0;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07); border: 1px solid #eee;
+        max-width: 640px; margin: 0 auto; overflow: hidden;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #484BE0 0%, #6366f1 100%);
+        padding: 30px 35px; color: #fff; display: flex; align-items: center; gap: 20px;
+    }
+    .profile-avatar {
+        width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.2);
+        display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0;
+        border: 3px solid rgba(255,255,255,0.4);
+    }
+    .profile-header-info h2 { margin: 0 0 4px 0; font-size: 20px; font-weight: 700; }
+    .profile-header-info .profile-role {
+        font-size: 13px; opacity: 0.85; background: rgba(255,255,255,0.15);
+        padding: 3px 12px; border-radius: 12px; display: inline-block;
+    }
+
+    .profile-body { padding: 30px 35px; }
+
+    .profile-group { margin-bottom: 22px; }
+    .profile-group label {
+        display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px;
+    }
+    .profile-group label i { width: 18px; text-align: center; margin-right: 4px; color: var(--primary); }
+
+    .profile-input {
+        width: 100%; padding: 10px 14px; border: 1px solid #e0e0e0; border-radius: 6px;
+        font-size: 14px; color: #333; background: #f9fafb; box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .profile-input:read-only {
+        background: #f3f4f6; color: #6b7280; cursor: default;
+    }
+    .profile-input:not(:read-only):focus {
+        border-color: var(--primary); box-shadow: 0 0 0 3px rgba(72,75,224,0.1); outline: none;
+    }
+
+    .profile-footer {
+        padding: 0 35px 30px; display: flex; justify-content: flex-end;
+    }
+    .btn-save-profile {
+        padding: 10px 28px; border: none; border-radius: 6px; cursor: pointer;
+        font-weight: 600; font-size: 14px; background: var(--primary); color: #fff;
+        display: inline-flex; align-items: center; gap: 8px;
+        box-shadow: 0 4px 12px rgba(72,75,224,0.2); transition: 0.2s;
+    }
+    .btn-save-profile:hover { background: #3538b2; transform: translateY(-1px); }
+    .btn-save-profile:disabled { background: #9ca3af; cursor: default; transform: none; box-shadow: none; }
+
+    @@media (max-width: 640px) {
+        .profile-card { margin: 0 10px; }
+        .profile-header { padding: 20px; flex-direction: column; text-align: center; }
+        .profile-body, .profile-footer { padding-left: 20px; padding-right: 20px; }
+    }
+</style>
+
+<div class="content-body profile-page">
+    <div class="profile-card">
+
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fa-regular fa-circle-user"></i>
+            </div>
+            <div class="profile-header-info">
+                <h2>@Model.HoTen</h2>
+                <span class="profile-role">
+                    @(role == "SINH_VIEN" || role == "SV" ? "Sinh viên" :
+                      role == "GIANG_VIEN" || role == "GV" ? "Giảng viên" :
+                      role == "BO_MON" ? "GV Bộ môn" :
+                      role == "BCN_KHOA" ? "BCN Khoa" : "Người dùng")
+                    @if (!string.IsNullOrEmpty(Model.MaSo))
+                    {
+                        <text> · @Model.MaSo</text>
+                    }
+                </span>
+            </div>
+        </div>
+
+        <div class="profile-body">
+            <div class="profile-group">
+                <label><i class="fa-solid fa-id-badge"></i> @labelMaSo</label>
+                <input type="text" class="profile-input" value="@Model.MaSo" readonly>
+            </div>
+
+            <div class="profile-group">
+                <label><i class="fa-solid fa-user"></i> Họ và tên</label>
+                <input type="text" class="profile-input" value="@Model.HoTen" readonly>
+            </div>
+
+            <div class="profile-group">
+                <label><i class="fa-solid fa-envelope"></i> Email</label>
+                <input type="text" class="profile-input" value="@Model.Email" readonly>
+            </div>
+
+            <div class="profile-group">
+                <label><i class="fa-solid fa-phone"></i> Số điện thoại</label>
+                <input type="text" class="profile-input" id="inputSdt" value="@Model.Sdt"
+                       placeholder="Nhập số điện thoại..." maxlength="15">
+            </div>
+        </div>
+
+        <div class="profile-footer">
+            <button type="button" class="btn-save-profile" id="btnSavePhone">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var originalValue = document.getElementById('inputSdt').value;
+        var btnSave = document.getElementById('btnSavePhone');
+
+        document.getElementById('inputSdt').addEventListener('input', function () {
+            btnSave.disabled = (this.value.trim() === originalValue.trim());
+        });
+
+        btnSave.addEventListener('click', function () {
+            var sdt = document.getElementById('inputSdt').value.trim();
+
+            if (sdt && !/^[0-9+\-\s]{8,15}$/.test(sdt)) {
+                Swal.fire({ icon: 'warning', title: 'Không hợp lệ', text: 'Số điện thoại không đúng định dạng.', confirmButtonColor: '#484BE0' });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Xác nhận cập nhật?',
+                text: 'Bạn muốn thay đổi số điện thoại?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#484BE0',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Cập nhật',
+                cancelButtonText: 'Hủy'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                    fetch('@Url.Action("UpdatePhone", "Account")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': token ? token.value : ''
+                        },
+                        body: 'sdt=' + encodeURIComponent(sdt) + '&__RequestVerificationToken=' + encodeURIComponent(token ? token.value : '')
+                    })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.success) {
+                            originalValue = sdt;
+                            btnSave.disabled = true;
+                            Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+                        }
+                    })
+                    .catch(function () {
+                        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra. Vui lòng thử lại.' });
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+@Html.AntiForgeryToken()

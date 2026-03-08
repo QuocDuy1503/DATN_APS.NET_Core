@@ -4,6 +4,8 @@
     ViewData["Title"] = "Chỉnh sửa đợt đồ án";
 }
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
 <style>
     .edit-container {
         background-color: #fff;
@@ -36,17 +38,18 @@
     .timeline-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
     .timeline-table th { background-color: #f8f9fa; padding: 15px 20px; text-align: left; font-weight: 600; color: #444; font-size: 13px; border-bottom: 1px solid #eee; }
     .timeline-table td { padding: 12px 20px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; background: #fff; }
-    
-    .table-date-input { width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 5px; font-size: 13px; }
-    
+
+    .table-date-input { width: 100%; padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 5px; font-size: 13px; background: #fff; cursor: pointer; }
+    .table-date-input:focus { border-color: #484BE0; box-shadow: 0 0 0 3px rgba(72, 75, 224, 0.1); outline: none; }
+
     .table-int-input { width: 60px; padding: 6px 10px; border: 1px solid #e0e0e0; border-radius: 4px; text-align: center; font-weight: 600; color: #484BE0; margin: 0 5px; }
-    
+
     .activity-name { font-weight: 600; color: #333; font-size: 14px; }
-    
+
     .config-row td { background-color: #fdfdfd; padding: 10px 20px 20px 40px; border-bottom: 1px solid #eee; }
     .config-item { display: inline-flex; align-items: center; margin-right: 30px; font-size: 13px; color: #555; background: #fff; padding: 5px 10px; border: 1px dashed #ddd; border-radius: 4px; }
     .config-label { margin-right: 5px; }
-    
+
     tr.section-separator td { background-color: #fffbf0 !important; color: #b7791f; font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 12px 20px; }
 
     .action-footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 15px; }
@@ -64,12 +67,12 @@
 </style>
 
 <div class="content-body">
-    <form asp-action="Edit" method="post">
+    <form asp-action="Edit" method="post" id="editForm">
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="TrangThai" />
 
         <div class="edit-container">
-            
+
             <div class="page-header-row">
                 <h2 class="page-title">Thiết lập thời gian đợt đồ án</h2>
             </div>
@@ -101,11 +104,17 @@
                     </div>
                     <div class="form-group">
                         <label>Ngày bắt đầu đợt</label>
-                        <input type="date" asp-for="NgayBatDauDot" class="form-control">
+                        <input type="text" class="table-date-input date-picker" data-field="NgayBatDauDot"
+                               value="@(Model.NgayBatDauDot.HasValue ? Model.NgayBatDauDot.Value.ToString("dd/MM/yyyy") : "")"
+                               placeholder="dd/MM/yyyy">
+                        <input type="hidden" name="NgayBatDauDot" value="@(Model.NgayBatDauDot.HasValue ? Model.NgayBatDauDot.Value.ToString("yyyy-MM-dd") : "")">
                     </div>
                     <div class="form-group">
                         <label>Ngày kết thúc đợt</label>
-                        <input type="date" asp-for="NgayKetThucDot" class="form-control">
+                        <input type="text" class="table-date-input date-picker" data-field="NgayKetThucDot"
+                               value="@(Model.NgayKetThucDot.HasValue ? Model.NgayKetThucDot.Value.ToString("dd/MM/yyyy") : "")"
+                               placeholder="dd/MM/yyyy">
+                        <input type="hidden" name="NgayKetThucDot" value="@(Model.NgayKetThucDot.HasValue ? Model.NgayKetThucDot.Value.ToString("yyyy-MM-dd") : "")">
                     </div>
                 </div>
             </div>
@@ -127,59 +136,143 @@
                 <tbody>
                     <tr>
                         <td><div class="activity-name">Đăng ký nguyện vọng</div></td>
-                        <td><input type="date" asp-for="NgayBatDauDkNguyenVong" class="table-date-input"></td>
-                        <td><input type="date" asp-for="NgayKetThucDkNguyenVong" class="table-date-input"></td>
-                        <td></td>
-                    </tr>
-                    
-                    <tr>
-                        <td><div class="activity-name">Duyệt nguyện vọng</div></td>
-                        <td><input type="date" asp-for="NgayBatDauDkDuyetNguyenVong" class="table-date-input"></td>
-                        <td><input type="date" asp-for="NgayKetThucDkDuyetNguyenVong" class="table-date-input"></td>
-                        <td></td>
-                    </tr>
-                    
-                    <tr>
-                        <td><div class="activity-name">Đề xuất đề tài (GV)</div></td>
-                        <td><input type="date" asp-for="NgayBatDauDeXuatDeTai" class="table-date-input"></td>
-                        <td><input type="date" asp-for="NgayKetThucDeXuatDeTai" class="table-date-input"></td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayBatDauDkNguyenVong"
+                                   value="@(Model.NgayBatDauDkNguyenVong.HasValue ? Model.NgayBatDauDkNguyenVong.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayBatDauDkNguyenVong" value="@(Model.NgayBatDauDkNguyenVong.HasValue ? Model.NgayBatDauDkNguyenVong.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayKetThucDkNguyenVong"
+                                   value="@(Model.NgayKetThucDkNguyenVong.HasValue ? Model.NgayKetThucDkNguyenVong.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayKetThucDkNguyenVong" value="@(Model.NgayKetThucDkNguyenVong.HasValue ? Model.NgayKetThucDkNguyenVong.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
                         <td></td>
                     </tr>
 
                     <tr>
-                        <td style="border-bottom:none;"><div class="activity-name">Duyệt đề tài (Hội đồng)</div></td>
-                        <td style="border-bottom:none;"><input type="date" asp-for="NgayBatDauDuyetDeXuatDeTai" class="table-date-input"></td>
-                        <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucDuyetDeXuatDeTai" class="table-date-input"></td>
-                        <td style="border-bottom:none;"></td>
+                        <td><div class="activity-name">Duyệt nguyện vọng</div></td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayBatDauDkDuyetNguyenVong"
+                                   value="@(Model.NgayBatDauDkDuyetNguyenVong.HasValue ? Model.NgayBatDauDkDuyetNguyenVong.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayBatDauDkDuyetNguyenVong" value="@(Model.NgayBatDauDkDuyetNguyenVong.HasValue ? Model.NgayBatDauDkDuyetNguyenVong.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayKetThucDkDuyetNguyenVong"
+                                   value="@(Model.NgayKetThucDkDuyetNguyenVong.HasValue ? Model.NgayKetThucDkDuyetNguyenVong.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayKetThucDkDuyetNguyenVong" value="@(Model.NgayKetThucDkDuyetNguyenVong.HasValue ? Model.NgayKetThucDkDuyetNguyenVong.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td></td>
                     </tr>
-                    @* Các mốc lập hội đồng/duyệt đề tài sẽ cấu hình trong QuanLyThongBao *@
+
+                    <tr>
+                        <td><div class="activity-name">Đề xuất đề tài (GV)</div></td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayBatDauDeXuatDeTai"
+                                   value="@(Model.NgayBatDauDeXuatDeTai.HasValue ? Model.NgayBatDauDeXuatDeTai.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayBatDauDeXuatDeTai" value="@(Model.NgayBatDauDeXuatDeTai.HasValue ? Model.NgayBatDauDeXuatDeTai.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayKetThucDeXuatDeTai"
+                                   value="@(Model.NgayKetThucDeXuatDeTai.HasValue ? Model.NgayKetThucDeXuatDeTai.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayKetThucDeXuatDeTai" value="@(Model.NgayKetThucDeXuatDeTai.HasValue ? Model.NgayKetThucDeXuatDeTai.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><div class="activity-name">Đăng ký đề tài (SV)</div></td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayBatDauDkDeTai"
+                                   value="@(Model.NgayBatDauDkDeTai.HasValue ? Model.NgayBatDauDkDeTai.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayBatDauDkDeTai" value="@(Model.NgayBatDauDkDeTai.HasValue ? Model.NgayBatDauDkDeTai.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayKetThucDkDeTai"
+                                   value="@(Model.NgayKetThucDkDeTai.HasValue ? Model.NgayKetThucDkDeTai.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayKetThucDkDeTai" value="@(Model.NgayKetThucDkDeTai.HasValue ? Model.NgayKetThucDkDeTai.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td><div class="activity-name">Duyệt đề tài (Hội đồng)</div></td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayBatDauDuyetDeXuatDeTai"
+                                   value="@(Model.NgayBatDauDuyetDeXuatDeTai.HasValue ? Model.NgayBatDauDuyetDeXuatDeTai.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayBatDauDuyetDeXuatDeTai" value="@(Model.NgayBatDauDuyetDeXuatDeTai.HasValue ? Model.NgayBatDauDuyetDeXuatDeTai.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayKetThucDuyetDeXuatDeTai"
+                                   value="@(Model.NgayKetThucDuyetDeXuatDeTai.HasValue ? Model.NgayKetThucDuyetDeXuatDeTai.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayKetThucDuyetDeXuatDeTai" value="@(Model.NgayKetThucDuyetDeXuatDeTai.HasValue ? Model.NgayKetThucDuyetDeXuatDeTai.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td></td>
+                    </tr>
 
                     <tr class="section-separator">
                         <td colspan="4">Giai đoạn Thực hiện & Báo cáo</td>
                     </tr>
-                    
+
                     <tr>
                         <td><div class="activity-name">Nộp đề cương chi tiết</div></td>
-                        <td><input type="date" asp-for="NgayBatDauNopDeCuong" class="table-date-input"></td>
-                        <td><input type="date" asp-for="NgayKetThucNopDeCuong" class="table-date-input"></td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayBatDauNopDeCuong"
+                                   value="@(Model.NgayBatDauNopDeCuong.HasValue ? Model.NgayBatDauNopDeCuong.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayBatDauNopDeCuong" value="@(Model.NgayBatDauNopDeCuong.HasValue ? Model.NgayBatDauNopDeCuong.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayKetThucNopDeCuong"
+                                   value="@(Model.NgayKetThucNopDeCuong.HasValue ? Model.NgayKetThucNopDeCuong.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayKetThucNopDeCuong" value="@(Model.NgayKetThucNopDeCuong.HasValue ? Model.NgayKetThucNopDeCuong.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
                         <td></td>
                     </tr>
 
                     <tr>
-                        <td style="border-bottom:none;"><div class="activity-name">Báo cáo giữa kì (Hội đồng)</div></td>
-                        <td style="border-bottom:none;"><input type="date" asp-for="NgayBatDauBaoCaoGiuaKi" class="table-date-input"></td>
-                        <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucBaoCaoGiuaKi" class="table-date-input"></td>
-                        <td style="border-bottom:none;"></td>
+                        <td><div class="activity-name">Báo cáo giữa kì (Hội đồng)</div></td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayBatDauBaoCaoGiuaKi"
+                                   value="@(Model.NgayBatDauBaoCaoGiuaKi.HasValue ? Model.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayBatDauBaoCaoGiuaKi" value="@(Model.NgayBatDauBaoCaoGiuaKi.HasValue ? Model.NgayBatDauBaoCaoGiuaKi.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayKetThucBaoCaoGiuaKi"
+                                   value="@(Model.NgayKetThucBaoCaoGiuaKi.HasValue ? Model.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayKetThucBaoCaoGiuaKi" value="@(Model.NgayKetThucBaoCaoGiuaKi.HasValue ? Model.NgayKetThucBaoCaoGiuaKi.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td></td>
                     </tr>
-                    @* Các mốc lập HĐ / nộp tài liệu sẽ cấu hình trong QuanLyThongBao *@
 
                     <tr>
-                        <td style="border-bottom:none;"><div class="activity-name">Báo cáo cuối kỳ</div></td>
-                        <td style="border-bottom:none;"><input type="date" asp-for="NgayBatDauBaoCaoCuoiKi" class="table-date-input"></td>
-                        <td style="border-bottom:none;"><input type="date" asp-for="NgayKetThucBaoCaoCuoiKi" class="table-date-input"></td>
-                        <td style="border-bottom:none;"></td>
+                        <td><div class="activity-name">Báo cáo cuối kỳ</div></td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayBatDauBaoCaoCuoiKi"
+                                   value="@(Model.NgayBatDauBaoCaoCuoiKi.HasValue ? Model.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayBatDauBaoCaoCuoiKi" value="@(Model.NgayBatDauBaoCaoCuoiKi.HasValue ? Model.NgayBatDauBaoCaoCuoiKi.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td>
+                            <input type="text" class="table-date-input date-picker" data-field="NgayKetThucBaoCaoCuoiKi"
+                                   value="@(Model.NgayKetThucBaoCaoCuoiKi.HasValue ? Model.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") : "")"
+                                   placeholder="dd/MM/yyyy">
+                            <input type="hidden" name="NgayKetThucBaoCaoCuoiKi" value="@(Model.NgayKetThucBaoCaoCuoiKi.HasValue ? Model.NgayKetThucBaoCaoCuoiKi.Value.ToString("yyyy-MM-dd") : "")">
+                        </td>
+                        <td></td>
                     </tr>
-                    @* Các mốc lập HĐ / nộp tài liệu / công bố KQ sẽ cấu hình trong QuanLyThongBao *@
                 </tbody>
             </table>
 
@@ -191,10 +284,37 @@
             </div>
         </div>
     </form>
-    </div> <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-        
+
+            // Khởi tạo flatpickr cho tất cả date-picker
+            document.querySelectorAll('.date-picker').forEach(function (el) {
+                flatpickr(el, {
+                    dateFormat: "d/m/Y",
+                    locale: "vn",
+                    allowInput: true,
+                    onChange: function (selectedDates, dateStr, instance) {
+                        // Cập nhật hidden input với format yyyy-MM-dd
+                        var fieldName = instance.element.getAttribute('data-field');
+                        var hiddenInput = instance.element.nextElementSibling;
+                        if (hiddenInput && hiddenInput.type === 'hidden' && selectedDates.length > 0) {
+                            var d = selectedDates[0];
+                            var yyyy = d.getFullYear();
+                            var mm = String(d.getMonth() + 1).padStart(2, '0');
+                            var dd = String(d.getDate()).padStart(2, '0');
+                            hiddenInput.value = yyyy + '-' + mm + '-' + dd;
+                        } else if (hiddenInput && hiddenInput.type === 'hidden') {
+                            hiddenInput.value = '';
+                        }
+                    }
+                });
+            });
+
             // THÔNG BÁO THÀNH CÔNG
             @if (TempData["SuccessMessage"] != null)
             {

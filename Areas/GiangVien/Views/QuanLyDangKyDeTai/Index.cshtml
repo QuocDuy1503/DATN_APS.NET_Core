@@ -1,37 +1,59 @@
-﻿@{
+﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model IPagedList<DATN_TMS.Areas.GiangVien.Models.DangKyDeTaiGVItem>
+@{
     ViewData["Title"] = "Duyệt sinh viên đăng ký đề tài";
+    var chuyenNganhs = ViewBag.ChuyenNganhs as List<string> ?? new List<string>();
+    var hasData = Model != null && Model.Any();
+    var currentCN = ViewBag.CurrentChuyenNganh as string;
+    var currentFilter = ViewBag.CurrentFilter as string;
 }
 
 <style>
-    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
-    .dotdoan-page .content-card {
+    .content-body.dkdt-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dkdt-page .content-card {
         background: #fff; border-radius: 8px; padding: 20px;
         box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;
         min-height: calc(100vh - 140px); font-family: inherit;
     }
+
     .page-header-row { margin-bottom: 15px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
-    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
     .filter-item { display: flex; flex-direction: column; gap: 4px; }
     .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
     .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
     .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
 
     .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
-    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
-    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    tbody td { padding:12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .table-scroll { flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; }
+    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
     tbody tr:hover { background: #f9f9f9; }
 
-    .action-btn { background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 15px; transition: 0.15s; }
-    .btn-edit-icon { color: #2563eb; }
-    .btn-edit-icon:hover { background: #eef2ff; }
+    td.td-ten-detai { max-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .action-btn:hover { background: #eef2ff; color: #3538b2; }
+
+    .table-msg-row td { text-align: center; padding: 50px 20px !important; white-space: normal !important; }
+    .table-msg-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+    .table-msg-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 6px; }
+    .table-msg-text { font-size: 13px; color: #6b7280; line-height: 1.6; }
+    .table-msg-row.msg-info .table-msg-icon { color: #484BE0; }
+
+    .pagination-container { display: flex; justify-content: center; margin-top: auto; padding-top: 12px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; font-size: 13px; }
+    .pagination li a:hover { border-color: #484BE0; color: #484BE0; }
+    .pagination li.active span { background: #484BE0; border-color: #484BE0; color: #fff; box-shadow: 0 4px 12px rgba(72, 75, 224, 0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
 </style>
 
-<div class="content-body dotdoan-page">
+<div class="content-body dkdt-page">
     <div class="content-card">
         <div class="page-header-row">
             <h2 class="page-title">Duyệt sinh viên đăng ký đề tài</h2>
@@ -40,39 +62,19 @@
         <div class="toolbar-row">
             <div class="filter-wrapper">
                 <div class="filter-item">
-                    <span class="filter-label">Năm học</span>
-                    <select class="form-control" style="width: 160px;">
+                    <span class="filter-label">Chuyên ngành</span>
+                    <select id="filterNganh" class="form-control" style="width:180px;">
                         <option value="">-- Tất cả --</option>
-                        <option>2023-2024</option>
-                        <option>2024-2025</option>
-                        <option>2025-2026</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <span class="filter-label">Học kì</span>
-                    <select class="form-control" style="width: 140px;">
-                        <option value="">-- Tất cả --</option>
-                        <option>101</option>
-                        <option>102</option>
-                        <option>103</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <span class="filter-label">Khóa</span>
-                    <select class="form-control" style="width: 140px;">
-                        <option value="">-- Tất cả --</option>
-                        <option>Khóa 26</option>
-                        <option>Khóa 27</option>
-                        <option>Khóa 28</option>
+                        @foreach (var cn in chuyenNganhs)
+                        {
+                            <option value="@cn" selected="@(cn == currentCN)">@cn</option>
+                        }
                     </select>
                 </div>
             </div>
-
-            <div style="display:flex; align-items:flex-end; gap:10px;">
-                <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                    <span class="filter-label">Tìm kiếm</span>
-                    <input type="text" class="toolbar-input" placeholder="Mã đề tài, Tên đề tài..." style="width: 250px;" />
-                </div>
+            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+                <span class="filter-label">Tìm kiếm</span>
+                <input type="text" id="txtSearch" class="toolbar-input" placeholder="Mã, tên đề tài..." style="width:260px;" value="@currentFilter">
             </div>
         </div>
 
@@ -81,26 +83,93 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Mã đề tài</th>
+                            <th style="width:50px;">STT</th>
+                            <th style="width:120px;">Mã đề tài</th>
                             <th>Tên đề tài</th>
-                            <th>Ngành</th>
-                            <th style="text-align:center; width:100px;">Số lượng</th>
-                            <th style="text-align:center; width:80px;">Thao tác</th>
+                            <th style="width:160px;">Chuyên ngành</th>
+                            <th style="text-align:center; width:100px;">SL đăng ký</th>
+                            <th style="text-align:center; width:70px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>DT01</td>
-                            <td style="max-width:380px;">Kiến trúc Học sâu lai cho phân đoạn khối u não trên ảnh MRI đa phương thức với Bộ dữ liệu BraTS</td>
-                            <td>CNTT/CNPM</td>
-                            <td style="text-align:center;">2</td>
-                            <td style="text-align:center;">
-                                <button class="action-btn btn-edit-icon" title="Xem chi tiết"><i class="fa-regular fa-pen-to-square"></i></button>
-                            </td>
-                        </tr>
+                        @if (hasData)
+                        {
+                            var stt = (Model.PageNumber - 1) * Model.PageSize;
+                            foreach (var item in Model)
+                            {
+                                stt++;
+                                <tr>
+                                    <td>@stt</td>
+                                    <td>@item.MaDeTai</td>
+                                    <td class="td-ten-detai" title="@item.TenDeTai">@item.TenDeTai</td>
+                                    <td>@item.ChuyenNganh</td>
+                                    <td style="text-align:center;">@item.SoLuongDangKy / 2</td>
+                                    <td style="text-align:center;">
+                                        <a asp-action="Detail" asp-route-id="@item.IdDeTai" class="action-btn" title="Xem chi tiết">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr class="table-msg-row msg-info">
+                                <td colspan="6">
+                                    <span class="table-msg-icon"><i class="fa-solid fa-folder-open"></i></span>
+                                    <div class="table-msg-title">Không có đề tài</div>
+                                    <div class="table-msg-text">Bạn chưa được phân công hướng dẫn đề tài nào.</div>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
+
+        @if (hasData && Model.PageCount > 1)
+        {
+            <div class="pagination-container">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page, chuyenNganh = ViewBag.CurrentChuyenNganh, searchString = ViewBag.CurrentFilter }),
+                    new PagedListRenderOptions
+                    {
+                        LiElementClasses = new string[] { "page-item" },
+                        PageClasses = new string[] { "page-link" },
+                        DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                        DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                        LinkToPreviousPageFormat = "«",
+                        LinkToNextPageFormat = "»",
+                        EllipsesFormat = "...",
+                        MaximumPageNumbersToDisplay = 5
+                    })
+            </div>
+        }
     </div>
 </div>
+
+<script>
+    var timeout = null;
+    var searchInput = document.getElementById('txtSearch');
+    var filterNganh = document.getElementById('filterNganh');
+
+    function performSearch() {
+        var keyword = searchInput.value;
+        var nganh = filterNganh.value;
+        var url = '@Url.Action("Index")' + '?searchString=' + encodeURIComponent(keyword) + '&chuyenNganh=' + encodeURIComponent(nganh);
+        window.location.href = url;
+    }
+
+    searchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(timeout);
+        timeout = setTimeout(performSearch, 800);
+    });
+
+    filterNganh.addEventListener('change', performSearch);
+</script>

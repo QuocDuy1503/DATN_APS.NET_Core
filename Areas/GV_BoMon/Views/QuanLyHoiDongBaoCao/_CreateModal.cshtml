@@ -1,4 +1,4 @@
-@* Modal thÍm h?i ??ng b·o c·o cho B? mÙn *@
+Ôªø@* Modal th√™m h?i ??ng b√°o c√°o cho B? m√¥n *@
 <style>
     .modal-overlay {
         position: fixed;
@@ -98,7 +98,7 @@
 <div class="modal-overlay" id="addModal">
     <div class="modal-dialog">
         <div class="modal-header">
-            <div class="modal-title">ThÍm h?i ??ng b·o c·o m?i</div>
+            <div class="modal-title">Th√™m h?i ??ng b√°o c√°o m?i</div>
             <button type="button" class="btn-close-custom close-modal">&times;</button>
         </div>
         
@@ -106,8 +106,8 @@
             @Html.AntiForgeryToken()
             <div class="modal-body">
                 <div class="form-group">
-                    <label>TÍn h?i ??ng <span class="required">*</span></label>
-                    <input type="text" name="TenHoiDong" class="form-control" placeholder="VD: H?i ??ng b?o v? ?? ·n" required>
+                    <label>T√™n h?i ??ng <span class="required">*</span></label>
+                    <input type="text" name="TenHoiDong" class="form-control" placeholder="VD: H?i ??ng b?o v? ?? √°n" required>
                 </div>
 
                 <div class="form-row">
@@ -115,14 +115,14 @@
                         <label>Lo?i h?i ??ng <span class="required">*</span></label>
                         <select name="LoaiHoiDong" class="form-control" required>
                             <option value="">-- Ch?n lo?i --</option>
-                            <option value="GIUA_KY">Gi?a kÏ</option>
-                            <option value="CUOI_KY">Cu?i kÏ</option>
+                            <option value="GIUA_KY">Gi?a k√¨</option>
+                            <option value="CUOI_KY">Cu?i k√¨</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>B? mÙn</label>
+                        <label>B? m√¥n</label>
                         <select name="IdBoMon" class="form-control">
-                            <option value="">-- Ch?n b? mÙn --</option>
+                            <option value="">-- Ch?n b? m√¥n --</option>
                             @if (ViewBag.ListBoMon != null)
                             {
                                 foreach (SelectListItem item in ViewBag.ListBoMon)
@@ -135,7 +135,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>??t ?? ·n</label>
+                    <label>??t ?? √°n</label>
                     <select name="IdDot" class="form-control">
                         <option value="">-- Ch?n ??t --</option>
                         @if (ViewBag.ListDot != null)
@@ -150,7 +150,7 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Ng‡y b·o c·o</label>
+                        <label>Ng√†y b√°o c√°o</label>
                         <input type="date" name="NgayBaoCao" class="form-control">
                     </div>
                     <div class="form-group">
@@ -161,7 +161,7 @@
 
                 <div class="form-group">
                     <label>??a ?i?m</label>
-                    <input type="text" name="DiaDiem" class="form-control" placeholder="VD: PhÚng A101">
+                    <input type="text" name="DiaDiem" class="form-control" placeholder="VD: Ph√≤ng A101">
                 </div>
             </div>
             

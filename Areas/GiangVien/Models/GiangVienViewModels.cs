@@ -99,4 +99,35 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string? ActionListJson { get; set; }
         public int TaskCount { get; set; }
     }
+
+    // === CHI TIẾT ĐỀ TÀI - DUYỆT ĐĂNG KÝ ===
+    public class ChiTietDangKyDeTaiGVViewModel
+    {
+        public int IdDeTai { get; set; }
+        public string? MaDeTai { get; set; }
+        public string? TenDeTai { get; set; }
+        public string? TenChuyenNganh { get; set; }
+        public string? NguoiDeXuat { get; set; }
+        public string? MucTieu { get; set; }
+        public string? YeuCauTinhMoi { get; set; }
+        public string? PhamVi { get; set; }
+        public string? CongNghe { get; set; }
+        public string? KetQuaDuKien { get; set; }
+        public int SoLuongDangKy { get; set; }
+        public int SoLuongDaDuyet { get; set; }
+        public List<SinhVienDangKyDetailGVItem> DanhSachSV { get; set; } = new();
+    }
+
+    public class SinhVienDangKyDetailGVItem
+    {
+        public int IdSvDeTai { get; set; }
+        public string? Mssv { get; set; }
+        public string? HoTen { get; set; }
+        public string? Email { get; set; }
+        public string? KhoaHoc { get; set; }
+        public string? TrangThai { get; set; }
+        public string? StatusCss { get; set; }
+        public string? NgayDangKy { get; set; }
+        public string? NhanXet { get; set; }
+    }
 }
