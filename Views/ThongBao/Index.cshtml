@@ -1,4 +1,4 @@
-@using DATN_TMS.Models
+﻿@using DATN_TMS.Models
 @using Microsoft.AspNetCore.Http
 @using X.PagedList
 @using X.PagedList.Mvc.Core
@@ -12,7 +12,7 @@
         "BO_MON" => "~/Views/Shared/_LayoutGVBoMon.cshtml",
         _ => "~/Views/Shared/_LayoutBCNKhoa.cshtml"
     };
-    ViewData["Title"] = "Th�ng b�o";
+    ViewData["Title"] = "Thông báo";
     var filter = (ViewBag.Filter as string ?? "all").ToLower();
 }
 
@@ -41,13 +41,13 @@
     <div class="notif-page-card">
         <div class="notif-toolbar">
             <div>
-                <h2 style="margin:0; font-size:18px; font-weight:800;">Th�ng b�o c?a b?n</h2>
-                <div style="color:#666; font-size:13px;">Nh?n v�o th�ng b�o ?? m? chi ti?t ho?c chuy?n ??n li�n k?t ?�nh k�m.</div>
+                <h2 style="margin:0; font-size:18px; font-weight:800;">Thông báo của bạn</h2>
+                <div style="color:#666; font-size:13px;">Nhấn vào thông báo để mở chi tiết hoặc chuyển đến liên kết đính kèm.</div>
             </div>
             <div class="notif-filters">
-                <a asp-action="Index" asp-route-filter="all" class="notif-filter @(filter == "all" ? "active" : "")">T?t c?</a>
-                <a asp-action="Index" asp-route-filter="unread" class="notif-filter @(filter == "unread" ? "active" : "")">Ch?a ??c</a>
-                <a asp-action="Index" asp-route-filter="read" class="notif-filter @(filter == "read" ? "active" : "")">?� ??c</a>
+                <a asp-action="Index" asp-route-filter="all" class="notif-filter @(filter == "all" ? "active" : "")">Tất cả</a>
+                <a asp-action="Index" asp-route-filter="unread" class="notif-filter @(filter == "unread" ? "active" : "")">Chưa đọc</a>
+                <a asp-action="Index" asp-route-filter="read" class="notif-filter @(filter == "read" ? "active" : "")">Đã đọc</a>
             </div>
         </div>
 
@@ -68,18 +68,18 @@
                         </div>
                         @if (!isRead)
                         {
-                            <button type="button" class="btn-mark-read" data-id="@item.Id">?�nh d?u ?� ??c</button>
+                            <button type="button" class="btn-mark-read" data-id="@item.Id">Đánh dấu đã đọc</button>
                         }
                         else
                         {
-                            <span class="badge-read">?� ??c</span>
+                            <span class="badge-read">Đã đọc</span>
                         }
                     </div>
                 }
             }
             else
             {
-                <div class="notif-empty">Ch?a c� th�ng b�o.</div>
+                <div class="notif-empty">Chưa có thông báo.</div>
             }
         </div>
 
@@ -103,13 +103,9 @@
 
         const rows = document.querySelectorAll('.notif-row');
         rows.forEach(row => {
-            row.addEventListener('click', async () => {
+            row.addEventListener('click', () => {
                 const id = row.dataset.id;
-                const link = row.dataset.link;
-                await markRead(id);
-                if (link && link.length > 0) {
-                    window.location.href = link;
-                }
+                window.location.href = '@Url.Action("Details")/' + id;
             });
         });
     });

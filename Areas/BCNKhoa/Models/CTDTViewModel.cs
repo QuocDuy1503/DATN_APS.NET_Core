@@ -29,6 +29,15 @@
         public string Khoa { get; set; } = string.Empty;
         public string Nganh { get; set; }
         public int TongTinChi { get; set; }
+        public List<CTDTKhoiKienThucViewModel> KhoiKienThucs { get; set; } = new();
+        public List<CTDTHocPhanViewModel> HocPhans { get; set; } = new();
+    }
+
+    public class CTDTKhoiKienThucViewModel
+    {
+        public int Id { get; set; }
+        public string TenKhoi { get; set; } = string.Empty;
+        public int TongTinChi { get; set; }
         public List<CTDTHocPhanViewModel> HocPhans { get; set; } = new();
     }
 
@@ -41,5 +50,6 @@
         public string LoaiHocPhan { get; set; } = string.Empty;
         public string? DieuKienTienQuyet { get; set; }
         public int HocKiToChuc { get; set; }
+        public string KhoiKienThuc { get; set; } = string.Empty;
     }
 }

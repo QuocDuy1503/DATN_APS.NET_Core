@@ -107,7 +107,6 @@ CREATE TABLE HocKi (
     ma_hoc_ki VARCHAR(20),
     nam_bat_dau INT,
     nam_ket_thuc INT,
-    tuan_bat_dau INT,
     ngay_bat_dau DATE,
     trang_thai BIT DEFAULT 1 -- đang diễn ra, đã kết thúc
 );
@@ -695,16 +694,13 @@ INSERT INTO KhoaHoc (ma_khoa, ten_khoa, nam_nhap_hoc, nam_tot_nghiep, trang_thai
 ('K31', N'Khóa 31', 2027, 2031, 1);
 
 -- 3.8 HỌC KỲ
-INSERT INTO HocKi (ma_hoc_ki, nam_bat_dau, nam_ket_thuc, tuan_bat_dau, ngay_bat_dau, trang_thai) VALUES 
-('HK1_099', 2023, 2024, 33, '2023-08-14', 0),
-('HK2_099', 2023, 2024, 3,  '2024-01-15', 0),
-('HK3_099', 2023, 2024, 25, '2024-06-17', 0),
-('HK1_100', 2024, 2025, 33, '2024-08-12', 0),
-('HK2_100', 2024, 2025, 3,  '2025-01-13', 0),
-('HK3_100', 2024, 2025, 25, '2025-06-16', 0),
-('HK1_101', 2025, 2026, 33, '2025-08-11', 0),
-('HK2_101', 2025, 2026, 3,  '2026-01-12', 1),
-('HK3_101', 2025, 2026, 25, '2026-06-15', 0);
+INSERT INTO HocKi (ma_hoc_ki, nam_bat_dau, nam_ket_thuc, ngay_bat_dau, trang_thai) VALUES 
+('HK1_099', 2023, 2024, '2023-08-14', 0),
+('HK2_099', 2023, 2024, '2024-01-15', 0),
+('HK1_100', 2024, 2025, '2024-08-12', 0),
+('HK2_100', 2024, 2025, '2025-01-13', 0),
+('HK1_101', 2025, 2026, '2025-08-11', 0),
+('HK2_101', 2025, 2026, '2026-01-12', 1);
 
 -- 3.9 GIẢNG VIÊN
 INSERT INTO GiangVien (id_nguoi_dung, ma_gv, hoc_vi, id_bo_mon) VALUES
@@ -737,55 +733,44 @@ INSERT INTO ChuongTrinhDaoTao (ma_ctdt, ten_ctdt, stt_hien_thi, id_nganh, id_kho
 
 GO
 
--- 3.12 CHI TIẾT CTDT
+-- 3.12 KHỐI KIẾN THỨC & MÔN HỌC & CHI TIẾT CTDT
 DECLARE @id_k27 INT = (SELECT TOP 1 id FROM ChuongTrinhDaoTao WHERE ma_ctdt = 'CTDT_K27');
 DECLARE @id_k28 INT = (SELECT TOP 1 id FROM ChuongTrinhDaoTao WHERE ma_ctdt = 'CTDT_K28');
 
-INSERT INTO ChiTiet_CTDT (id_ctdt, stt, ma_hoc_phan, ten_hoc_phan, so_tin_chi, loai_hoc_phan, dieu_kien_tien_quyet, hoc_ki_to_chuc) VALUES
-(@id_k27, 1, 'COMP1001', N'Nhập môn Lập trình', 3, N'Bắt buộc', NULL, 1),
-(@id_k27, 2, 'MATH1001', N'Đại số tuyến tính', 3, N'Bắt buộc', NULL, 1),
-(@id_k27, 3, 'COMP1002', N'Kỹ thuật Lập trình', 3, N'Bắt buộc', N'COMP1001', 2),
-(@id_k27, 4, 'MATH1002', N'Toán rời rạc', 3, N'Bắt buộc', NULL, 2),
-(@id_k27, 5, 'COMP2001', N'Cấu trúc dữ liệu và Giải thuật', 4, N'Bắt buộc', N'COMP1002', 3),
-(@id_k27, 6, 'COMP2002', N'Kiến trúc máy tính', 3, N'Bắt buộc', NULL, 3),
-(@id_k27, 7, 'COMP2003', N'Cơ sở dữ liệu', 4, N'Bắt buộc', N'COMP2001', 4),
-(@id_k27, 8, 'COMP2004', N'Mạng máy tính', 3, N'Bắt buộc', N'COMP2002', 4),
-(@id_k27, 9, 'COMP3001', N'Lập trình Web', 3, N'Bắt buộc', N'COMP2003', 5),
-(@id_k27, 10, 'COMP3002', N'Công nghệ phần mềm', 3, N'Bắt buộc', N'COMP2003', 5),
-
-(@id_k28, 1, 'COMP1001', N'Nhập môn Lập trình', 3, N'Bắt buộc', NULL, 1),
-(@id_k28, 2, 'MATH1001', N'Đại số tuyến tính', 3, N'Bắt buộc', NULL, 1),
-(@id_k28, 3, 'COMP1002', N'Kỹ thuật Lập trình', 3, N'Bắt buộc', N'COMP1001', 2),
-(@id_k28, 4, 'MATH1002', N'Toán rời rạc', 3, N'Bắt buộc', NULL, 2),
-(@id_k28, 5, 'COMP2001', N'Cấu trúc dữ liệu và Giải thuật', 4, N'Bắt buộc', N'COMP1002', 3);
-
-
-
-
-
-
--- 3.12B KHỐI KIẾN THỨC & MÔN HỌC (mẫu theo logic import)
+-- 3.12A Khối kiến thức
 DECLARE @khoi_cb INT, @khoi_chuyen INT, @khoi_tuchon INT;
 INSERT INTO KhoiKienThuc (id_ctdt, ten_khoi, tong_tin_chi, ghi_chu)
-VALUES (@id_k27, N'Khối kiến thức đại cương', 18, N'Tiêu đề khối với tổng TC nằm ở cột E (Case A)');
+VALUES (@id_k27, N'Khối kiến thức đại cương', 18, N'Giai đoạn 1: tên khối ở cột B, tổng TC ở cột E');
 SET @khoi_cb = SCOPE_IDENTITY();
 
 INSERT INTO KhoiKienThuc (id_ctdt, ten_khoi, tong_tin_chi, ghi_chu)
-VALUES (@id_k27, N'Khối chuyên ngành bắt buộc', 30, N'Case A, tên khối lấy từ cột B, bỏ phần trong ngoặc');
+VALUES (@id_k27, N'Khối chuyên ngành bắt buộc', 30, N'Giai đoạn 2 – Case A: cột A có số dấu chấm, tên khối ở cột B (bỏ ngoặc), TC ở cột E');
 SET @khoi_chuyen = SCOPE_IDENTITY();
 
 INSERT INTO KhoiKienThuc (id_ctdt, ten_khoi, tong_tin_chi, ghi_chu)
-VALUES (@id_k27, N'Khối tự chọn (tính từ cột B)', 4, N'Case C: tổng tín chỉ cộng dồn từ cột B');
+VALUES (@id_k27, N'Khối tự chọn', 4, N'Giai đoạn 2 – Case B: tên khối ở cột A (bỏ số đầu), TC cộng từ dòng kế cột B');
 SET @khoi_tuchon = SCOPE_IDENTITY();
 
+-- 3.12B Chi tiết CTDT (liên kết khối kiến thức)
+INSERT INTO ChiTiet_CTDT (id_ctdt, id_khoi_kien_thuc, stt, ma_hoc_phan, ten_hoc_phan, so_tin_chi, loai_hoc_phan, dieu_kien_tien_quyet, hoc_ki_to_chuc) VALUES
+(@id_k27, @khoi_cb, 1, 'COMP1001', N'Nhập môn Lập trình', 3, N'Bắt buộc', NULL, 1),
+(@id_k27, @khoi_cb, 2, 'MATH1001', N'Đại số tuyến tính', 3, N'Bắt buộc', NULL, 1),
+(@id_k27, @khoi_cb, 3, 'COMP1002', N'Kỹ thuật Lập trình', 3, N'Bắt buộc', N'COMP1001', 2),
+(@id_k27, @khoi_cb, 4, 'MATH1002', N'Toán rời rạc', 3, N'Bắt buộc', NULL, 2),
+(@id_k27, @khoi_chuyen, 5, 'COMP2001', N'Cấu trúc dữ liệu và Giải thuật', 4, N'Bắt buộc', N'COMP1002', 3),
+(@id_k27, @khoi_chuyen, 6, 'COMP2002', N'Kiến trúc máy tính', 3, N'Bắt buộc', NULL, 3),
+(@id_k27, @khoi_chuyen, 7, 'COMP2003', N'Cơ sở dữ liệu', 4, N'Bắt buộc', N'COMP2001', 4),
+(@id_k27, @khoi_chuyen, 8, 'COMP2004', N'Mạng máy tính', 3, N'Bắt buộc', N'COMP2002', 4),
+(@id_k27, @khoi_chuyen, 9, 'COMP3001', N'Lập trình Web', 3, N'Bắt buộc', N'COMP2003', 5),
+(@id_k27, @khoi_chuyen, 10, 'COMP3002', N'Công nghệ phần mềm', 3, N'Bắt buộc', N'COMP2003', 5),
 
+(@id_k28, NULL, 1, 'COMP1001', N'Nhập môn Lập trình', 3, N'Bắt buộc', NULL, 1),
+(@id_k28, NULL, 2, 'MATH1001', N'Đại số tuyến tính', 3, N'Bắt buộc', NULL, 1),
+(@id_k28, NULL, 3, 'COMP1002', N'Kỹ thuật Lập trình', 3, N'Bắt buộc', N'COMP1001', 2),
+(@id_k28, NULL, 4, 'MATH1002', N'Toán rời rạc', 3, N'Bắt buộc', NULL, 2),
+(@id_k28, NULL, 5, 'COMP2001', N'Cấu trúc dữ liệu và Giải thuật', 4, N'Bắt buộc', N'COMP1002', 3);
 
-
-
-
-
-
-
+-- 3.12C Môn học (liên kết khối kiến thức)
 INSERT INTO MonHoc (id_khoi_kien_thuc, id_ctdt, ma_mon, ten_mon, so_tin_chi, loai_hoc_phan, hoc_ki_to_chuc)
 VALUES
 (@khoi_cb, @id_k27, 'COMP1001', N'Nhập môn lập trình', 3, N'Bắt buộc', 1),

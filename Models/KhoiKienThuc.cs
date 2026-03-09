@@ -18,4 +18,6 @@ public partial class KhoiKienThuc
     public virtual ChuongTrinhDaoTao? IdCtdtNavigation { get; set; }
 
     public virtual ICollection<MonHoc> MonHocs { get; set; } = new List<MonHoc>();
+
+    public virtual ICollection<ChiTietCtdt> ChiTietCtdts { get; set; } = new List<ChiTietCtdt>();
 }

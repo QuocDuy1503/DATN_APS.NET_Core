@@ -9,6 +9,8 @@ public partial class ChiTietCtdt
 
     public int? IdCtdt { get; set; }
 
+    public int? IdKhoiKienThuc { get; set; }
+
     public int? Stt { get; set; }
 
     public string? MaHocPhan { get; set; }
@@ -24,4 +26,6 @@ public partial class ChiTietCtdt
     public int? HocKiToChuc { get; set; }
 
     public virtual ChuongTrinhDaoTao? IdCtdtNavigation { get; set; }
+
+    public virtual KhoiKienThuc? IdKhoiKienThucNavigation { get; set; }
 }

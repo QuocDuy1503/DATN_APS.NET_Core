@@ -101,7 +101,43 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.HocPhans.Any())
+                        @if (Model.KhoiKienThucs.Any())
+                        {
+                            foreach (var khoi in Model.KhoiKienThucs)
+                            {
+                                <tr style="background-color: #f0f4ff;">
+                                    <td colspan="3" style="font-weight: 700; color: #2c3e50; font-size: 13px;">
+                                        <i class="fa-solid fa-layer-group" style="color: var(--primary-color); margin-right: 6px;"></i>@khoi.TenKhoi
+                                    </td>
+                                    <td style="font-weight: 700; color: var(--primary-color); text-align: center;">@khoi.TongTinChi</td>
+                                    <td colspan="3"></td>
+                                </tr>
+                                @if (khoi.HocPhans.Any())
+                                {
+                                    foreach (var hp in khoi.HocPhans)
+                                    {
+                                        <tr>
+                                            <td>@hp.Stt</td>
+                                            <td>@hp.MaHocPhan</td>
+                                            <td style="padding-left: 28px;">@hp.TenHocPhan</td>
+                                            <td>@hp.SoTinChi</td>
+                                            <td>
+                                                <span class="badge-type @((hp.LoaiHocPhan != null && hp.LoaiHocPhan.Contains("tự", StringComparison.OrdinalIgnoreCase)) ? "badge-elective" : "badge-compulsory")">
+                                                    @hp.LoaiHocPhan
+                                                </span>
+                                            </td>
+                                            <td>@hp.DieuKienTienQuyet</td>
+                                            <td>@hp.HocKiToChuc</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="7" style="padding-left: 28px; color: #aaa; font-style: italic;">Không có học phần.</td></tr>
+                                }
+                            }
+                        }
+                        else if (Model.HocPhans.Any())
                         {
                             foreach (var hp in Model.HocPhans)
                             {
@@ -111,7 +147,7 @@
                                     <td>@hp.TenHocPhan</td>
                                     <td>@hp.SoTinChi</td>
                                     <td>
-                                        <span class="badge-type @((hp.LoaiHocPhan != null && hp.LoaiHocPhan.Contains("tự" , StringComparison.OrdinalIgnoreCase)) ? "badge-elective" : "badge-compulsory")">
+                                        <span class="badge-type @((hp.LoaiHocPhan != null && hp.LoaiHocPhan.Contains("tự", StringComparison.OrdinalIgnoreCase)) ? "badge-elective" : "badge-compulsory")">
                                             @hp.LoaiHocPhan
                                         </span>
                                     </td>

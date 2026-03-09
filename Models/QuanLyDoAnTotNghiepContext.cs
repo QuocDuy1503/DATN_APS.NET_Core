@@ -253,6 +253,7 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("dieu_kien_tien_quyet");
             entity.Property(e => e.HocKiToChuc).HasColumnName("hoc_ki_to_chuc");
             entity.Property(e => e.IdCtdt).HasColumnName("id_ctdt");
+            entity.Property(e => e.IdKhoiKienThuc).HasColumnName("id_khoi_kien_thuc");
             entity.Property(e => e.LoaiHocPhan)
                 .HasMaxLength(50)
                 .HasColumnName("loai_hoc_phan");
@@ -268,6 +269,10 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.HasOne(d => d.IdCtdtNavigation).WithMany(p => p.ChiTietCtdts)
                 .HasForeignKey(d => d.IdCtdt)
                 .HasConstraintName("FK_CTDT_ChiTiet");
+
+            entity.HasOne(d => d.IdKhoiKienThucNavigation).WithMany(p => p.ChiTietCtdts)
+                .HasForeignKey(d => d.IdKhoiKienThuc)
+                .HasConstraintName("FK_CTDT_KhoiKienThuc");
         });
 
         modelBuilder.Entity<ChuongTrinhDaoTao>(entity =>
@@ -609,7 +614,6 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.TrangThai)
                 .HasDefaultValue(true)
                 .HasColumnName("trang_thai");
-            entity.Property(e => e.TuanBatDau).HasColumnName("tuan_bat_dau");
         });
 
         modelBuilder.Entity<HoiDongBaoCao>(entity =>

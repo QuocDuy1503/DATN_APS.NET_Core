@@ -26,23 +26,9 @@
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                    <div class="form-group" style="flex: 1;">
-                        <label>Tuần bắt đầu:</label>
-                        <input type="number" name="TuanBatDau" id="editTuanBatDau" class="form-control">
-                    </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Ngày bắt đầu:</label>
-                        <input type="date" name="NgayBatDau" id="editNgayBatDau" class="form-control">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Trạng thái:</label>
-                    <select name="TrangThai" id="editTrangThai" class="form-control">
-                        <option value="true">Đang diễn ra</option>
-                        <option value="false">Đã kết thúc</option>
-                    </select>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Ngày bắt đầu:</label>
+                    <input type="date" name="NgayBatDau" id="editNgayBatDau" class="form-control">
                 </div>
             </div>
             
@@ -73,12 +59,7 @@
                 document.getElementById('editMaHocKi').value = data.maHocKi || '';
                 document.getElementById('editNamBatDau').value = data.namBatDau || '';
                 document.getElementById('editNamKetThuc').value = data.namKetThuc || '';
-                document.getElementById('editTuanBatDau').value = data.tuanBatDau || '';
-                document.getElementById('editNgayBatDau').value = data.ngayBatDau || ''; // Date input cần format yyyy-MM-dd nếu chưa chuẩn
-                
-                // Xử lý select box boolean
-                const statusSelect = document.getElementById('editTrangThai');
-                statusSelect.value = data.trangThai ? "true" : "false";
+                document.getElementById('editNgayBatDau').value = data.ngayBatDau || '';
 
                 document.getElementById('editModal').classList.add('show');
             } else {

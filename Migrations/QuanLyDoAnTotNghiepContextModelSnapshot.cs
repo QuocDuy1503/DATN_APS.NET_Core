@@ -937,10 +937,6 @@ namespace DATN_TMS.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("trang_thai");
 
-                    b.Property<int?>("TuanBatDau")
-                        .HasColumnType("int")
-                        .HasColumnName("tuan_bat_dau");
-
                     b.HasKey("Id")
                         .HasName("PK__HocKi__3213E83FE7F52CAF");
 

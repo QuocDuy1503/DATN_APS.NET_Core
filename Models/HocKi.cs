@@ -13,8 +13,6 @@ public partial class HocKi
 
     public int? NamKetThuc { get; set; }
 
-    public int? TuanBatDau { get; set; }
-
     public DateOnly? NgayBatDau { get; set; }
 
     public bool? TrangThai { get; set; }

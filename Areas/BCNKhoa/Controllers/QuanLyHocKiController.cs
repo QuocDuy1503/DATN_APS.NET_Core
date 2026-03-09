@@ -44,7 +44,6 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 MaHocKi = h.MaHocKi,
                 NamBatDau = h.NamBatDau,
                 NamKetThuc = h.NamKetThuc,
-                TuanBatDau = h.TuanBatDau,
                 NgayBatDau = h.NgayBatDau,
                 TrangThai = h.TrangThai
             });
@@ -65,7 +64,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         // POST: Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string MaHocKi, int? NamBatDau, int? NamKetThuc, int? TuanBatDau, DateOnly? NgayBatDau)
+        public async Task<IActionResult> Create(string MaHocKi, int? NamBatDau, int? NamKetThuc, DateOnly? NgayBatDau)
         {
             try
             {
@@ -83,12 +82,22 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     return RedirectToAction("Index");
                 }
 
+                // Kiểm tra năm học đã có tối đa 2 học kì chưa
+                if (NamBatDau.HasValue)
+                {
+                    var countInYear = await _context.HocKis.CountAsync(h => h.NamBatDau == NamBatDau);
+                    if (countInYear >= 2)
+                    {
+                        TempData["ErrorMessage"] = $"Năm học {NamBatDau}-{NamKetThuc} đã có đủ 2 học kì, không thể tạo thêm.";
+                        return RedirectToAction("Index");
+                    }
+                }
+
                 var hk = new HocKi
                 {
                     MaHocKi = MaHocKi.Trim(),
                     NamBatDau = NamBatDau,
                     NamKetThuc = NamKetThuc,
-                    TuanBatDau = TuanBatDau,
                     NgayBatDau = NgayBatDau,
                     TrangThai = true // Mặc định mới tạo là đang kích hoạt
                 };
@@ -109,7 +118,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         // POST: Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int Id, string MaHocKi, int? NamBatDau, int? NamKetThuc, int? TuanBatDau, DateOnly? NgayBatDau, bool TrangThai)
+        public async Task<IActionResult> Edit(int Id, string MaHocKi, int? NamBatDau, int? NamKetThuc, DateOnly? NgayBatDau)
         {
             try
             {
@@ -131,9 +140,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 hk.MaHocKi = MaHocKi.Trim();
                 hk.NamBatDau = NamBatDau;
                 hk.NamKetThuc = NamKetThuc;
-                hk.TuanBatDau = TuanBatDau;
                 hk.NgayBatDau = NgayBatDau;
-                hk.TrangThai = TrangThai;
 
                 _context.HocKis.Update(hk);
                 await _context.SaveChangesAsync();

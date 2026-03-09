@@ -41,6 +41,8 @@
 
     .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
     .status-active { background: #16a34a; }
+    .status-pending { background: #f59e0b; }
+    .status-inactive { background: #6b7280; }
 
     .pagination-container { display: flex; justify-content: center; margin-top: 12px; margin-top: auto; padding-top: 8px; }
     .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
@@ -81,7 +83,6 @@
                         <th>Học kì</th>
                         <th>Năm bắt đầu</th>
                         <th>Năm kết thúc</th>
-                        <th>Tuần bắt đầu</th>
                         <th>Ngày bắt đầu</th>
                         <th>Trạng thái</th>
                         <th class="text-center">Thao tác</th>
@@ -96,12 +97,15 @@
                                 <td><span>@item.MaHocKi</span></td>
                                 <td>@item.NamBatDau</td>
                                 <td>@item.NamKetThuc</td>
-                                <td>@item.TuanBatDau</td>
                                 <td>@(item.NgayBatDau.HasValue ? item.NgayBatDau.Value.ToString("dd/MM/yyyy") : "-")</td>
                                 <td>
-                                    @if(item.TrangThai == true)
+                                    @if(item.TrangThaiText == "Đang diễn ra")
                                     {
                                         <span class="status-badge status-active">Đang diễn ra</span>
+                                    }
+                                    else if(item.TrangThaiText == "Chưa diễn ra")
+                                    {
+                                        <span class="status-badge status-pending">Chưa diễn ra</span>
                                     }
                                     else
                                     {
@@ -127,7 +131,7 @@
                     }
                     else
                     {
-                        <tr><td colspan="7" class="text-center text-muted p-4">Không tìm thấy dữ liệu.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted p-4">Không tìm thấy dữ liệu.</td></tr>
                     }
                 </tbody>
             </table>
