@@ -126,8 +126,11 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 PhamVi = deTai.PhamViChucNang,
                 CongNghe = deTai.CongNgheSuDung,
                 KetQuaDuKien = deTai.SanPhamKetQuaDuKien,
+                NhiemVuCuThe = deTai.NhiemVuCuThe,
                 SoLuongDangKy = allDangKy.Count,
                 SoLuongDaDuyet = tongDaDuyet,
+                CoTheDuyet = true, // GVHD có thể duyệt ngay sau khi SV đăng ký
+                ThongBaoGiaiDoan = null,
                 DanhSachSV = allDangKy
                     .OrderBy(svdt => svdt.TrangThai == "DA_DUYET" ? 0 : svdt.TrangThai == "Chờ GVHD duyệt" ? 1 : 2)
                     .Select(svdt => new SinhVienDangKyDetailGVItem

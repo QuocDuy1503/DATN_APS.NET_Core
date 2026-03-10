@@ -17,8 +17,9 @@ namespace DATN_TMS.Areas.BCNKhoa.Models
         public string CongNghe { get; set; }
         public string YeuCauTinhMoi { get; set; }
         public string KetQuaDuKien { get; set; }
+        public string NhiemVuCuThe { get; set; }
 
-  
+
         public string NhomThucHien { get; set; }
 
 

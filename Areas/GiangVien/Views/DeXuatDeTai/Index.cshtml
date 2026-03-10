@@ -345,6 +345,108 @@
     }
 
     /* ===============================================
+       AUTOCOMPLETE SEARCH STYLES
+    =============================================== */
+    .sv-search-wrapper {
+        position: relative;
+    }
+    .sv-search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        height: 36px;
+        box-sizing: border-box;
+    }
+    .sv-search-input:focus {
+        outline: none;
+        border-color: #484BE0;
+        box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1);
+    }
+    .sv-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: none;
+    }
+    .sv-search-results.show {
+        display: block;
+    }
+    .sv-search-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .sv-search-item:last-child {
+        border-bottom: none;
+    }
+    .sv-search-item:hover {
+        background-color: #f5f5f5;
+    }
+    .sv-search-item.selected {
+        background-color: #e8f0fe;
+    }
+    .sv-search-item .sv-mssv {
+        font-weight: 600;
+        color: #484BE0;
+    }
+    .sv-search-item .sv-name {
+        color: #333;
+    }
+    .sv-search-item .sv-cn {
+        font-size: 11px;
+        color: #888;
+        margin-top: 2px;
+    }
+    .sv-search-no-result {
+        padding: 12px;
+        text-align: center;
+        color: #888;
+        font-size: 13px;
+    }
+    .sv-selected-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #e8f0fe;
+        border: 1px solid #484BE0;
+        border-radius: 4px;
+        padding: 6px 10px;
+        margin-top: 6px;
+    }
+    .sv-selected-badge .sv-info {
+        flex: 1;
+        font-size: 13px;
+    }
+    .sv-selected-badge .sv-info .mssv {
+        font-weight: 600;
+        color: #484BE0;
+    }
+    .sv-selected-badge .btn-remove-sv {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0;
+        line-height: 1;
+    }
+    .sv-selected-badge .btn-remove-sv:hover {
+        color: #a71d2a;
+    }
+
+    /* ===============================================
        NOTIFICATION MODAL
     =============================================== */
     .modal-box {
@@ -540,6 +642,42 @@
                     <label>Sản phẩm kết quả dự kiến</label>
                     <input asp-for="SanPhamKetQuaDuKien" type="text" class="form-control" placeholder="Nhập sản phẩm kết quả dự kiến" />
                 </div>
+
+                <div class="form-group">
+                    <label>Nhiệm vụ cụ thể</label>
+                    <textarea asp-for="NhiemVuCuThe" class="form-control" rows="3" placeholder="Nhập nhiệm vụ cụ thể"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sinh viên thực hiện 1 <small style="color:#888;">(không bắt buộc)</small></label>
+                        <div class="sv-search-wrapper">
+                            <input type="hidden" asp-for="IdSinhVien1" id="IdSinhVien1" />
+                            <input type="text" id="searchSv1" class="sv-search-input" placeholder="Nhập MSSV hoặc họ tên để tìm..." autocomplete="off" />
+                            <div id="resultsSv1" class="sv-search-results"></div>
+                        </div>
+                        <div id="selectedSv1" class="sv-selected-badge" style="display: none;">
+                            <div class="sv-info">
+                                <span class="mssv"></span> - <span class="name"></span>
+                            </div>
+                            <button type="button" class="btn-remove-sv" onclick="removeSinhVien(1)">&times;</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Sinh viên thực hiện 2 <small style="color:#888;">(không bắt buộc)</small></label>
+                        <div class="sv-search-wrapper">
+                            <input type="hidden" asp-for="IdSinhVien2" id="IdSinhVien2" />
+                            <input type="text" id="searchSv2" class="sv-search-input" placeholder="Nhập MSSV hoặc họ tên để tìm..." autocomplete="off" />
+                            <div id="resultsSv2" class="sv-search-results"></div>
+                        </div>
+                        <div id="selectedSv2" class="sv-selected-badge" style="display: none;">
+                            <div class="sv-info">
+                                <span class="mssv"></span> - <span class="name"></span>
+                            </div>
+                            <button type="button" class="btn-remove-sv" onclick="removeSinhVien(2)">&times;</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -619,6 +757,7 @@
                     document.getElementById('CongNgheSuDung').value = dt.congNgheSuDung || '';
                     document.getElementById('YeuCauTinhMoi').value = dt.yeuCauTinhMoi || '';
                     document.getElementById('SanPhamKetQuaDuKien').value = dt.sanPhamKetQuaDuKien || '';
+                    document.getElementById('NhiemVuCuThe').value = dt.nhiemVuCuThe || '';
                     showModal('addModal');
                 }
             });
@@ -700,6 +839,120 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal-overlay.show').forEach(function(m) { m.classList.remove('show'); });
+        }
+    });
+</script>
+
+<!-- Script tìm kiếm sinh viên động -->
+<script>
+    var searchTimerSv1 = null;
+    var searchTimerSv2 = null;
+
+    // Tìm kiếm sinh viên 1
+    document.getElementById('searchSv1').addEventListener('input', function() {
+        var self = this;
+        clearTimeout(searchTimerSv1);
+        searchTimerSv1 = setTimeout(function() {
+            searchSinhVien(self.value, 1);
+        }, 300);
+    });
+
+    // Tìm kiếm sinh viên 2
+    document.getElementById('searchSv2').addEventListener('input', function() {
+        var self = this;
+        clearTimeout(searchTimerSv2);
+        searchTimerSv2 = setTimeout(function() {
+            searchSinhVien(self.value, 2);
+        }, 300);
+    });
+
+    function searchSinhVien(keyword, index) {
+        var resultsDiv = document.getElementById('resultsSv' + index);
+
+        if (!keyword || keyword.length < 2) {
+            resultsDiv.classList.remove('show');
+            resultsDiv.innerHTML = '';
+            return;
+        }
+
+        fetch('/GiangVien/DeXuatDeTai/TimKiemSinhVien?keyword=' + encodeURIComponent(keyword))
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success && data.data.length > 0) {
+                    var html = '';
+                    data.data.forEach(function(sv) {
+                        html += '<div class="sv-search-item" onclick="selectSinhVien(' + sv.idSinhVien + ', \'' + escapeHtml(sv.mssv) + '\', \'' + escapeHtml(sv.hoTen) + '\', \'' + escapeHtml(sv.tenChuyenNganh || '') + '\', ' + index + ')">';
+                        html += '<div><span class="sv-mssv">' + escapeHtml(sv.mssv) + '</span> - <span class="sv-name">' + escapeHtml(sv.hoTen) + '</span></div>';
+                        if (sv.tenChuyenNganh) {
+                            html += '<div class="sv-cn">' + escapeHtml(sv.tenChuyenNganh) + '</div>';
+                        }
+                        html += '</div>';
+                    });
+                    resultsDiv.innerHTML = html;
+                    resultsDiv.classList.add('show');
+                } else {
+                    resultsDiv.innerHTML = '<div class="sv-search-no-result">Không tìm thấy sinh viên phù hợp</div>';
+                    resultsDiv.classList.add('show');
+                }
+            })
+            .catch(function() {
+                resultsDiv.innerHTML = '<div class="sv-search-no-result">Có lỗi xảy ra</div>';
+                resultsDiv.classList.add('show');
+            });
+    }
+
+    function selectSinhVien(id, mssv, hoTen, chuyenNganh, index) {
+        // Kiểm tra trùng lặp
+        var otherId = index === 1 ? document.getElementById('IdSinhVien2').value : document.getElementById('IdSinhVien1').value;
+        if (otherId && parseInt(otherId) === id) {
+            alert('Sinh viên này đã có trong đề tài!');
+            return;
+        }
+
+        // Gán giá trị
+        document.getElementById('IdSinhVien' + index).value = id;
+        document.getElementById('searchSv' + index).value = '';
+        document.getElementById('resultsSv' + index).classList.remove('show');
+        document.getElementById('resultsSv' + index).innerHTML = '';
+
+        // Hiển thị badge đã chọn
+        var badge = document.getElementById('selectedSv' + index);
+        badge.querySelector('.mssv').textContent = mssv;
+        badge.querySelector('.name').textContent = hoTen;
+        badge.style.display = 'flex';
+
+        // Ẩn ô input
+        document.getElementById('searchSv' + index).style.display = 'none';
+    }
+
+    function removeSinhVien(index) {
+        document.getElementById('IdSinhVien' + index).value = '';
+        document.getElementById('selectedSv' + index).style.display = 'none';
+        document.getElementById('searchSv' + index).style.display = 'block';
+        document.getElementById('searchSv' + index).value = '';
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // Đóng dropdown khi click bên ngoài
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.sv-search-wrapper')) {
+            document.querySelectorAll('.sv-search-results').forEach(function(el) {
+                el.classList.remove('show');
+            });
+        }
+    });
+
+    // Reset form khi mở modal tạo mới
+    var originalBtnClick = document.getElementById('btnOpenModal').onclick;
+    document.getElementById('btnOpenModal').addEventListener('click', function() {
+        if (!this.disabled) {
+            // Reset các ô chọn sinh viên
+            removeSinhVien(1);
+            removeSinhVien(2);
         }
     });
 </script>

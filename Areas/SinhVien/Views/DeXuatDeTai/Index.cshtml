@@ -407,15 +407,15 @@
                                 <td class="ellipsis-cell" title="@dt.TenDeTai">@dt.TenDeTai</td>
                                 <td>@dt.TenChuyenNganh</td>
                                 <td>
-                                    @if (dt.TrangThai == "Chờ duyệt")
+                                    @if (dt.TrangThai == "CHO_DUYET")
                                     {
                                         <span class="status-badge status-pending">Chờ duyệt</span>
                                     }
-                                    else if (dt.TrangThai == "Đã duyệt")
+                                    else if (dt.TrangThai == "DA_DUYET")
                                     {
                                         <span class="status-badge status-running">Đã duyệt</span>
                                     }
-                                    else if (dt.TrangThai == "Từ chối")
+                                    else if (dt.TrangThai == "TU_CHOI")
                                     {
                                         <span class="status-badge status-rejected">Từ chối</span>
                                     }
@@ -539,6 +539,11 @@
                     <label>Sản phẩm kết quả dự kiến</label>
                     <input asp-for="SanPhamKetQuaDuKien" type="text" class="form-control" placeholder="Nhập sản phẩm kết quả dự kiến" />
                 </div>
+
+                <div class="form-group">
+                    <label>Nhiệm vụ cụ thể</label>
+                    <textarea asp-for="NhiemVuCuThe" class="form-control" rows="3" placeholder="Nhập nhiệm vụ cụ thể"></textarea>
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -619,6 +624,7 @@ function chinhSua(id) {
                 document.getElementById('CongNgheSuDung').value = dt.congNgheSuDung || '';
                 document.getElementById('YeuCauTinhMoi').value = dt.yeuCauTinhMoi || '';
                 document.getElementById('SanPhamKetQuaDuKien').value = dt.sanPhamKetQuaDuKien || '';
+                document.getElementById('NhiemVuCuThe').value = dt.nhiemVuCuThe || '';
                 showModal('addModal');
             }
         });

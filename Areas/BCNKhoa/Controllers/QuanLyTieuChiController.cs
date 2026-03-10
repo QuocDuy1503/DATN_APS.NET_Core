@@ -72,10 +72,20 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 })
                 .ToListAsync();
 
+            var chiNhanXet = false;
+            if (loaiPhieuId.HasValue)
+            {
+                chiNhanXet = await _context.LoaiPhieuChams
+                    .Where(lp => lp.Id == loaiPhieuId.Value)
+                    .Select(lp => lp.ChiNhanXet ?? false)
+                    .FirstOrDefaultAsync();
+            }
+
             var vm = new TieuChiViewModel
             {
                 SelectedDotId = dotId,
                 SelectedLoaiPhieuId = loaiPhieuId,
+                ChiNhanXet = chiNhanXet,
                 LoaiPhieuOptions = loaiPhieuOptions,
                 DotOptions = dotOptions,
                 TieuChis = tieuChis

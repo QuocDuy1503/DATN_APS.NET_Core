@@ -1,4 +1,4 @@
-﻿@* Modal thêm h?i ??ng báo cáo cho B? môn *@
+@* Modal thêm hội đồng báo cáo cho Bộ môn *@
 <style>
     .modal-overlay {
         position: fixed;
@@ -98,7 +98,7 @@
 <div class="modal-overlay" id="addModal">
     <div class="modal-dialog">
         <div class="modal-header">
-            <div class="modal-title">Thêm h?i ??ng báo cáo m?i</div>
+            <div class="modal-title">Thêm hội đồng báo cáo mới</div>
             <button type="button" class="btn-close-custom close-modal">&times;</button>
         </div>
         
@@ -106,23 +106,23 @@
             @Html.AntiForgeryToken()
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Tên h?i ??ng <span class="required">*</span></label>
-                    <input type="text" name="TenHoiDong" class="form-control" placeholder="VD: H?i ??ng b?o v? ?? án" required>
+                    <label>Tên hội đồng <span class="required">*</span></label>
+                    <input type="text" name="TenHoiDong" class="form-control" placeholder="VD: Hội đồng bảo vệ đồ án" required>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Lo?i h?i ??ng <span class="required">*</span></label>
+                        <label>Loại hội đồng <span class="required">*</span></label>
                         <select name="LoaiHoiDong" class="form-control" required>
-                            <option value="">-- Ch?n lo?i --</option>
-                            <option value="GIUA_KY">Gi?a kì</option>
-                            <option value="CUOI_KY">Cu?i kì</option>
+                            <option value="">-- Chọn loại --</option>
+                            <option value="GIUA_KY">Giữa kì</option>
+                            <option value="CUOI_KY">Cuối kì</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>B? môn</label>
+                        <label>Bộ môn</label>
                         <select name="IdBoMon" class="form-control">
-                            <option value="">-- Ch?n b? môn --</option>
+                            <option value="">-- Chọn bộ môn --</option>
                             @if (ViewBag.ListBoMon != null)
                             {
                                 foreach (SelectListItem item in ViewBag.ListBoMon)
@@ -135,9 +135,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label>??t ?? án</label>
+                    <label>Đợt đồ án</label>
                     <select name="IdDot" class="form-control">
-                        <option value="">-- Ch?n ??t --</option>
+                        <option value="">-- Chọn đợt --</option>
                         @if (ViewBag.ListDot != null)
                         {
                             foreach (SelectListItem item in ViewBag.ListDot)
@@ -154,20 +154,20 @@
                         <input type="date" name="NgayBaoCao" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>Gi? b?t ??u</label>
+                        <label>Giờ bắt đầu</label>
                         <input type="time" name="GioBatDau" class="form-control">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>??a ?i?m</label>
+                    <label>Địa điểm</label>
                     <input type="text" name="DiaDiem" class="form-control" placeholder="VD: Phòng A101">
                 </div>
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary close-modal">H?y</button>
-                <button type="submit" class="btn btn-save">L?u</button>
+                <button type="button" class="btn btn-secondary close-modal">Hủy</button>
+                <button type="submit" class="btn btn-save">Lưu</button>
             </div>
         </form>
     </div>

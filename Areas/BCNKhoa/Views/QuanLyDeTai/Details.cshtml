@@ -182,6 +182,11 @@
                 </div>
 
                 <div class="detail-group">
+                    <label>Nhiệm vụ cụ thể:</label>
+                    <textarea class="detail-control" readonly>@(Model.NhiemVuCuThe ?? "---")</textarea>
+                </div>
+
+                <div class="detail-group">
                     <label>Sản phẩm kết quả dự kiến:</label>
                     <textarea class="detail-control" readonly>@Model.KetQuaDuKien</textarea>
                 </div>
@@ -332,16 +337,30 @@
         .then(data => {
             if (data.success) {
                 Swal.fire('Thành công!', data.message, 'success');
-                
-                // Cập nhật giao diện ngay lập tức
+
+                // Cập nhật trạng thái chính từ server response
                 const statusDiv = document.getElementById('statusDisplay');
-                if(newStatus === "DA_DUYET") {
-                    statusDiv.className = "status-value status-approved";
+                const overallStatus = data.overallStatus;
+
+                if(overallStatus === "DA_DUYET") {
+                    statusDiv.className = "status-badge status-approved";
                     statusDiv.innerText = "Đã duyệt";
+                } else if(overallStatus === "TU_CHOI") {
+                    statusDiv.className = "status-badge status-rejected";
+                    statusDiv.innerText = "Từ chối";
                 } else {
-                    statusDiv.className = "status-value status-rejected";
-                    statusDiv.innerText = "Đã từ chối";
+                    statusDiv.className = "status-badge status-waiting";
+                    statusDiv.innerText = "Chờ duyệt";
                 }
+
+                // Cập nhật số lượng nhận xét
+                const reviewCountText = document.querySelector('.current-status div[style*="margin-top:6px"]');
+                if (reviewCountText && data.reviewCount !== undefined && data.totalMembers !== undefined) {
+                    reviewCountText.innerText = `Đã nhận ${data.reviewCount}/${data.totalMembers} nhận xét`;
+                }
+
+                // Reload sau 1.5s để hiển thị nhận xét mới
+                setTimeout(() => location.reload(), 1500);
             } else {
                 Swal.fire('Lỗi!', data.message, 'error');
             }

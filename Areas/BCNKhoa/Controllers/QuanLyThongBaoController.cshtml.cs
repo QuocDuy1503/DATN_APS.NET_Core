@@ -18,49 +18,47 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         {
             ["dangky_nguyenvong"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi mở đợt gửi thông báo", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo tự động khi đợt được mở." },
-                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc mở đợt: gửi trước X ngày khi đợt bắt đầu", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc sắp hết hạn: gửi trước X ngày khi đợt kết thúc", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc nhở trước khi mở đợt", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở sắp hết hạn", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
             },
             ["duyet_nguyenvong"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi mở đợt gửi thông báo", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo tự động khi đợt được mở." },
-                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc mở đợt: gửi trước X ngày khi đợt bắt đầu", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc sắp hết hạn: gửi trước X ngày khi đợt kết thúc", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc nhở trước khi mở đợt", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở sắp hết hạn", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
             },
             ["dexuat_detai"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi mở đợt gửi thông báo", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo tự động khi đợt được mở." },
-                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc mở đợt: gửi trước X ngày khi đợt bắt đầu", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc sắp hết hạn: gửi trước X ngày khi đợt kết thúc", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc nhở trước khi mở đợt", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở sắp hết hạn", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
+            },
+            ["dangky_detai"] = new()
+            {
+                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc nhở trước khi mở đợt", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở sắp hết hạn", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
             },
             ["duyet_detai"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi mở đợt gửi thông báo", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo tự động khi đợt được mở." },
-                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nhắc nhở lập hội đồng: gửi sau X ngày khi duyệt đề tài bắt đầu", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "after_start_review", Title = "Nhắc nhở duyệt đề tài: gửi sau X ngày khi duyệt đề tài bắt đầu", MocThoiGian = "AFTER_START_REVIEW", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc sắp kết thúc duyệt đề tài: gửi trước X ngày khi duyệt đề tài kết thúc", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nhắc nhở lập hội đồng", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "after_start_review", Title = "Nhắc nhở duyệt đề tài", MocThoiGian = "AFTER_START_REVIEW", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở sắp hết hạn duyệt", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
             },
             ["nop_decuong"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi mở đợt gửi thông báo", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo tự động khi đợt được mở." },
-                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc mở đợt: gửi trước X ngày khi đợt bắt đầu", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc sắp hết hạn: gửi trước X ngày khi đợt kết thúc", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "before_start", Title = "Nhắc nhở trước khi mở đợt", MocThoiGian = "BEFORE_START", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở sắp hết hạn", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
             },
             ["baocao_giuaki"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi mở đợt báo cáo giữa kỳ", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo tự động khi đợt được mở." },
-                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nhắc nhở lập hội đồng: gửi sau X ngày khi đợt báo cáo giữa kỳ bắt đầu", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "after_start_nop", Title = "Nhắc nhở nộp tài liệu: gửi sau X ngày khi báo cáo giữa kỳ bắt đầu", MocThoiGian = "AFTER_START_NOP", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở duyệt: gửi trước X ngày khi kết thúc đợt báo cáo giữa kỳ", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nhắc nhở lập hội đồng", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "after_start_nop", Title = "Nhắc nhở nộp tài liệu", MocThoiGian = "AFTER_START_NOP", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở sắp hết hạn", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true }
             },
             ["baocao_cuoiki"] = new()
             {
-                new ThongBaoThoiGianItem { Key = "open", Title = "Khi mở đợt báo cáo cuối kỳ", MocThoiGian = "ON_START", SoNgayChenhLech = 0, TrangThai = true, ChoPhepNhapSoNgay = false, GhiChu = "Thông báo tự động khi đợt được mở." },
-                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nhắc nhở lập hội đồng: gửi sau X ngày khi đợt báo cáo cuối kỳ bắt đầu", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "after_start_nop", Title = "Nhắc nhở nộp tài liệu: gửi sau X ngày khi báo cáo cuối kỳ bắt đầu", MocThoiGian = "AFTER_START_NOP", SoNgayChenhLech = 3, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở duyệt: gửi trước X ngày khi kết thúc đợt báo cáo cuối kỳ", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true },
-                new ThongBaoThoiGianItem { Key = "after_end_publish", Title = "Công bố điểm: gửi sau X ngày khi kết thúc đợt báo cáo cuối kỳ", MocThoiGian = "AFTER_END_PUBLISH", SoNgayChenhLech = 2, TrangThai = true }
+                new ThongBaoThoiGianItem { Key = "after_start_hd", Title = "Nhắc nhở lập hội đồng", MocThoiGian = "AFTER_START_HD", SoNgayChenhLech = 2, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "after_start_nop", Title = "Nhắc nhở nộp tài liệu", MocThoiGian = "AFTER_START_NOP", SoNgayChenhLech = 3, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "before_end", Title = "Nhắc nhở sắp hết hạn", MocThoiGian = "BEFORE_END", SoNgayChenhLech = 2, TrangThai = true },
+                new ThongBaoThoiGianItem { Key = "after_end_publish", Title = "Công bố điểm", MocThoiGian = "AFTER_END_PUBLISH", SoNgayChenhLech = 2, TrangThai = true }
             }
         };
 
@@ -70,37 +68,33 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         {
             return (loaiSuKien, key) switch
             {
-                ("dangky_nguyenvong", "open") => "Khi mở đợt gửi thông báo",
-                ("dangky_nguyenvong", "before_start") => "Nhắc mở đợt: gửi trước X ngày khi đợt bắt đầu",
-                ("dangky_nguyenvong", "before_end") => "Nhắc sắp hết hạn: gửi trước X ngày khi đợt kết thúc",
+                ("dangky_nguyenvong", "before_start") => "Nhắc nhở trước khi mở đợt",
+                ("dangky_nguyenvong", "before_end") => "Nhắc nhở sắp hết hạn",
 
-                ("duyet_nguyenvong", "open") => "Khi mở đợt gửi thông báo",
-                ("duyet_nguyenvong", "before_start") => "Nhắc mở đợt: gửi trước X ngày khi đợt bắt đầu",
-                ("duyet_nguyenvong", "before_end") => "Nhắc sắp hết hạn: gửi trước X ngày khi đợt kết thúc",
+                ("duyet_nguyenvong", "before_start") => "Nhắc nhở trước khi mở đợt",
+                ("duyet_nguyenvong", "before_end") => "Nhắc nhở sắp hết hạn",
 
-                ("dexuat_detai", "open") => "Khi mở đợt gửi thông báo",
-                ("dexuat_detai", "before_start") => "Nhắc mở đợt: gửi trước X ngày khi đợt bắt đầu",
-                ("dexuat_detai", "before_end") => "Nhắc sắp hết hạn: gửi trước X ngày khi đợt kết thúc",
+                ("dexuat_detai", "before_start") => "Nhắc nhở trước khi mở đợt",
+                ("dexuat_detai", "before_end") => "Nhắc nhở sắp hết hạn",
 
-                ("duyet_detai", "open") => "Khi mở đợt gửi thông báo",
-                ("duyet_detai", "after_start_hd") => "Nhắc nhở lập hội đồng: gửi sau X ngày khi duyệt đề tài bắt đầu",
-                ("duyet_detai", "after_start_review") => "Nhắc nhở duyệt đề tài: gửi sau X ngày khi duyệt đề tài bắt đầu",
-                ("duyet_detai", "before_end") => "Nhắc sắp kết thúc duyệt đề tài: gửi trước X ngày khi duyệt đề tài kết thúc",
+                ("dangky_detai", "before_start") => "Nhắc nhở trước khi mở đợt",
+                ("dangky_detai", "before_end") => "Nhắc nhở sắp hết hạn",
 
-                ("nop_decuong", "open") => "Khi mở đợt gửi thông báo",
-                ("nop_decuong", "before_start") => "Nhắc mở đợt: gửi trước X ngày khi đợt bắt đầu",
-                ("nop_decuong", "before_end") => "Nhắc sắp hết hạn: gửi trước X ngày khi đợt kết thúc",
+                ("duyet_detai", "after_start_hd") => "Nhắc nhở lập hội đồng",
+                ("duyet_detai", "after_start_review") => "Nhắc nhở duyệt đề tài",
+                ("duyet_detai", "before_end") => "Nhắc nhở sắp hết hạn duyệt",
 
-                ("baocao_giuaki", "open") => "Khi mở đợt báo cáo giữa kỳ",
-                ("baocao_giuaki", "after_start_hd") => "Nhắc nhở lập hội đồng: gửi sau X ngày khi đợt báo cáo giữa kỳ bắt đầu",
-                ("baocao_giuaki", "after_start_nop") => "Nhắc nhở nộp tài liệu: gửi sau X ngày khi báo cáo giữa kỳ bắt đầu",
-                ("baocao_giuaki", "before_end") => "Nhắc nhở duyệt: gửi trước X ngày khi kết thúc đợt báo cáo giữa kỳ",
+                ("nop_decuong", "before_start") => "Nhắc nhở trước khi mở đợt",
+                ("nop_decuong", "before_end") => "Nhắc nhở sắp hết hạn",
 
-                ("baocao_cuoiki", "open") => "Khi mở đợt báo cáo cuối kỳ",
-                ("baocao_cuoiki", "after_start_hd") => "Nhắc nhở lập hội đồng: gửi sau X ngày khi đợt báo cáo cuối kỳ bắt đầu",
-                ("baocao_cuoiki", "after_start_nop") => "Nhắc nhở nộp tài liệu: gửi sau X ngày khi báo cáo cuối kỳ bắt đầu",
-                ("baocao_cuoiki", "before_end") => "Nhắc nhở duyệt: gửi trước X ngày khi kết thúc đợt báo cáo cuối kỳ",
-                ("baocao_cuoiki", "after_end_publish") => "Công bố điểm: gửi sau X ngày khi kết thúc đợt báo cáo cuối kỳ",
+                ("baocao_giuaki", "after_start_hd") => "Nhắc nhở lập hội đồng",
+                ("baocao_giuaki", "after_start_nop") => "Nhắc nhở nộp tài liệu",
+                ("baocao_giuaki", "before_end") => "Nhắc nhở sắp hết hạn",
+
+                ("baocao_cuoiki", "after_start_hd") => "Nhắc nhở lập hội đồng",
+                ("baocao_cuoiki", "after_start_nop") => "Nhắc nhở nộp tài liệu",
+                ("baocao_cuoiki", "before_end") => "Nhắc nhở sắp hết hạn",
+                ("baocao_cuoiki", "after_end_publish") => "Công bố điểm",
                 _ => string.Empty
             };
         }
@@ -109,13 +103,12 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         {
             return (loaiSuKien, key) switch
             {
-                ("dangky_nguyenvong", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
-                ("duyet_nguyenvong", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
-                ("dexuat_detai", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
-                ("duyet_detai", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
-                ("nop_decuong", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
-                ("baocao_giuaki", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
-                ("baocao_cuoiki", "open") => "Thông báo t? ??ng khi ??t ???c m?.",
+                (_, "before_start") => "Gửi trước ngày bắt đầu đợt theo số ngày đã cấu hình.",
+                (_, "before_end") => "Gửi trước ngày kết thúc đợt theo số ngày đã cấu hình.",
+                (_, "after_start_hd") => "Gửi sau ngày bắt đầu đợt theo số ngày đã cấu hình.",
+                (_, "after_start_nop") => "Gửi sau ngày bắt đầu đợt theo số ngày đã cấu hình.",
+                (_, "after_start_review") => "Gửi sau ngày bắt đầu đợt theo số ngày đã cấu hình.",
+                (_, "after_end_publish") => "Gửi sau ngày kết thúc đợt theo số ngày đã cấu hình.",
                 _ => null
             };
         }
@@ -161,6 +154,15 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     TieuDeMau = "[VLU] Nhắc đề xuất đề tài",
                     NoiDungMau = "Đợt {Ten_Dot} sắp hết hạn đề xuất đề tài vào {Ngay_Ket_Thuc}. Vui lòng hoàn tất trước hạn.",
                     ThoiGians = CloneTimeConfigs(_defaultTimeConfigs["dexuat_detai"])
+                },
+                new ThongBaoCauHinhItem
+                {
+                    LoaiSuKien = "dangky_detai",
+                    DoiTuongNhan = "sinhvien",
+                    TrangThai = true,
+                    TieuDeMau = "[VLU] Nhắc đăng ký đề tài",
+                    NoiDungMau = "Đợt {Ten_Dot} sắp mở đăng ký đề tài vào {Ngay_Bat_Dau}. Vui lòng chuẩn bị và đăng ký đúng hạn.",
+                    ThoiGians = CloneTimeConfigs(_defaultTimeConfigs["dangky_detai"])
                 },
                 new ThongBaoCauHinhItem
                 {
@@ -246,6 +248,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 "dangky_nguyenvong",
                 "duyet_nguyenvong",
                 "dexuat_detai",
+                "dangky_detai",
                 "duyet_detai",
                 "nop_decuong",
                 "baocao_giuaki",

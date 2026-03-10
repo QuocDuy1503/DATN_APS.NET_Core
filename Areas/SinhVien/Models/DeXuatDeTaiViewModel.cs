@@ -35,6 +35,9 @@ namespace DATN_TMS.Areas.SinhVien.Models
         [Display(Name = "Sản phẩm kết quả dự kiến")]
         public string? SanPhamKetQuaDuKien { get; set; }
 
+        [Display(Name = "Nhiệm vụ cụ thể")]
+        public string? NhiemVuCuThe { get; set; }
+
         // Sinh viên thực hiện
         [Display(Name = "MSSV thứ nhất")]
         public string? MssvSinhVien1 { get; set; }

@@ -17,6 +17,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Models
     {
         public int? SelectedDotId { get; set; }
         public int? SelectedLoaiPhieuId { get; set; }
+        public bool ChiNhanXet { get; set; }
         public IEnumerable<SelectListItem>? LoaiPhieuOptions { get; set; }
         public IEnumerable<SelectListItem>? DotOptions { get; set; }
         public List<TieuChiItem> TieuChis { get; set; } = new();

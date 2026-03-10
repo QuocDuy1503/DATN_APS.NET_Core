@@ -59,13 +59,13 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 return View(new List<DangKyDeTaiViewModel>().ToPagedList(1, pageSize));
             }
 
-            var giaiDoan = XacDinhGiaiDoan(dot);
+            var giaiDoan = XacDinhGiaiDoanDangKy(dot);
             ViewBag.GiaiDoan = giaiDoan;
             ViewBag.TenDot = dot.TenDot;
 
             if (giaiDoan == "CHUA_MO")
             {
-                var ngayMo = dot.NgayBatDauDeXuatDeTai?.ToString("dd/MM/yyyy");
+                var ngayMo = dot.NgayBatDauDkDeTai?.ToString("dd/MM/yyyy");
                 ViewBag.Message = $"Giai đoạn đăng ký đề tài sẽ bắt đầu từ ngày {ngayMo}. Vui lòng quay lại sau.";
                 return View(new List<DangKyDeTaiViewModel>().ToPagedList(1, pageSize));
             }
@@ -75,17 +75,18 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 .Select(x => x.IdDeTai)
                 .ToListAsync();
 
+            // Sinh viên có thể đăng ký vào các đề tài đã đề xuất (CHO_DUYET hoặc DA_DUYET)
             var query = _context.DeTais
                 .Include(dt => dt.IdChuyenNganhNavigation)
                 .Include(dt => dt.IdGvhdNavigation)
                     .ThenInclude(gv => gv!.IdNguoiDungNavigation)
-                .Where(dt => dt.IdDot == dot.Id && dt.TrangThai == "DA_DUYET")
+                .Where(dt => dt.IdDot == dot.Id && (dt.TrangThai == "CHO_DUYET" || dt.TrangThai == "DA_DUYET"))
                 .AsQueryable();
 
             // Build filter dropdown data from full (unfiltered) list
             var allChuyenNganhs = await _context.DeTais
                 .Include(dt => dt.IdChuyenNganhNavigation)
-                .Where(dt => dt.IdDot == dot.Id && dt.TrangThai == "DA_DUYET" && dt.IdChuyenNganhNavigation != null)
+                .Where(dt => dt.IdDot == dot.Id && (dt.TrangThai == "CHO_DUYET" || dt.TrangThai == "DA_DUYET") && dt.IdChuyenNganhNavigation != null)
                 .Select(dt => dt.IdChuyenNganhNavigation!.TenChuyenNganh)
                 .Distinct()
                 .OrderBy(x => x)
@@ -133,7 +134,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             var dot = await GetDotDoAnActive();
             if (dot == null) return RedirectToAction("Index");
 
-            var giaiDoan = XacDinhGiaiDoan(dot);
+            var giaiDoan = XacDinhGiaiDoanDangKy(dot);
             if (giaiDoan == "CHUA_MO") return RedirectToAction("Index");
 
             var mssv = HttpContext.Session.GetString("UserCode");
@@ -204,6 +205,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 CongNghe = deTai.CongNgheSuDung,
                 YeuCauTinhMoi = deTai.YeuCauTinhMoi,
                 KetQuaDuKien = deTai.SanPhamKetQuaDuKien,
+                NhiemVuCuThe = deTai.NhiemVuCuThe,
                 TrangThaiDeTai = deTai.TrangThai,
 
                 MssvSinhVien = sinhVien.Mssv,
@@ -230,7 +232,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             if (dot == null)
                 return Json(new { success = false, message = "Không tìm thấy đợt đồ án." });
 
-            var giaiDoan = XacDinhGiaiDoan(dot);
+            var giaiDoan = XacDinhGiaiDoanDangKy(dot);
             if (giaiDoan != "DANG_MO")
                 return Json(new { success = false, message = "Giai đoạn đăng ký đã đóng." });
 
@@ -285,7 +287,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             if (dot == null)
                 return Json(new { success = false, message = "Không tìm thấy đợt đồ án." });
 
-            var giaiDoan = XacDinhGiaiDoan(dot);
+            var giaiDoan = XacDinhGiaiDoanDangKy(dot);
             if (giaiDoan != "DANG_MO")
                 return Json(new { success = false, message = "Giai đoạn đăng ký đã đóng, không thể hủy." });
 
@@ -324,17 +326,18 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 .FirstOrDefaultAsync();
         }
 
-        private static string XacDinhGiaiDoan(DotDoAn dot)
+        private static string XacDinhGiaiDoanDangKy(DotDoAn dot)
         {
             var today = DateOnly.FromDateTime(DateTime.Now);
 
-            if (dot.NgayBatDauDeXuatDeTai == null || dot.NgayKetThucDeXuatDeTai == null)
+            // Kiểm tra giai đoạn đăng ký đề tài (sau khi đề xuất đề tài kết thúc)
+            if (dot.NgayBatDauDkDeTai == null || dot.NgayKetThucDkDeTai == null)
                 return "CHUA_MO";
 
-            if (today < dot.NgayBatDauDeXuatDeTai)
+            if (today < dot.NgayBatDauDkDeTai)
                 return "CHUA_MO";
 
-            if (today > dot.NgayKetThucDeXuatDeTai)
+            if (today > dot.NgayKetThucDkDeTai)
                 return "DA_KET_THUC";
 
             return "DANG_MO";

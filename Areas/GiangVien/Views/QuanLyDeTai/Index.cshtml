@@ -1,9 +1,9 @@
 @using X.PagedList.Mvc.Core;
 @using X.PagedList;
-@model IPagedList<DATN_TMS.Areas.GV_BoMon.Models.QuanLyDangKyViewModel>
+@model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyDeTaiViewModel>
 
 @{
-    ViewData["Title"] = "Duyệt đăng ký đồ án";
+    ViewData["Title"] = "Quản lý danh sách đề tài";
 }
 
 <style>
@@ -18,7 +18,6 @@
         min-height: calc(100vh - 140px);
         font-family: inherit;
     }
-
     .page-header-row { margin-bottom: 15px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
@@ -31,9 +30,9 @@
 
     .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
     .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
-    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; }
-    tbody td { padding: 12px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody td { padding:17px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     tbody tr:hover { background: #f9f9f9; }
 
     .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
@@ -52,7 +51,7 @@
 <div class="content-body dotdoan-page">
     <div class="content-card">
         <div class="page-header-row">
-            <h2 class="page-title">Duyệt đăng ký nguyện vọng</h2>
+            <h2 class="page-title">Quản lý danh sách đề tài</h2>
         </div>
 
         <div class="toolbar-row">
@@ -63,12 +62,14 @@
                         <option value="">-- Tất cả đợt --</option>
                     </select>
                 </div>
+                
                 <div class="filter-item">
-                    <span class="filter-label">Khóa</span>
-                    <select name="khoaId" id="khoaSelect" class="form-control" asp-items="ViewBag.ListKhoa" onchange="performSearch()">
-                        <option value="">-- Tất cả khóa --</option>
+                    <span class="filter-label">Năm học</span>
+                    <select name="namHoc" id="namSelect" class="form-control" asp-items="ViewBag.ListNamHoc" onchange="performSearch()">
+                        <option value="">-- Tất cả năm --</option>
                     </select>
                 </div>
+
                 <div class="filter-item">
                     <span class="filter-label">Chuyên ngành</span>
                     <select name="chuyenNganhId" id="nganhSelect" class="form-control" asp-items="ViewBag.ListChuyenNganh" onchange="performSearch()">
@@ -83,7 +84,7 @@
                     <input type="text" id="searchInput" name="searchString"
                            value="@ViewBag.CurrentFilter"
                            class="toolbar-input search-input"
-                           placeholder="Nhập MSSV hoặc Họ tên..." style="width: 250px;" />
+                           placeholder="Mã đề tài, Tên đề tài..." style="width: 250px;" />
                 </div>
             </div>
         </div>
@@ -93,13 +94,13 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>MSSV</th>
-                            <th>Họ tên</th>
-                            <th>Khóa</th>
-                            <th>Chuyên ngành</th>
-                            <th style="text-align:center;">Tín chỉ</th>
-                            <th style="text-align:center;">Trạng thái</th>
-                            <th style="text-align:center;">Thao tác</th>
+                            <th>Mã ĐT</th>
+                            <th>Tên đề tài</th>
+                            <th>Người đề xuất</th>
+                            <th>GVHD</th>
+                            <th style="text-align:center; width:150px;">Chuyên ngành</th>
+                            <th style="text-align:center; width:120px;">Trạng thái</th>
+                            <th style="text-align:center; width:80px;">Chi tiết</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,17 +109,17 @@
                             foreach (var item in Model)
                             {
                                 <tr>
-                                    <td>@item.MaSinhVien</td>
-                                    <td>@item.HoTen</td> 
-                                    <td>@item.TenKhoa</td>
-                                    <td>@item.TenChuyenNganh</td>
-                                    <td style="text-align:center;">@item.TinChiTichLuy</td>
-                                    <td style="text-align:center;" id="status-@item.Id">
-                                        @if (item.TrangThai == 1)
+                                    <td>@item.MaDeTai</td>
+                                    <td style="max-width: 300px;">@item.TenDeTai</td>
+                                    <td>@item.NguoiDeXuat</td>
+                                    <td>@item.GVHD</td>
+                                    <td style="text-align:center;">@item.TenChuyenNganh</td>
+                                    <td style="text-align:center;">
+                                        @if (item.TrangThai == "DA_DUYET")
                                         {
                                             <span class="status-badge status-approved">Đã duyệt</span>
                                         }
-                                        else if (item.TrangThai == 2)
+                                        else if (item.TrangThai == "TU_CHOI")
                                         {
                                             <span class="status-badge status-rejected">Từ chối</span>
                                         }
@@ -128,13 +129,7 @@
                                         }
                                     </td>
                                     <td style="text-align:center;">
-                                        <button class="action-btn btn-approve" title="Duyệt" onclick="duyetDangKy(@item.Id)" style="color: #27ae60;">
-                                            <i class="fa-solid fa-check"></i>
-                                        </button>
-                                        <button class="action-btn btn-reject" title="Từ chối" onclick="tuChoiDangKy(@item.Id)" style="color: #dc3545;">
-                                            <i class="fa-solid fa-xmark"></i>
-                                        </button>
-                                        <a href="@Url.Action("KetQuaHocTap", new { id = item.IdSinhVien })" class="action-btn btn-view" title="Xem KQHT" style="color: #2980b9;">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="action-btn btn-view" title="Xem chi tiết" style="color: #2980b9;">
                                             <i class="fa-solid fa-eye"></i>
                                         </a>
                                     </td>
@@ -143,7 +138,7 @@
                         }
                         else
                         {
-                            <tr><td colspan="7" class="text-center text-muted p-4">Không tìm thấy dữ liệu phù hợp.</td></tr>
+                            <tr><td colspan="7" class="text-center text-muted p-4">Không tìm thấy đề tài phù hợp.</td></tr>
                         }
                     </tbody>
                 </table>
@@ -151,7 +146,7 @@
         </div>
 
         <div class="pagination-container">
-             @Html.PagedListPager(Model, page => Url.Action("Index", new { page, dotId = ViewBag.CurrentDotId, khoaId = ViewBag.CurrentKhoaId, chuyenNganhId = ViewBag.CurrentChuyenNganh, searchString = ViewBag.CurrentFilter }),
+             @Html.PagedListPager(Model, page => Url.Action("Index", new { page, dotId = ViewBag.CurrentDotId, namHoc = ViewBag.CurrentNamHoc, chuyenNganhId = ViewBag.CurrentChuyenNganh, searchString = ViewBag.CurrentFilter }),
             new PagedListRenderOptions {
                 LiElementClasses = new string[] { "page-item" },
                 PageClasses = new string[] { "page-link" },
@@ -166,9 +161,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // --- 1. LOGIC TÌM KIẾM REAL-TIME ---
     const searchInput = document.getElementById('searchInput');
     const tableContainer = document.querySelector('.table-responsive');
     const paginationContainer = document.querySelector('.pagination-container');
@@ -186,17 +179,17 @@
     function performSearch() {
         const keyword = document.getElementById('searchInput').value;
         const dotId = document.getElementById('dotSelect').value;
-        const khoaId = document.getElementById('khoaSelect').value;
+        const namHoc = document.getElementById('namSelect').value;
         const nganhId = document.getElementById('nganhSelect').value;
 
-        const url = `@Url.Action("Index")?searchString=${encodeURIComponent(keyword)}&dotId=${dotId}&khoaId=${khoaId}&chuyenNganhId=${nganhId}`;
+        const url = `@Url.Action("Index")?searchString=${encodeURIComponent(keyword)}&dotId=${dotId}&namHoc=${namHoc}&chuyenNganhId=${nganhId}`;
 
         fetch(url)
             .then(response => response.text())
             .then(html => {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
-                
+
                 const newTable = doc.querySelector('.table-responsive').innerHTML;
                 if (tableContainer) tableContainer.innerHTML = newTable;
 
@@ -204,66 +197,5 @@
                 if (paginationContainer) paginationContainer.innerHTML = newPagination;
             })
             .catch(err => console.error('Lỗi tìm kiếm:', err));
-    }
-
-    // --- 2. CÁC HÀM XỬ LÝ NÚT BẤM ---
-    function duyetDangKy(id) {
-        Swal.fire({
-            title: 'Duyệt sinh viên này?',
-            text: "Sinh viên sẽ được tham gia vào đợt đồ án!",
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#27ae60',
-            confirmButtonText: 'Duyệt ngay',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                callApiChangeStatus(id, '@Url.Action("DuyetDangKy")', 1);
-            }
-        });
-    }
-
-    function tuChoiDangKy(id) {
-        Swal.fire({
-            title: 'Từ chối đăng ký?',
-            text: "Sinh viên này không đủ điều kiện?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            confirmButtonText: 'Từ chối',
-            cancelButtonText: 'Hủy'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                callApiChangeStatus(id, '@Url.Action("TuChoiDangKy")', 2);
-            }
-        });
-    }
-
-    function callApiChangeStatus(id, url, newStatus) {
-        let formData = new FormData();
-        formData.append('id', id);
-
-        fetch(url, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire('Thành công!', data.message, 'success');
-                const cell = document.getElementById(`status-${id}`);
-                if(newStatus === 1) {
-                    cell.innerHTML = '<span class="status-badge status-approved">Đã duyệt</span>';
-                } else {
-                    cell.innerHTML = '<span class="status-badge status-rejected">Từ chối</span>';
-                }
-            } else {
-                Swal.fire('Lỗi!', data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire('Lỗi hệ thống', 'Không thể kết nối đến server', 'error');
-        });
     }
 </script>

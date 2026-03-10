@@ -1,9 +1,9 @@
-﻿@using X.PagedList.Mvc.Core;
+@using X.PagedList.Mvc.Core;
 @using X.PagedList;
 @model IPagedList<DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongBaoCaoViewModel>
 
 @{
-    ViewData["Title"] = "Qu?n lý H?i ??ng báo cáo";
+    ViewData["Title"] = "Quản lý Hội đồng báo cáo";
 }
 
 <style>
@@ -60,15 +60,15 @@
 <div class="content-body dotdoan-page">
     <div class="content-card">
         <div class="page-header-row">
-            <h2 class="page-title">Qu?n lý H?i ??ng báo cáo</h2>
+            <h2 class="page-title">Quản lý Hội đồng báo cáo</h2>
         </div>
 
         <div class="toolbar-row">
             <form method="get" class="filter-wrapper" id="filterForm">
                 <div class="filter-item">
-                    <span class="filter-label">??t ?? án:</span>
+                    <span class="filter-label">Đợt đồ án:</span>
                     <select name="dotId" class="form-control" onchange="this.form.submit()">
-                        <option value="">-- T?t c? --</option>
+                        <option value="">-- Tất cả --</option>
                         @if (ViewBag.ListDot != null)
                         {
                             foreach (SelectListItem item in ViewBag.ListDot)
@@ -79,9 +79,9 @@
                     </select>
                 </div>
                 <div class="filter-item">
-                    <span class="filter-label">N?m h?c:</span>
+                    <span class="filter-label">Năm học:</span>
                     <select name="namHoc" class="form-control" onchange="this.form.submit()">
-                        <option value="">-- T?t c? --</option>
+                        <option value="">-- Tất cả --</option>
                         @if (ViewBag.ListNamHoc != null)
                         {
                             foreach (SelectListItem item in ViewBag.ListNamHoc)
@@ -95,15 +95,15 @@
 
             <div class="toolbar-right" style="display:flex; align-items:flex-end; gap:10px;">
                 <div class="search-box" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                    <span class="filter-label">Tìm ki?m</span>
+                    <span class="filter-label">Tìm kiếm</span>
                     <input type="text" id="searchInput" class="toolbar-input search-input" 
                            value="@ViewBag.CurrentFilter" 
-                           placeholder="Nh?p mã ho?c tên h?i ??ng..." 
+                           placeholder="Nhập mã hoặc tên hội đồng..." 
                            style="width: 280px;" />
                 </div>
                 
                 <button type="button" class="btn-primary" id="btnOpenModal">
-                    <i class="fa-solid fa-plus"></i> Thêm h?i ??ng
+                    <i class="fa-solid fa-plus"></i> Thêm hội đồng
                 </button>
             </div>
         </div>
@@ -113,14 +113,14 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 100px;">Mã H?</th>
-                            <th>Tên h?i ??ng</th>
-                            <th>B? môn</th>
-                            <th style="width: 100px;">Lo?i</th>
-                            <th>Ng??i t?o</th>
+                            <th style="width: 100px;">Mã HĐ</th>
+                            <th>Tên hội đồng</th>
+                            <th>Bộ môn</th>
+                            <th style="width: 100px;">Loại</th>
+                            <th>Người tạo</th>
                             <th style="width: 130px;">Ngày báo cáo</th>
-                            <th>??a ?i?m</th>
-                            <th style="width: 100px;">Tr?ng thái</th>
+                            <th>Địa điểm</th>
+                            <th style="width: 100px;">Trạng thái</th>
                             <th style="text-align:center; width: 100px;">Thao tác</th>
                         </tr>
                     </thead>
@@ -129,7 +129,7 @@
                         {
                             foreach (var item in Model)
                             {
-                                var isGiuaKy = item.LoaiHoiDong?.ToLower().Contains("gi?a") == true || 
+                                var isGiuaKy = item.LoaiHoiDong?.ToLower().Contains("giữa") == true || 
                                               item.LoaiHoiDong?.ToUpper() == "GIUA_KY";
                                 <tr>
                                     <td>@item.MaHoiDong</td>
@@ -138,11 +138,11 @@
                                     <td>
                                         @if (isGiuaKy)
                                         {
-                                            <span class="status-badge status-midterm">Gi?a kì</span>
+                                            <span class="status-badge status-midterm">Giữa kì</span>
                                         }
                                         else
                                         {
-                                            <span class="status-badge status-final">Cu?i kì</span>
+                                            <span class="status-badge status-final">Cuối kì</span>
                                         }
                                     </td>
                                     <td>@item.NguoiTao</td>
@@ -164,15 +164,15 @@
                                     <td>
                                         @if (item.TrangThai)
                                         {
-                                            <span class="status-badge status-approved">?ã duy?t</span>
+                                            <span class="status-badge status-approved">Đã duyệt</span>
                                         }
                                         else
                                         {
-                                            <span class="status-badge status-pending">Ch? duy?t</span>
+                                            <span class="status-badge status-pending">Chờ duyệt</span>
                                         }
                                     </td>
                                     <td style="text-align:center;">
-                                        <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Chi ti?t">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Chi tiết">
                                             <i class="fa-regular fa-pen-to-square"></i>
                                         </a>
                                         @if (!item.TrangThai)
@@ -187,7 +187,7 @@
                         }
                         else
                         {
-                            <tr><td colspan="9" class="text-center" style="padding: 30px; color: #999;">Không tìm th?y d? li?u h?i ??ng nào.</td></tr>
+                            <tr><td colspan="9" class="text-center" style="padding: 30px; color: #999;">Không tìm thấy dữ liệu hội đồng nào.</td></tr>
                         }
                     </tbody>
                 </table>
@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded", function () {
         Swal.fire({ icon: 'success', title: 'Thành công!', text: successMsg, timer: 3000, confirmButtonColor: '#484BE0' });
     }
     if (errorMsg && errorMsg.length > 0) {
-        Swal.fire({ icon: 'error', title: 'Có l?i x?y ra', text: errorMsg, confirmButtonColor: '#d33' });
+        Swal.fire({ icon: 'error', title: 'Có lỗi xảy ra', text: errorMsg, confirmButtonColor: '#d33' });
     }
 
     // Delete confirm
@@ -234,12 +234,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const id = this.getAttribute('data-id');
             const name = this.getAttribute('data-name');
             Swal.fire({
-                title: 'Xác nh?n xóa?',
-                html: `B?n có ch?c mu?n xóa h?i ??ng <strong>"${name}"</strong>?`,
+                title: 'Xác nhận xóa?',
+                html: `Bạn có chắc muốn xóa hội đồng <strong>"${name}"</strong>?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                cancelButtonText: 'H?y',
+                cancelButtonText: 'Hủy',
                 confirmButtonText: 'Xóa'
             }).then(r => {
                 if (r.isConfirmed) {

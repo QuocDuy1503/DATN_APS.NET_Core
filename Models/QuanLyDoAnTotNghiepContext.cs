@@ -420,6 +420,7 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.Property(e => e.MucTieuChinh).HasColumnName("muc_tieu_chinh");
             entity.Property(e => e.NguoiDuyet).HasColumnName("nguoi_duyet");
             entity.Property(e => e.NhanXetDuyet).HasColumnName("nhan_xet_duyet");
+            entity.Property(e => e.NhiemVuCuThe).HasColumnName("nhiem_vu_cu_the");
             entity.Property(e => e.PhamViChucNang).HasColumnName("pham_vi_chuc_nang");
             entity.Property(e => e.SanPhamKetQuaDuKien).HasColumnName("san_pham_ket_qua_du_kien");
             entity.Property(e => e.TenDeTai)
@@ -844,6 +845,7 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
             entity.ToTable("LoaiPhieuCham");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ChiNhanXet).HasColumnName("chi_nhan_xet");
             entity.Property(e => e.NguoiTao).HasColumnName("nguoi_tao");
             entity.Property(e => e.TenLoaiPhieu)
                 .HasMaxLength(100)

@@ -21,6 +21,8 @@ public partial class DeTai
 
     public string? SanPhamKetQuaDuKien { get; set; }
 
+    public string? NhiemVuCuThe { get; set; }
+
     public int? IdNguoiDeXuat { get; set; }
 
     public int? IdGvhd { get; set; }

@@ -1,14 +1,14 @@
-﻿using DATN_TMS.Areas.BCNKhoa.Models;
-using DATN_TMS.Areas.BCNKhoa.Models.ViewModels;
+using DATN_TMS.Areas.BCNKhoa.Models;
 using DATN_TMS.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using X.PagedList.Extensions;
 
-namespace DATN_TMS.Areas.BCNKhoa.Controllers
+namespace DATN_TMS.Areas.GiangVien.Controllers
 {
-    [Area("BCNKhoa")]
+    [Area("GiangVien")]
     public class QuanLyDeTaiController : Controller
     {
         private readonly QuanLyDoAnTotNghiepContext _context;
@@ -18,16 +18,37 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             _context = context;
         }
 
-        // Danh sách đề tài
-        public IActionResult Index(int? page, int? dotId, int? namHoc, int? chuyenNganhId, string searchString)
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            var sessionRole = HttpContext.Session.GetString("Role");
+            var isGiangVienByClaim = User?.Identity?.IsAuthenticated == true && 
+                (User.IsInRole("GIANG_VIEN") || User.IsInRole("BO_MON") || User.IsInRole("BCN_KHOA"));
+            var isGiangVienBySession = sessionRole == "GIANG_VIEN" || sessionRole == "BO_MON" || sessionRole == "BCN_KHOA";
+
+            if (!isGiangVienByClaim && !isGiangVienBySession)
+            {
+                context.Result = RedirectToAction("Login", "Account", new { area = "" });
+                return;
+            }
+
+            base.OnActionExecuting(context);
+        }
+
+        // Danh sách đề tài - Chỉ hiển thị các đợt đã kết thúc giai đoạn đề xuất đề tài
+        public async Task<IActionResult> Index(int? page, int? dotId, int? namHoc, int? chuyenNganhId, string searchString)
         {
             int pageSize = 10;
             int pageNumber = page ?? 1;
+            var today = DateOnly.FromDateTime(DateTime.Now);
 
-            // List Đợt
-            ViewBag.ListDot = new SelectList(_context.DotDoAns.OrderByDescending(d => d.Id), "Id", "TenDot", dotId);
+            // Chỉ lấy các đợt đã kết thúc giai đoạn đề xuất đề tài
+            var availableDots = await _context.DotDoAns
+                .Where(d => d.NgayKetThucDeXuatDeTai.HasValue && d.NgayKetThucDeXuatDeTai.Value < today)
+                .OrderByDescending(d => d.Id)
+                .ToListAsync();
 
-            // List Năm học
+            ViewBag.ListDot = new SelectList(availableDots, "Id", "TenDot", dotId);
+
             var listNamHoc = _context.HocKis
                 .Select(h => new { h.NamBatDau, TenNam = $"{h.NamBatDau}-{h.NamKetThuc}" })
                 .Distinct()
@@ -35,26 +56,26 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 .ToList();
             ViewBag.ListNamHoc = new SelectList(listNamHoc, "NamBatDau", "TenNam", namHoc);
 
-            // List Chuyên ngành
             ViewBag.ListChuyenNganh = new SelectList(_context.ChuyenNganhs, "Id", "TenChuyenNganh", chuyenNganhId);
 
-            // Lưu trạng thái
             ViewBag.CurrentDotId = dotId;
             ViewBag.CurrentNamHoc = namHoc;
             ViewBag.CurrentChuyenNganh = chuyenNganhId;
             ViewBag.CurrentFilter = searchString;
 
-            // 2. Query dữ liệu
+            // Lấy danh sách ID các đợt có thể xem
+            var availableDotIds = availableDots.Select(d => d.Id).ToList();
+
             var query = _context.DeTais
-                .Include(dt => dt.IdNguoiDeXuatNavigation) 
+                .Include(dt => dt.IdNguoiDeXuatNavigation)
                 .Include(dt => dt.IdGvhdNavigation)
-                    .ThenInclude(gv => gv.IdNguoiDungNavigation) 
+                    .ThenInclude(gv => gv.IdNguoiDungNavigation)
                 .Include(dt => dt.IdChuyenNganhNavigation)
-                .Include(dt => dt.IdDotNavigation) // Để lọc theo năm học qua Đợt -> Học kỳ
+                .Include(dt => dt.IdDotNavigation)
                     .ThenInclude(d => d.IdHocKiNavigation)
+                .Where(dt => dt.IdDot.HasValue && availableDotIds.Contains(dt.IdDot.Value))
                 .AsQueryable();
 
-            // bộ lọc
             if (dotId.HasValue)
             {
                 query = query.Where(dt => dt.IdDot == dotId);
@@ -62,7 +83,6 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
             if (namHoc.HasValue)
             {
-                // Lọc đề tài thuộc đợt của năm học đó
                 query = query.Where(dt => dt.IdDotNavigation.IdHocKiNavigation.NamBatDau == namHoc);
             }
 
@@ -76,7 +96,6 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 query = query.Where(dt => dt.MaDeTai.Contains(searchString) || dt.TenDeTai.Contains(searchString));
             }
 
-            // Select ra ViewModel
             var modelQuery = query.Select(dt => new QuanLyDeTaiViewModel
             {
                 Id = dt.Id,
@@ -85,25 +104,40 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 NguoiDeXuat = dt.IdNguoiDeXuatNavigation.HoTen,
                 GVHD = dt.IdGvhdNavigation.IdNguoiDungNavigation.HoTen,
                 TenChuyenNganh = dt.IdChuyenNganhNavigation.TenChuyenNganh,
-                TrangThai = dt.TrangThai 
+                TrangThai = dt.TrangThai
             });
 
-  
             var pagedList = modelQuery.OrderByDescending(x => x.Id).ToPagedList(pageNumber, pageSize);
 
             return View(pagedList);
         }
 
-
-        public async Task<IActionResult> Details(int id)
+        // Chi tiết đề tài
+        public async Task<IActionResult> Details(int? id)
         {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
             var detai = await _context.DeTais
                 .Include(dt => dt.IdNguoiDeXuatNavigation)
                 .Include(dt => dt.IdGvhdNavigation).ThenInclude(gv => gv.IdNguoiDungNavigation)
                 .Include(dt => dt.IdChuyenNganhNavigation)
+                .Include(dt => dt.IdDotNavigation)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (detai == null) return NotFound();
+
+            // Kiểm tra xem đợt đã kết thúc giai đoạn đề xuất chưa
+            if (!detai.IdDotNavigation?.NgayKetThucDeXuatDeTai.HasValue == true ||
+                detai.IdDotNavigation.NgayKetThucDeXuatDeTai.Value >= today)
+            {
+                TempData["ErrorMessage"] = "Đợt này chưa kết thúc giai đoạn đề xuất đề tài.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var currentEmail = HttpContext.Session.GetString("UserEmail");
             var currentUser = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == currentEmail);
@@ -111,6 +145,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 ? await _context.GiangViens.FirstOrDefaultAsync(gv => gv.IdNguoiDung == currentUser.Id)
                 : null;
 
+            // Kiểm tra xem giảng viên có thuộc hội đồng duyệt đề tài không
             var hoiDong = await _context.HoiDongBaoCaos
                 .Include(h => h.ThanhVienHdBaoCaos)
                     .ThenInclude(tv => tv.IdGiangVienNavigation)
@@ -130,7 +165,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 ? reviews.FirstOrDefault(r => r.IdGiangVien == currentGiangVien.IdNguoiDung)
                 : null;
 
-            // Tìm sinh viên đã đăng ký đề tài này (nếu có) để hiển thị nhóm
+            // Tìm sinh viên đã đăng ký đề tài này
             var nhomSV = await _context.SinhVienDeTais
                 .Include(svdt => svdt.IdSinhVienNavigation).ThenInclude(sv => sv.IdNguoiDungNavigation)
                 .Where(svdt => svdt.IdDeTai == id)
@@ -151,7 +186,6 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 CongNghe = detai.CongNgheSuDung,
                 YeuCauTinhMoi = detai.YeuCauTinhMoi,
                 KetQuaDuKien = detai.SanPhamKetQuaDuKien,
-                NhiemVuCuThe = detai.NhiemVuCuThe,
 
                 NhomThucHien = nhomSV.Any() ? string.Join(", ", nhomSV) : "Chưa có nhóm đăng ký",
 
@@ -286,28 +320,27 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             {
                 if (detai.TrangThai == "TU_CHOI")
                 {
-                    await CreateThongBao(detai.IdNguoiDeXuat.Value, "Đề tài bị từ chối", $"Đề tài {detai.MaDeTai} đã bị từ chối bởi hội đồng.", $"/BCNKhoa/QuanLyDeTai/Details/{detai.Id}");
+                    await CreateThongBao(detai.IdNguoiDeXuat.Value, "Đề tài bị từ chối", $"Đề tài {detai.MaDeTai} đã bị từ chối bởi hội đồng.", $"/GiangVien/QuanLyDeTai/Details/{detai.Id}");
                 }
                 else if (detai.TrangThai == "DA_DUYET")
                 {
-                    await CreateThongBao(detai.IdNguoiDeXuat.Value, "Đề tài đã được duyệt", $"Đề tài {detai.MaDeTai} đã được toàn bộ hội đồng duyệt.", $"/BCNKhoa/QuanLyDeTai/Details/{detai.Id}");
+                    await CreateThongBao(detai.IdNguoiDeXuat.Value, "Đề tài đã được duyệt", $"Đề tài {detai.MaDeTai} đã được hội đồng phê duyệt.", $"/GiangVien/QuanLyDeTai/Details/{detai.Id}");
                 }
             }
         }
 
-        private async Task CreateThongBao(int nguoiNhanId, string tieuDe, string noiDung, string link)
+        private async Task CreateThongBao(int idNguoiNhan, string tieuDe, string noiDung, string link)
         {
-            var tb = new ThongBao
+            var thongBao = new ThongBao
             {
-                IdNguoiNhan = nguoiNhanId,
+                IdNguoiNhan = idNguoiNhan,
                 TieuDe = tieuDe,
                 NoiDung = noiDung,
                 LinkLienKet = link,
                 TrangThaiXem = false,
                 NgayTao = DateTime.Now
             };
-
-            _context.ThongBaos.Add(tb);
+            _context.ThongBaos.Add(thongBao);
             await _context.SaveChangesAsync();
         }
     }

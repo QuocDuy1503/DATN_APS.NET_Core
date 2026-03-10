@@ -108,7 +108,7 @@ CREATE TABLE HocKi (
     nam_bat_dau INT,
     nam_ket_thuc INT,
     ngay_bat_dau DATE,
-    trang_thai BIT DEFAULT 1 -- đang diễn ra, đã kết thúc
+    trang_thai BIT DEFAULT 1 -- đang diễn ra, đã kết thúc, Chưa diễn ra
 );
 
 CREATE TABLE ChuongTrinhDaoTao (
@@ -243,10 +243,11 @@ CREATE TABLE DeTai (
     pham_vi_chuc_nang NVARCHAR(MAX),
     cong_nghe_su_dung NVARCHAR(MAX),
     san_pham_ket_qua_du_kien NVARCHAR(MAX),
+    nhiem_vu_cu_the NVARCHAR(MAX),
 
     id_nguoi_de_xuat INT,
     id_gvhd INT,
-    
+
     id_dot INT,
     id_chuyen_nganh INT,
 
@@ -302,6 +303,7 @@ CREATE TABLE SinhVien_DeTai (
 CREATE TABLE LoaiPhieuCham (
     id INT IDENTITY(1,1) PRIMARY KEY,
     ten_loai_phieu NVARCHAR(100),
+    chi_nhan_xet BIT DEFAULT 0, -- 1: chỉ ghi nhận xét (không chấm điểm), 0: có chấm điểm
     nguoi_tao INT
 );
 
@@ -715,7 +717,11 @@ INSERT INTO GiangVien (id_nguoi_dung, ma_gv, hoc_vi, id_bo_mon) VALUES
 (9, 'GV_009', N'Thạc sĩ', 3),
 (10, 'GV_010', N'Thạc sĩ', 2),
 (11, 'GV_011', N'Tiến sĩ', 6),
-(12, 'GV_012', N'Thạc sĩ', 7);
+(12, 'GV_012', N'Thạc sĩ', 7),
+(18, 'GV_018', N'Thạc sĩ', 1),
+(19, 'GV_019', N'Tiến sĩ', 2),
+(20, 'GV_020', N'Thạc sĩ', 3),
+(21, 'GV_021', N'Tiến sĩ', 4);
 
 -- 3.10 SINH VIÊN
 INSERT INTO SinhVien (id_nguoi_dung, mssv, id_chuyen_nganh, id_khoa_hoc, tin_chi_tich_luy) VALUES
@@ -844,7 +850,7 @@ DECLARE @id_dot_active INT = (SELECT TOP 1 id FROM DotDoAn WHERE trang_thai = 1)
 
 INSERT INTO DeTai (
     ma_de_tai, ten_de_tai, muc_tieu_chinh, yeu_cau_tinh_moi, 
-    pham_vi_chuc_nang, cong_nghe_su_dung, san_pham_ket_qua_du_kien,
+    pham_vi_chuc_nang, cong_nghe_su_dung, san_pham_ket_qua_du_kien, nhiem_vu_cu_the,
     id_nguoi_de_xuat, id_gvhd, id_dot, id_chuyen_nganh,
     trang_thai, nhan_xet_duyet, nguoi_duyet
 ) VALUES 
@@ -855,6 +861,11 @@ INSERT INTO DeTai (
     N'Quản lý sách, độc giả, mượn trả, thống kê báo cáo',
     N'.NET Core, ReactJS, SQL Server, RFID SDK',
     N'Website quản lý và App mobile cho độc giả',
+    N'1. Nghiên cứu công nghệ RFID và tích hợp SDK
+2. Xây dựng module quản lý sách và độc giả
+3. Phát triển chức năng mượn trả tự động
+4. Thiết kế giao diện web responsive
+5. Xây dựng app mobile cho độc giả tra cứu',
     13, 1, @id_dot_active, 1, 
     'DA_DUYET', N'Đề tài có tính thực tiễn cao, đồng ý cho thực hiện.', 1
 ),
@@ -865,6 +876,11 @@ INSERT INTO DeTai (
     N'Upload ảnh, phân tích ảnh, trả kết quả chẩn đoán, lưu hồ sơ bệnh án',
     N'Python, PyTorch, Flask, PostgreSQL',
     N'Web app chẩn đoán bệnh',
+    N'1. Thu thập và tiền xử lý dữ liệu X-Quang
+2. Huấn luyện mô hình EfficientNet
+3. Đánh giá và tối ưu mô hình
+4. Xây dựng API Flask phục vụ inference
+5. Phát triển giao diện web cho bác sĩ',
     14, 3, @id_dot_active, 10, 
     'DA_DUYET', N'Đề tài có hướng tiếp cận tốt, đồng ý cho thực hiện.', 1
 ),
@@ -875,6 +891,10 @@ INSERT INTO DeTai (
     N'Nghe nhạc, tạo playlist, tìm kiếm bài hát',
     N'Flutter, Firebase',
     N'Ứng dụng Android/iOS',
+    N'1. Thiết kế UI/UX cho ứng dụng
+2. Xây dựng chức năng phát nhạc
+3. Phát triển tính năng playlist
+4. Tích hợp Firebase backend',
     15, 5, @id_dot_active, 2, 
     'TU_CHOI', N'Đề tài quá đơn giản, cần bổ sung chức năng gợi ý nhạc thông minh.', 1
 ),
@@ -885,6 +905,12 @@ INSERT INTO DeTai (
     N'Giám sát lưu lượng mạng, phân tích gói tin, gửi cảnh báo qua Email/SMS',
     N'Python, Snort, Kibana, ElasticSearch',
     N'Phần mềm giám sát và Dashboard báo cáo',
+    N'1. Nghiên cứu các loại tấn công DDoS
+2. Thu thập dataset CICIDS2017
+3. Huấn luyện mô hình SVM và Random Forest
+4. Tích hợp Snort để bắt gói tin
+5. Xây dựng Dashboard Kibana hiển thị cảnh báo
+6. Phát triển module gửi thông báo Email/SMS',
     16, 9, @id_dot_active, 8, 
     'DA_DUYET', N'Đề tài phù hợp chuyên ngành, hướng đi tốt.', 2
 );
@@ -946,36 +972,59 @@ INSERT INTO DeCuong (id_de_tai, ly_do_chon_de_tai, gia_thuyet_nghien_cuu, doi_tu
 );
 
 -- 3.19 LOẠI PHIẾU CHẤM
-INSERT INTO LoaiPhieuCham (ten_loai_phieu, nguoi_tao) VALUES 
-(N'Phiếu chấm của Giáo viên hướng dẫn', 1),
-(N'Phiếu chấm của Hội đồng bảo vệ', 1);
+INSERT INTO LoaiPhieuCham (ten_loai_phieu, chi_nhan_xet, nguoi_tao) VALUES 
+(N'Phiếu chấm giữa kì', 1, 1),
+(N'Phiếu chấm của Giáo viên hướng dẫn', 0, 1),
+(N'Phiếu chấm của Phản biện', 0, 1),
+(N'Phiếu chấm Hội đồng bảo vệ', 0, 1);
 
 GO
 
 -- 3.20 TIÊU CHÍ CHẤM ĐIỂM
+DECLARE @id_phieu_giuaki INT = (SELECT TOP 1 id FROM LoaiPhieuCham WHERE ten_loai_phieu LIKE N'%giữa kì%');
 DECLARE @id_phieu_gvhd INT = (SELECT TOP 1 id FROM LoaiPhieuCham WHERE ten_loai_phieu LIKE N'%hướng dẫn%');
+DECLARE @id_phieu_phanbien INT = (SELECT TOP 1 id FROM LoaiPhieuCham WHERE ten_loai_phieu LIKE N'%Phản biện%');
 DECLARE @id_phieu_hd INT = (SELECT TOP 1 id FROM LoaiPhieuCham WHERE ten_loai_phieu LIKE N'%Hội đồng%');
 
+-- Tiêu chí phiếu chấm giữa kì (chỉ nhận xét, không chấm điểm)
 INSERT INTO TieuChiChamDiem (id_loai_phieu, ten_tieu_chi, mo_ta_huong_dan, trong_so, diem_toi_da, stt_hien_thi) VALUES 
-(@id_phieu_gvhd, N'Tinh thần và thái độ làm việc', N'Đánh giá sự chuyên cần, chủ động gặp gỡ GVHD và tuân thủ tiến độ.', 0.1, 1.0, 1),
-(@id_phieu_gvhd, N'Kỹ năng giải quyết vấn đề', N'Khả năng tự nghiên cứu, tìm tòi công nghệ và xử lý các bài toán kỹ thuật.', 0.2, 2.0, 2),
-(@id_phieu_gvhd, N'Kết quả thực hiện sản phẩm', N'Sản phẩm chạy ổn định, đáp ứng đủ các chức năng đã đăng ký trong đề cương.', 0.4, 4.0, 3),
-(@id_phieu_gvhd, N'Chất lượng báo cáo thuyết minh', N'Trình bày đúng quy định, văn phong khoa học, nội dung logic.', 0.3, 3.0, 4),
+(@id_phieu_giuaki, N'Tiến độ thực hiện', N'Đánh giá mức độ hoàn thành so với kế hoạch đã đăng ký trong đề cương.', NULL, NULL, 1),
+(@id_phieu_giuaki, N'Phương pháp và cách tiếp cận', N'Nhận xét về phương pháp nghiên cứu, cách giải quyết vấn đề của sinh viên.', NULL, NULL, 2),
+(@id_phieu_giuaki, N'Kết quả sơ bộ đạt được', N'Nhận xét về các kết quả, sản phẩm sơ bộ đã thực hiện được đến thời điểm báo cáo.', NULL, NULL, 3),
+(@id_phieu_giuaki, N'Thái độ và tinh thần làm việc', N'Đánh giá sự chuyên cần, chủ động liên hệ GVHD, tuân thủ tiến độ.', NULL, NULL, 4),
+(@id_phieu_giuaki, N'Đề xuất và góp ý', N'Ghi nhận xét, góp ý hướng cải thiện cho giai đoạn tiếp theo.', NULL, NULL, 5),
 
-(@id_phieu_hd, N'Hình thức và bố cục thuyết minh', N'Bố cục hợp lý, trình bày đẹp, đúng format chuẩn của khoa.', 0.1, 1.0, 1),
-(@id_phieu_hd, N'Nội dung và kết quả đạt được', N'Đánh giá tính hoàn thiện, tính thực tiễn và độ phức tạp của đề tài.', 0.4, 4.0, 2),
-(@id_phieu_hd, N'Kỹ năng trình bày và Demo', N'Trình bày tự tin, rõ ràng, Demo sản phẩm chạy tốt tại buổi bảo vệ.', 0.2, 2.0, 3),
-(@id_phieu_hd, N'Trả lời câu hỏi phản biện', N'Hiểu rõ vấn đề, trả lời đúng trọng tâm và thuyết phục được hội đồng.', 0.3, 3.0, 4);
+-- Tiêu chí phiếu chấm GVHD (có chấm điểm)
+(@id_phieu_gvhd, N'Tinh thần và thái độ làm việc', N'Đánh giá sự chuyên cần, chủ động gặp gỡ GVHD và tuân thủ tiến độ.', 10, 1.0, 1),
+(@id_phieu_gvhd, N'Kỹ năng giải quyết vấn đề', N'Khả năng tự nghiên cứu, tìm tòi công nghệ và xử lý các bài toán kỹ thuật.', 20, 2.0, 2),
+(@id_phieu_gvhd, N'Kết quả thực hiện sản phẩm', N'Sản phẩm chạy ổn định, đáp ứng đủ các chức năng đã đăng ký trong đề cương.', 40, 4.0, 3),
+(@id_phieu_gvhd, N'Chất lượng báo cáo thuyết minh', N'Trình bày đúng quy định, văn phong khoa học, nội dung logic.', 30, 3.0, 4),
+
+-- Tiêu chí phiếu chấm Phản biện (có chấm điểm)
+(@id_phieu_phanbien, N'Hình thức và bố cục thuyết minh', N'Bố cục hợp lý, trình bày đẹp, đúng format chuẩn của khoa.', 10, 1.0, 1),
+(@id_phieu_phanbien, N'Nội dung và kết quả đạt được', N'Đánh giá tính hoàn thiện, tính thực tiễn và độ phức tạp của đề tài.', 40, 4.0, 2),
+(@id_phieu_phanbien, N'Tính mới và sáng tạo', N'Đánh giá mức độ sáng tạo, tính mới so với các công trình tương tự.', 20, 2.0, 3),
+(@id_phieu_phanbien, N'Câu hỏi phản biện', N'Đánh giá khả năng trả lời câu hỏi phản biện của sinh viên.', 30, 3.0, 4),
+
+-- Tiêu chí phiếu chấm Hội đồng bảo vệ (có chấm điểm)
+(@id_phieu_hd, N'Hình thức và bố cục thuyết minh', N'Bố cục hợp lý, trình bày đẹp, đúng format chuẩn của khoa.', 10, 1.0, 1),
+(@id_phieu_hd, N'Nội dung và kết quả đạt được', N'Đánh giá tính hoàn thiện, tính thực tiễn và độ phức tạp của đề tài.', 40, 4.0, 2),
+(@id_phieu_hd, N'Kỹ năng trình bày và Demo', N'Trình bày tự tin, rõ ràng, Demo sản phẩm chạy tốt tại buổi bảo vệ.', 20, 2.0, 3),
+(@id_phieu_hd, N'Trả lời câu hỏi phản biện', N'Hiểu rõ vấn đề, trả lời đúng trọng tâm và thuyết phục được hội đồng.', 30, 3.0, 4);
 
 GO
 
 -- 3.21 CẤU HÌNH PHIẾU CHẤM
 DECLARE @id_dot_active INT = (SELECT TOP 1 id FROM DotDoAn WHERE trang_thai = 1);
+DECLARE @id_phieu_giuaki INT = (SELECT TOP 1 id FROM LoaiPhieuCham WHERE ten_loai_phieu LIKE N'%giữa kì%');
 DECLARE @id_phieu_gvhd INT = (SELECT TOP 1 id FROM LoaiPhieuCham WHERE ten_loai_phieu LIKE N'%hướng dẫn%');
+DECLARE @id_phieu_phanbien INT = (SELECT TOP 1 id FROM LoaiPhieuCham WHERE ten_loai_phieu LIKE N'%Phản biện%');
 DECLARE @id_phieu_hd INT = (SELECT TOP 1 id FROM LoaiPhieuCham WHERE ten_loai_phieu LIKE N'%Hội đồng%');
 
 INSERT INTO CauHinhPhieuCham_Dot (id_dot, vai_tro_cham, id_loai_phieu) VALUES 
+(@id_dot_active, 'GVHD_GIUA_KY', @id_phieu_giuaki),
 (@id_dot_active, 'GVHD', @id_phieu_gvhd),
+(@id_dot_active, 'PhanBien', @id_phieu_phanbien),
 (@id_dot_active, 'HoiDong', @id_phieu_hd);
 
 GO

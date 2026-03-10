@@ -1,7 +1,7 @@
-﻿@model DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongBaoCaoEditViewModel
+@model DATN_TMS.Areas.BCNKhoa.Models.QuanLyHoiDongBaoCaoEditViewModel
 
 @{
-    ViewData["Title"] = "Chi ti?t h?i ??ng báo cáo";
+    ViewData["Title"] = "Chi tiết hội đồng báo cáo";
     var isBCNKhoa = ViewBag.IsBCNKhoa ?? false;
 }
 
@@ -111,9 +111,9 @@
         <!-- Header -->
         <div class="page-header-wrapper">
             <div>
-                <h2 class="page-title">CHI TI?T H?I ??NG: @Model.MaHoiDong</h2>
+                <h2 class="page-title">CHI TIẾT HỘI ĐỒNG: @Model.MaHoiDong</h2>
                 <div class="breadcrumb-area">
-                    <a asp-action="Index">Danh sách h?i ??ng</a>
+                    <a asp-action="Index">Danh sách hội đồng</a>
                     <span>/</span>
                     <span style="color: #333; font-weight: 500;">@Model.MaHoiDong</span>
                 </div>
@@ -121,11 +121,11 @@
             <div>
                 @if (Model.TrangThai)
                 {
-                    <span class="status-badge status-approved"><i class="fa-solid fa-check-circle"></i> ?ã duy?t</span>
+                    <span class="status-badge status-approved"><i class="fa-solid fa-check-circle"></i> Đã duyệt</span>
                 }
                 else
                 {
-                    <span class="status-badge status-pending"><i class="fa-solid fa-clock"></i> Ch? duy?t</span>
+                    <span class="status-badge status-pending"><i class="fa-solid fa-clock"></i> Chờ duyệt</span>
                 }
             </div>
         </div>
@@ -138,11 +138,11 @@
             <div class="form-section">
                 <div class="form-row-3">
                     <div class="form-group">
-                        <label>Mã h?i ??ng:</label>
+                        <label>Mã hội đồng:</label>
                         <input value="@Model.MaHoiDong" class="form-control" readonly>
                     </div>
                     <div class="form-group">
-                        <label>Tên h?i ??ng:</label>
+                        <label>Tên hội đồng:</label>
                         <input name="TenHoiDong" value="@Model.TenHoiDong" class="form-control" @(Model.TrangThai ? "readonly" : "")>
                     </div>
                     <div class="form-group">
@@ -152,11 +152,11 @@
                 </div>
                 <div class="form-row-2">
                     <div class="form-group">
-                        <label>??a ?i?m:</label>
+                        <label>Địa điểm:</label>
                         <input name="DiaDiem" value="@Model.DiaDiem" class="form-control" @(Model.TrangThai ? "readonly" : "")>
                     </div>
                     <div class="form-group">
-                        <label>Th?i gian d? ki?n:</label>
+                        <label>Thời gian dự kiến:</label>
                         <input name="ThoiGianDuKien" value="@(Model.ThoiGianDuKien != null ? Model.ThoiGianDuKien.Value.ToString("HH\\:mm") + " - " + Model.ThoiGianDuKien.Value.AddHours(4).ToString("HH\\:mm") : "")" class="form-control" placeholder="07:30 - 11:30" @(Model.TrangThai ? "readonly" : "")>
                     </div>
                 </div>
@@ -166,7 +166,7 @@
         <!-- Tab Header -->
         <div class="tab-header">
             <button class="tab-btn active" onclick="switchTab('tabMembers', this)">Thành viên</button>
-            <button class="tab-btn" onclick="switchTab('tabTopics', this)">?? tài</button>
+            <button class="tab-btn" onclick="switchTab('tabTopics', this)">Đề tài</button>
         </div>
 
         <!-- Tab: Thành viên -->
@@ -175,8 +175,8 @@
             {
                 <div class="add-bar">
                     <div class="search-container" id="memberSearchContainer">
-                        <label style="font-size: 13px; font-weight: 500; margin-bottom: 5px; display:block;">Tìm gi?ng viên:</label>
-                        <input type="text" id="memberSearchInput" class="form-control" placeholder="Nh?p tên, email ho?c mã GV..." autocomplete="off">
+                        <label style="font-size: 13px; font-weight: 500; margin-bottom: 5px; display:block;">Tìm giảng viên:</label>
+                        <input type="text" id="memberSearchInput" class="form-control" placeholder="Nhập tên, email hoặc mã GV..." autocomplete="off">
                         <div class="suggestion-box" id="memberSuggestionBox"></div>
                     </div>
 
@@ -189,10 +189,10 @@
                     <div class="form-group">
                         <label>Vai trò:</label>
                         <select class="form-control" id="memberRole" style="width: 150px;">
-                            <option value="UY_VIEN">?y viên</option>
-                            <option value="THU_KY">Th? ký</option>
-                            <option value="CHU_TICH">Ch? t?ch</option>
-                            <option value="PHAN_BIEN">Ph?n bi?n</option>
+                            <option value="UY_VIEN">Ủy viên</option>
+                            <option value="THU_KY">Thư ký</option>
+                            <option value="CHU_TICH">Chủ tịch</option>
+                            <option value="PHAN_BIEN">Phản biện</option>
                         </select>
                     </div>
 
@@ -206,9 +206,9 @@
                 <thead>
                     <tr>
                         <th>Mã GV</th>
-                        <th>H? và tên</th>
+                        <th>Họ và tên</th>
                         <th>Email</th>
-                        <th>H?c v?</th>
+                        <th>Học vị</th>
                         <th>Vai trò</th>
                         @if (!Model.TrangThai) { <th class="text-center" style="width: 80px;">Thao tác</th> }
                     </tr>
@@ -219,7 +219,7 @@
                         foreach (var tv in Model.ThanhViens)
                         {
                             var badgeClass = tv.VaiTro switch { "CHU_TICH" => "chu-tich", "THU_KY" => "thu-ky", "PHAN_BIEN" => "phan-bien", _ => "uy-vien" };
-                            var vaiTroDisplay = tv.VaiTro switch { "CHU_TICH" => "Ch? t?ch", "THU_KY" => "Th? ký", "PHAN_BIEN" => "Ph?n bi?n", _ => "?y viên" };
+                            var vaiTroDisplay = tv.VaiTro switch { "CHU_TICH" => "Chủ tịch", "THU_KY" => "Thư ký", "PHAN_BIEN" => "Phản biện", _ => "Ủy viên" };
                             <tr id="row-member-@tv.IdNguoiDung">
                                 <td>@tv.MaGV</td>
                                 <td>@tv.TenGiangVien</td>
@@ -237,18 +237,18 @@
                     }
                     else
                     {
-                        <tr><td colspan="6" class="no-data">Ch?a có thành viên nào.</td></tr>
+                        <tr><td colspan="6" class="no-data">Chưa có thành viên nào.</td></tr>
                     }
                 </tbody>
             </table>
         </div>
 
-        <!-- Tab: ?? tài -->
+        <!-- Tab: Đề tài -->
         <div id="tabTopics" class="tab-content">
             <div class="add-bar">
                 <div class="search-container" id="topicSearchContainer">
-                    <label style="font-size: 13px; font-weight: 500; margin-bottom: 5px; display:block;">Tìm ?? tài:</label>
-                    <input type="text" id="topicSearchInput" class="form-control" placeholder="Nh?p mã ho?c tên ?? tài..." autocomplete="off">
+                    <label style="font-size: 13px; font-weight: 500; margin-bottom: 5px; display:block;">Tìm đề tài:</label>
+                    <input type="text" id="topicSearchInput" class="form-control" placeholder="Nhập mã hoặc tên đề tài..." autocomplete="off">
                     <div class="suggestion-box" id="topicSuggestionBox"></div>
                 </div>
 
@@ -259,17 +259,17 @@
                 </div>
 
                 <button class="btn btn-primary" id="btnAddTopic" type="button" style="height: 38px; margin-top: 20px;">
-                    <i class="fa-solid fa-plus"></i> Thêm ?? tài
+                    <i class="fa-solid fa-plus"></i> Thêm đề tài
                 </button>
             </div>
 
             <table id="topicTable">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">Mã ?? tài</th>
-                        <th>Tên ?? tài</th>
+                        <th style="width: 120px;">Mã đề tài</th>
+                        <th>Tên đề tài</th>
                         <th style="width: 120px;">Chuyên ngành</th>
-                        <th style="width: 200px;">GV h??ng d?n</th>
+                        <th style="width: 200px;">GV hướng dẫn</th>
                         <th style="width: 140px;">SV tham gia</th>
                         <th style="width: 80px; text-align:center;">Thao tác</th>
                     </tr>
@@ -294,7 +294,7 @@
                     }
                     else
                     {
-                        <tr><td colspan="6" class="no-data">Ch?a có ?? tài nào.</td></tr>
+                        <tr><td colspan="6" class="no-data">Chưa có đề tài nào.</td></tr>
                     }
                 </tbody>
             </table>
@@ -360,7 +360,7 @@
         const memberId = selectedMemberId.value;
         const role = document.getElementById('memberRole').value;
         if (!memberId) {
-            Swal.fire('Ch?a ch?n gi?ng viên', 'Vui lòng ch?n gi?ng viên tr??c khi thêm.', 'warning');
+            Swal.fire('Chưa chọn giảng viên', 'Vui lòng chọn giảng viên trước khi thêm.', 'warning');
             return;
         }
         fetch('/GV_BoMon/QuanLyHoiDongBaoCao/AddMember', {
@@ -373,7 +373,7 @@
             if (data.success) {
                 location.reload();
             } else {
-                Swal.fire('L?i', data.message, 'error');
+                Swal.fire('Lỗi', data.message, 'error');
             }
         });
     });
@@ -389,12 +389,12 @@
             if (data.success) {
                 document.getElementById(`row-member-${id}`)?.remove();
             } else {
-                Swal.fire('L?i', data.message, 'error');
+                Swal.fire('Lỗi', data.message, 'error');
             }
         });
     }
 
-    // ===== ?? tài =====
+    // ===== Đề tài =====
     const topicInput = document.getElementById('topicSearchInput');
     const topicBox = document.getElementById('topicSuggestionBox');
     const selectedTopicDisplay = document.getElementById('selectedTopicDisplay');
@@ -442,7 +442,7 @@
     document.getElementById('btnAddTopic')?.addEventListener('click', () => {
         const topicId = selectedTopicId.value;
         if (!topicId) {
-            Swal.fire('Ch?a ch?n ?? tài', 'Vui lòng ch?n ?? tài tr??c khi thêm.', 'warning');
+            Swal.fire('Chưa chọn đề tài', 'Vui lòng chọn đề tài trước khi thêm.', 'warning');
             return;
         }
         fetch('/GV_BoMon/QuanLyHoiDongBaoCao/AddTopic', {
@@ -455,7 +455,7 @@
             if (data.success) {
                 location.reload();
             } else {
-                Swal.fire('L?i', data.message, 'error');
+                Swal.fire('Lỗi', data.message, 'error');
             }
         });
     });
@@ -471,7 +471,7 @@
             if (data.success) {
                 location.reload();
             } else {
-                Swal.fire('L?i', data.message, 'error');
+                Swal.fire('Lỗi', data.message, 'error');
             }
         });
     }

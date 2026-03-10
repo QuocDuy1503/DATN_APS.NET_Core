@@ -1,4 +1,4 @@
-using DATN_TMS.Areas.BCNKhoa.Models;
+﻿using DATN_TMS.Areas.BCNKhoa.Models;
 using DATN_TMS.Areas.BCNKhoa.Models.ViewModels;
 using DATN_TMS.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +34,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             base.OnActionExecuting(context);
         }
 
-        // Danh s�ch ?? t�i
+        // Danh sách đề tài
         public IActionResult Index(int? page, int? dotId, int? namHoc, int? chuyenNganhId, string searchString)
         {
             int pageSize = 10;
@@ -157,7 +157,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                 YeuCauTinhMoi = detai.YeuCauTinhMoi,
                 KetQuaDuKien = detai.SanPhamKetQuaDuKien,
 
-                NhomThucHien = nhomSV.Any() ? string.Join(", ", nhomSV) : "Ch?a c� nh�m ??ng k�",
+                NhomThucHien = nhomSV.Any() ? string.Join(", ", nhomSV) : "Chưa có nhóm đăng ký",
 
                 TrangThai = detai.TrangThai,
                 NhanXet = currentReview?.NhanXet ?? string.Empty,
@@ -167,7 +167,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                 CouncilMemberCount = councilMemberIds.Count,
                 Reviews = reviews.Select(r => new ReviewItem
                 {
-                    ReviewerName = r.GiangVien?.IdNguoiDungNavigation?.HoTen ?? "Gi?ng vi�n",
+                    ReviewerName = r.GiangVien?.IdNguoiDungNavigation?.HoTen ?? "Giảng viên",
                     Comment = r.NhanXet,
                     Status = r.TrangThai ?? "CHO_DUYET",
                     CreatedAt = r.NgayTao,
@@ -189,7 +189,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
         {
             if (string.IsNullOrWhiteSpace(nhanXet))
             {
-                return Json(new { success = false, message = "Vui l�ng nh?p l� do t? ch?i!" });
+                return Json(new { success = false, message = "Vui lòng nhập lý do từ chối!" });
             }
 
             return await SaveReview(id, nhanXet, "TU_CHOI");
@@ -198,19 +198,19 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
         private async Task<JsonResult> SaveReview(int id, string nhanXet, string status)
         {
             var detai = await _context.DeTais.FindAsync(id);
-            if (detai == null) return Json(new { success = false, message = "Kh�ng t�m th?y ?? t�i!" });
+            if (detai == null) return Json(new { success = false, message = "Không tìm thấy đề tài!" });
 
             var currentEmail = HttpContext.Session.GetString("UserEmail");
             var currentUser = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == currentEmail);
             if (currentUser == null)
             {
-                return Json(new { success = false, message = "Phi�n ??ng nh?p h?t h?n!" });
+                return Json(new { success = false, message = "Phiên đăng nhập hết hạn!" });
             }
 
             var giangVien = await _context.GiangViens.FirstOrDefaultAsync(gv => gv.IdNguoiDung == currentUser.Id);
             if (giangVien == null)
             {
-                return Json(new { success = false, message = "Ch? th�nh vi�n h?i ??ng m?i ???c x�t duy?t." });
+                return Json(new { success = false, message = "Chỉ thành viên hội đồng mới được xét duyệt." });
             }
 
             var hoiDong = await _context.HoiDongBaoCaos
@@ -219,12 +219,12 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
 
             if (hoiDong == null || !hoiDong.ThanhVienHdBaoCaos.Any(tv => tv.IdGiangVien == giangVien.IdNguoiDung))
             {
-                return Json(new { success = false, message = "B?n kh�ng thu?c h?i ??ng duy?t ?? t�i n�y." });
+                return Json(new { success = false, message = "Bạn không thuộc hội đồng duyệt đề tài này." });
             }
 
             if (detai.IdNguoiDeXuat == currentUser.Id)
             {
-                return Json(new { success = false, message = "Ng??i ?? xu?t kh�ng ???c t? duy?t." });
+                return Json(new { success = false, message = "Người đề xuất không được tự duyệt." });
             }
 
             var review = await _context.NhanXetHoiDongDeTais
@@ -249,7 +249,17 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
 
             await UpdateOverallStatus(detai, hoiDong);
 
-            return Json(new { success = true, message = status == "DA_DUYET" ? "?� ghi nh?n ph� duy?t." : "?� ghi nh?n t? ch?i." });
+            // Lấy số lượng nhận xét hiện tại
+            var totalMembers = hoiDong?.ThanhVienHdBaoCaos?.Count ?? 0;
+            var reviewCount = await _context.NhanXetHoiDongDeTais.CountAsync(r => r.IdDeTai == detai.Id);
+
+            return Json(new { 
+                success = true, 
+                message = status == "DA_DUYET" ? "Đã ghi nhận phê duyệt." : "Đã ghi nhận từ chối.",
+                overallStatus = detai.TrangThai,
+                reviewCount = reviewCount,
+                totalMembers = totalMembers
+            });
         }
 
         private async Task UpdateOverallStatus(DeTai detai, HoiDongBaoCao hoiDong)
@@ -278,11 +288,11 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             {
                 if (detai.TrangThai == "TU_CHOI")
                 {
-                    await CreateThongBao(detai.IdNguoiDeXuat.Value, "?? t�i b? t? ch?i", $"?? t�i {detai.MaDeTai} ?� b? t? ch?i b?i h?i ??ng.", $"/GV_BoMon/QuanLyDeTai/Details/{detai.Id}");
+                    await CreateThongBao(detai.IdNguoiDeXuat.Value, "Đề tài bị từ chối", $"Đề tài {detai.MaDeTai} đã bị từ chối bởi hội đồng.", $"/GV_BoMon/QuanLyDeTai/Details/{detai.Id}");
                 }
                 else if (detai.TrangThai == "DA_DUYET")
                 {
-                    await CreateThongBao(detai.IdNguoiDeXuat.Value, "?? t�i ?� ???c duy?t", $"?? t�i {detai.MaDeTai} ?� ???c to�n b? h?i ??ng duy?t.", $"/GV_BoMon/QuanLyDeTai/Details/{detai.Id}");
+                    await CreateThongBao(detai.IdNguoiDeXuat.Value, "Đề tài đã được duyệt", $"Đề tài {detai.MaDeTai} đã được toàn bộ hội đồng duyệt.", $"/GV_BoMon/QuanLyDeTai/Details/{detai.Id}");
                 }
             }
         }

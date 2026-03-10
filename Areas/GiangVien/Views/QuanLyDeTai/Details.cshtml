@@ -112,6 +112,19 @@
     .review-item { padding: 10px; border: 1px solid #eee; border-radius: 6px; background: #fafafa; }
     .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-weight: 600; }
     .review-comment { font-size: 13px; color: #333; white-space: pre-wrap; }
+
+    .info-banner {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .info-banner i { color: #d97706; font-size: 16px; }
+    .info-banner span { color: #92400e; font-size: 12px; font-weight: 500; }
 </style>
 
 <div class="content-body">
@@ -230,10 +243,18 @@
                 }
                 else
                 {
-                    <div class="feedback-area">
-                        <div style="font-size:13px; color:#555; line-height:1.5;">
-                            @(Model.IsProposer ? "Bạn là người đề xuất, chỉ xem được nhận xét." : "Chỉ thành viên hội đồng mới được duyệt/từ chối.")
-                        </div>
+                    <div class="info-banner">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <span>
+                            @if (Model.IsProposer)
+                            {
+                                @:Bạn là người đề xuất, chỉ xem được nhận xét.
+                            }
+                            else
+                            {
+                                @:Chỉ thành viên hội đồng duyệt đề tài mới được duyệt/từ chối.
+                            }
+                        </span>
                     </div>
                 }
 

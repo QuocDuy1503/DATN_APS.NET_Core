@@ -9,6 +9,8 @@ public partial class LoaiPhieuCham
 
     public string? TenLoaiPhieu { get; set; }
 
+    public bool? ChiNhanXet { get; set; }
+
     public int? NguoiTao { get; set; }
 
     public virtual ICollection<CauHinhPhieuChamDot> CauHinhPhieuChamDots { get; set; } = new List<CauHinhPhieuChamDot>();

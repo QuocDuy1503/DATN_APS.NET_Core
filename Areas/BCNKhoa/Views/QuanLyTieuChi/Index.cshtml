@@ -8,6 +8,7 @@
     var weightStatusColor = weightValid ? "color:#28a745;" : "color:red;";
     var selectedDotId = Model?.SelectedDotId?.ToString() ?? "";
     var selectedLoaiPhieuId = Model?.SelectedLoaiPhieuId?.ToString() ?? "";
+    var chiNhanXet = Model?.ChiNhanXet ?? false;
 }
 
 <style>
@@ -162,7 +163,14 @@
                     </div>
                     <div class="form-group">
                         <label>Thang điểm:</label>
-                        <input type="text" class="form-control" value="10" readonly style="background:#f9f9f9;">
+                        @if (chiNhanXet)
+                        {
+                            <input type="text" class="form-control" value="Chỉ nhận xét" readonly style="background:#fef9e7; color:#856404; font-weight:600;">
+                        }
+                        else
+                        {
+                            <input type="text" class="form-control" value="10" readonly style="background:#f9f9f9;">
+                        }
                     </div>
                 </div>
             </form>
@@ -182,8 +190,11 @@
                             <th style="width: 50px; text-align: center;">STT</th>
                             <th style="width: 250px;">Tên tiêu chí</th>
                             <th>Mô tả / Hướng dẫn chấm</th>
-                            <th style="width: 100px; text-align: center;">Trọng số (%)</th>
-                            <th style="width: 100px; text-align: center;">Điểm tối đa</th>
+                            @if (!chiNhanXet)
+                            {
+                                <th style="width: 100px; text-align: center;">Trọng số (%)</th>
+                                <th style="width: 100px; text-align: center;">Điểm tối đa</th>
+                            }
                             <th style="width: 50px; text-align: center;">Xóa</th>
                         </tr>
                     </thead>
@@ -197,8 +208,11 @@
                                     <td class="text-center stt"><span class="stt-display">@(item.Stt ?? (i + 1))</span><input type="hidden" name="items[@i].Id" value="@item.Id" /><input type="hidden" class="stt-input" name="items[@i].Stt" value="@(item.Stt ?? (i + 1))" /></td>
                                     <td><input type="text" name="items[@i].TenTieuChi" class="form-control" value="@item.TenTieuChi" required></td>
                                     <td><textarea name="items[@i].MoTa" class="form-control" rows="1">@item.MoTa</textarea></td>
-                                    <td><input type="number" name="items[@i].TrongSo" class="form-control input-number weight-input" value="@item.TrongSo" min="0" max="100" step="0.1" required></td>
-                                    <td><input type="number" name="items[@i].DiemToiDa" class="form-control input-number" value="@item.DiemToiDa" min="0" step="0.1" required></td>
+                                    @if (!chiNhanXet)
+                                    {
+                                        <td><input type="number" name="items[@i].TrongSo" class="form-control input-number weight-input" value="@item.TrongSo" min="0" max="100" step="0.1" required></td>
+                                        <td><input type="number" name="items[@i].DiemToiDa" class="form-control input-number" value="@item.DiemToiDa" min="0" step="0.1" required></td>
+                                    }
                                     <td class="text-center">
                                         <button class="btn-remove-row btn-delete-existing" type="button" data-id="@item.Id"><i class="fa-solid fa-trash"></i></button>
                                     </td>
@@ -208,7 +222,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="6" class="empty-row" style="text-align:center; padding: 16px; color:#777;">Chưa có tiêu chí cho loại phiếu này.</td>
+                                <td colspan="@(chiNhanXet ? 4 : 6)" class="empty-row" style="text-align:center; padding: 16px; color:#777;">Chưa có tiêu chí cho loại phiếu này.</td>
                             </tr>
                         }
                     </tbody>
@@ -220,10 +234,19 @@
             </button>
 
             <div class="total-summary-bar">
-                <div class="total-label">
-                    Tổng trọng số: <span id="totalWeight" class="total-value">@totalWeight.ToString("0.##")%</span> 
-                    <span id="weightStatus" style="font-size:12px; margin-left:10px; @weightStatusColor">@weightStatusText</span>
-                </div>
+                @if (!chiNhanXet)
+                {
+                    <div class="total-label">
+                        Tổng trọng số: <span id="totalWeight" class="total-value">@totalWeight.ToString("0.##")%</span> 
+                        <span id="weightStatus" style="font-size:12px; margin-left:10px; @weightStatusColor">@weightStatusText</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="total-label" style="color:#856404;">
+                        <i class="fa-solid fa-circle-info"></i> Phiếu chấm này chỉ ghi nhận xét, không chấm điểm.
+                    </div>
+                }
                 <div>
                     <button class="btn btn-secondary" type="button" style="margin-right: 10px;">Hủy bỏ</button>
                     <button class="btn btn-save" id="btnSaveCriteria" type="submit">
@@ -243,6 +266,8 @@
     const addButton = document.getElementById('btnAddInline');
     const totalWeightEl = document.getElementById('totalWeight');
     const weightStatusEl = document.getElementById('weightStatus');
+    const chiNhanXet = @(chiNhanXet ? "true" : "false");
+    const colSpan = chiNhanXet ? 4 : 6;
 
     const getWeightInputs = () => Array.from(criteriaBody.querySelectorAll('.weight-input'));
 
@@ -269,7 +294,7 @@
             if (trongSoInput) trongSoInput.name = `items[${idx}].TrongSo`;
             if (diemInput) diemInput.name = `items[${idx}].DiemToiDa`;
         });
-        calcTotalWeight();
+        if (!chiNhanXet) calcTotalWeight();
     }
 
     function calcTotalWeight() {
@@ -291,22 +316,30 @@
 
         const newIndex = criteriaBody.querySelectorAll('tr').length;
         const newRow = document.createElement('tr');
-        newRow.innerHTML = `
+        let html = `
             <td class="text-center stt"><span class="stt-display"></span><input type="hidden" name="items[${newIndex}].Id" value="0" /><input type="hidden" class="stt-input" name="items[${newIndex}].Stt" value="${newIndex + 1}" /></td>
             <td><input type="text" name="items[${newIndex}].TenTieuChi" class="form-control" required></td>
-            <td><textarea name="items[${newIndex}].MoTa" class="form-control" rows="1"></textarea></td>
+            <td><textarea name="items[${newIndex}].MoTa" class="form-control" rows="1"></textarea></td>`;
+
+        if (!chiNhanXet) {
+            html += `
             <td><input type="number" name="items[${newIndex}].TrongSo" class="form-control input-number weight-input" min="0" max="100" step="0.1" required></td>
-            <td><input type="number" name="items[${newIndex}].DiemToiDa" class="form-control input-number" min="0" step="0.1" required></td>
+            <td><input type="number" name="items[${newIndex}].DiemToiDa" class="form-control input-number" min="0" step="0.1" required></td>`;
+        }
+
+        html += `
             <td class="text-center">
                 <button type="button" class="btn-remove-row btn-remove-new"><i class="fa-solid fa-trash"></i></button>
             </td>`;
+
+        newRow.innerHTML = html;
 
         criteriaBody.appendChild(newRow);
         newRow.querySelectorAll('.weight-input').forEach(inp => inp.addEventListener('input', calcTotalWeight));
         newRow.querySelector('.btn-remove-new').addEventListener('click', () => {
             newRow.remove();
             if (!criteriaBody.querySelectorAll('tr').length) {
-                criteriaBody.innerHTML = '<tr><td colspan="6" class="empty-row" style="text-align:center; padding: 16px; color:#777;">Chưa có tiêu chí cho loại phiếu này.</td></tr>';
+                criteriaBody.innerHTML = `<tr><td colspan="${colSpan}" class="empty-row" style="text-align:center; padding: 16px; color:#777;">Chưa có tiêu chí cho loại phiếu này.</td></tr>`;
             }
             renumberRows();
         });

@@ -113,8 +113,11 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string? PhamVi { get; set; }
         public string? CongNghe { get; set; }
         public string? KetQuaDuKien { get; set; }
+        public string? NhiemVuCuThe { get; set; }
         public int SoLuongDangKy { get; set; }
         public int SoLuongDaDuyet { get; set; }
+        public bool CoTheDuyet { get; set; } // Cho biết có được phép duyệt không (sau khi kết thúc giai đoạn đăng ký)
+        public string? ThongBaoGiaiDoan { get; set; } // Thông báo về giai đoạn
         public List<SinhVienDangKyDetailGVItem> DanhSachSV { get; set; } = new();
     }
 

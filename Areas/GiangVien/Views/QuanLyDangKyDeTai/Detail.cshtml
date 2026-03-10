@@ -163,6 +163,11 @@
                     <label>Sản phẩm kết quả dự kiến:</label>
                     <textarea class="detail-control" readonly>@(Model.KetQuaDuKien ?? "---")</textarea>
                 </div>
+
+                <div class="detail-group">
+                    <label>Nhiệm vụ cụ thể:</label>
+                    <textarea class="detail-control" readonly>@(Model.NhiemVuCuThe ?? "---")</textarea>
+                </div>
             </div>
 
             <!-- BÊN PHẢI: BOX DUYỆT SINH VIÊN -->
@@ -170,6 +175,14 @@
                 <div class="action-title">
                     <i class="fa-solid fa-user-check"></i> Duyệt sinh viên đăng ký
                 </div>
+
+                @if (!string.IsNullOrEmpty(Model.ThongBaoGiaiDoan))
+                {
+                    <div class="notice-box" style="background: #fffbeb; border: 1px solid #fbbf24; color: #92400e; margin-bottom: 16px;">
+                        <i class="fa-solid fa-clock" style="color: #f59e0b;"></i>
+                        <span>@Model.ThongBaoGiaiDoan</span>
+                    </div>
+                }
 
                 <div class="slot-info">
                     <div>Số lượng đăng ký</div>
@@ -203,7 +216,7 @@
                                     <div class="member-date">Đăng ký: @sv.NgayDangKy</div>
                                 }
 
-                                @if (sv.TrangThai == "Chờ GVHD duyệt")
+                                @if (sv.TrangThai == "Chờ GVHD duyệt" && Model.CoTheDuyet)
                                 {
                                     <div class="member-actions">
                                         <button type="button" class="btn-approve btn-duyet" data-id="@sv.IdSvDeTai" data-name="@sv.HoTen">

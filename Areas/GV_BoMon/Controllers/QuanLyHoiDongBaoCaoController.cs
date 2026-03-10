@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using DATN_TMS.Areas.BCNKhoa.Models;
 using DATN_TMS.Models;
@@ -115,27 +115,27 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                 var dot = _context.DotDoAns.FirstOrDefault(d => d.TrangThai == true);
 
                 if (dot == null)
-                    return Json(new { allowed = false, message = "Kh�ng c� ??t ?? �n ?ang ho?t ??ng." });
+                    return Json(new { allowed = false, message = "Không có đợt đồ án đang hoạt động." });
 
                 if (loaiHoiDong == "GIUA_KY")
                 {
                     if (!dot.NgayBatDauBaoCaoGiuaKi.HasValue || !dot.NgayKetThucBaoCaoGiuaKi.HasValue)
-                        return Json(new { allowed = false, message = "??t ?? �n ch?a c?u h�nh th?i gian b�o c�o gi?a k�." });
+                        return Json(new { allowed = false, message = "Đợt đồ án chưa cấu hình thời gian báo cáo giữa kì." });
 
                     if (today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
-                        return Json(new { allowed = false, message = "Ch?a ??n giai ?o?n l?p h?i ??ng b�o c�o gi?a k� ho?c ?� h?t h?n. Th?i gian: " + dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + "." });
+                        return Json(new { allowed = false, message = "Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn. Thời gian: " + dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + "." });
                 }
                 else if (loaiHoiDong == "CUOI_KY")
                 {
                     if (!dot.NgayBatDauBaoCaoCuoiKi.HasValue || !dot.NgayKetThucBaoCaoCuoiKi.HasValue)
-                        return Json(new { allowed = false, message = "??t ?? �n ch?a c?u h�nh th?i gian b�o c�o cu?i k�." });
+                        return Json(new { allowed = false, message = "Đợt đồ án chưa cấu hình thời gian báo cáo cuối kì." });
 
                     if (today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
-                        return Json(new { allowed = false, message = "Ch?a ??n giai ?o?n l?p h?i ??ng b�o c�o cu?i k� ho?c ?� h?t h?n. Th?i gian: " + dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + "." });
+                        return Json(new { allowed = false, message = "Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn. Thời gian: " + dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + "." });
                 }
                 else
                 {
-                    return Json(new { allowed = false, message = "Lo?i h?i ??ng kh�ng h?p l?." });
+                    return Json(new { allowed = false, message = "Loại hội đồng không hợp lệ." });
                 }
 
                 return Json(new { allowed = true });
@@ -152,7 +152,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
         {
             try
             {
-                // Ki?m tra giai ?o?n b�o c�o
+                // Kiểm tra giai đoạn báo cáo
                 var today = DateOnly.FromDateTime(DateTime.Today);
                 var dot = await _context.DotDoAns.FirstOrDefaultAsync(d => d.TrangThai == true);
                 if (dot != null && !string.IsNullOrEmpty(LoaiHoiDong))
@@ -162,7 +162,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                         if (!dot.NgayBatDauBaoCaoGiuaKi.HasValue || !dot.NgayKetThucBaoCaoGiuaKi.HasValue
                             || today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
                         {
-                            TempData["ErrorMessage"] = "Ch?a ??n giai ?o?n l?p h?i ??ng b�o c�o gi?a k� ho?c ?� h?t h?n.";
+                            TempData["ErrorMessage"] = "Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn.";
                             return RedirectToAction(nameof(Index));
                         }
                     }
@@ -171,7 +171,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                         if (!dot.NgayBatDauBaoCaoCuoiKi.HasValue || !dot.NgayKetThucBaoCaoCuoiKi.HasValue
                             || today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
                         {
-                            TempData["ErrorMessage"] = "Ch?a ??n giai ?o?n l?p h?i ??ng b�o c�o cu?i k� ho?c ?� h?t h?n.";
+                            TempData["ErrorMessage"] = "Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn.";
                             return RedirectToAction(nameof(Index));
                         }
                     }
@@ -202,11 +202,11 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
 
                 _context.Add(hoidong);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Th�m h?i ??ng b�o c�o th�nh c�ng!";
+                TempData["SuccessMessage"] = "Thêm hội đồng báo cáo thành công!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"L?i: {ex.Message}";
+                TempData["ErrorMessage"] = $"Lỗi: {ex.Message}";
             }
             return RedirectToAction(nameof(Index));
         }
@@ -303,7 +303,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                 var hd = await _context.HoiDongBaoCaos.FindAsync(Id);
                 if (hd == null)
                 {
-                    TempData["ErrorMessage"] = "Kh�ng t�m th?y h?i ??ng!";
+                    TempData["ErrorMessage"] = "Không tìm thấy hội đồng!";
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -322,18 +322,18 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                     hd.ThoiGianDuKien = null;
 
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "?� l?u th�ng tin h?i ??ng!";
+                TempData["SuccessMessage"] = "Đã lưu thông tin hội đồng!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"L?i: {ex.Message}";
+                TempData["ErrorMessage"] = $"Lỗi: {ex.Message}";
             }
             return RedirectToAction(nameof(Edit), new { id = Id });
         }
 
         #endregion
 
-        #region API - Th�nh vi�n
+        #region API - Thành viên
 
         [HttpGet]
         public IActionResult SearchMembers(string? term)
@@ -367,36 +367,36 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             try
             {
                 if (req.CouncilId <= 0 || req.TeacherId <= 0)
-                    return Json(new { success = false, message = "D? li?u kh�ng h?p l?!" });
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
 
                 var council = await _context.HoiDongBaoCaos.FindAsync(req.CouncilId);
                 if (council == null)
-                    return Json(new { success = false, message = "H?i ??ng kh�ng t?n t?i!" });
+                    return Json(new { success = false, message = "Hội đồng không tồn tại!" });
 
                 var gv = await _context.GiangViens
                     .Include(g => g.IdNguoiDungNavigation)
                     .FirstOrDefaultAsync(g => g.IdNguoiDung == req.TeacherId);
 
                 if (gv == null)
-                    return Json(new { success = false, message = "Kh�ng t�m th?y gi?ng vi�n!" });
+                    return Json(new { success = false, message = "Không tìm thấy giảng viên!" });
 
                 var exists = await _context.ThanhVienHdBaoCaos
                     .AnyAsync(tv => tv.IdHdBaocao == req.CouncilId && tv.IdGiangVien == req.TeacherId);
                 if (exists)
-                    return Json(new { success = false, message = "Gi?ng vi�n ?� c� trong h?i ??ng!" });
+                    return Json(new { success = false, message = "Giảng viên đã có trong hội đồng!" });
 
                 if (req.Role == "CHU_TICH")
                 {
                     var hasChairman = await _context.ThanhVienHdBaoCaos
                         .AnyAsync(tv => tv.IdHdBaocao == req.CouncilId && tv.VaiTro == "CHU_TICH");
                     if (hasChairman)
-                        return Json(new { success = false, message = "H?i ??ng ?� c� Ch? t?ch!" });
+                        return Json(new { success = false, message = "Hội đồng đã có Chủ tịch!" });
 
                     var hocVi = (gv.HocVi ?? "").ToLower();
-                    var validHocVi = new[] { "ti?n s?", "ts", "ts.", "ph� gi�o s?", "pgs", "pgs.", "gi�o s?", "gs", "gs." };
+                    var validHocVi = new[] { "tiến sĩ", "ts", "ts.", "phó giáo sư", "pgs", "pgs.", "giáo sư", "gs", "gs." };
                     var isValidHocVi = validHocVi.Any(v => hocVi.Contains(v));
                     if (!isValidHocVi)
-                        return Json(new { success = false, message = "Ch? t?ch h?i ??ng ph?i l� gi?ng vi�n c� h?c v? Ti?n s? tr? l�n!" });
+                        return Json(new { success = false, message = "Chủ tịch hội đồng phải là giảng viên có học vị Tiến sĩ trở lên!" });
                 }
 
                 if (req.Role == "THU_KY")
@@ -404,7 +404,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                     var hasSecretary = await _context.ThanhVienHdBaoCaos
                         .AnyAsync(tv => tv.IdHdBaocao == req.CouncilId && tv.VaiTro == "THU_KY");
                     if (hasSecretary)
-                        return Json(new { success = false, message = "H?i ??ng ?� c� Th? k�!" });
+                        return Json(new { success = false, message = "Hội đồng đã có Thư ký!" });
                 }
 
                 var thanhVien = new ThanhVienHdBaoCao
@@ -420,7 +420,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                 return Json(new
                 {
                     success = true,
-                    message = "Th�m th�nh vi�n th�nh c�ng!",
+                    message = "Thêm thành viên thành công!",
                     data = new
                     {
                         idGiangVien = gv.IdNguoiDung,
@@ -434,7 +434,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"L?i: {ex.Message}" });
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
 
@@ -472,21 +472,21 @@ public class RemoveTopicRequest
                     .FirstOrDefaultAsync(tv => tv.IdHdBaocao == req.CouncilId && tv.IdGiangVien == req.TeacherId);
 
                 if (thanhVien == null)
-                    return Json(new { success = false, message = "Kh�ng t�m th?y th�nh vi�n." });
+                    return Json(new { success = false, message = "Không tìm thấy thành viên." });
 
                 _context.ThanhVienHdBaoCaos.Remove(thanhVien);
                 await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "?� x�a th�nh vi�n kh?i h?i ??ng!" });
+                return Json(new { success = true, message = "Đã xóa thành viên khỏi hội đồng!" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"L?i: {ex.Message}" });
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
 
         #endregion
 
-        #region API - ?? t�i
+        #region API - Đề tài
 
         [HttpGet]
         public IActionResult SearchTopics(string? term)
@@ -522,25 +522,25 @@ public class RemoveTopicRequest
             try
             {
                 if (req.CouncilId <= 0 || req.TopicId <= 0)
-                    return Json(new { success = false, message = "D? li?u kh�ng h?p l?!" });
+                    return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
 
                 var council = await _context.HoiDongBaoCaos.FindAsync(req.CouncilId);
                 if (council == null)
-                    return Json(new { success = false, message = "H?i ??ng kh�ng t?n t?i!" });
+                    return Json(new { success = false, message = "Hội đồng không tồn tại!" });
 
                 var svDeTais = await _context.SinhVienDeTais
                     .Where(svdt => svdt.IdDeTai == req.TopicId)
                     .ToListAsync();
 
                 if (!svDeTais.Any())
-                    return Json(new { success = false, message = "?? t�i n�y ch?a c� sinh vi�n!" });
+                    return Json(new { success = false, message = "Đề tài này chưa có sinh viên!" });
 
                 var svDeTaiIds = svDeTais.Select(sv => sv.Id).ToList();
                 var exists = await _context.PhienBaoVes
                     .AnyAsync(pb => pb.IdHdBaocao == req.CouncilId && svDeTaiIds.Contains(pb.IdSinhVienDeTai ?? 0));
 
                 if (exists)
-                    return Json(new { success = false, message = "?? t�i n�y ?� c� trong h?i ??ng!" });
+                    return Json(new { success = false, message = "Đề tài này đã có trong hội đồng!" });
 
                 int stt = await _context.PhienBaoVes.Where(p => p.IdHdBaocao == req.CouncilId).CountAsync() + 1;
                 foreach (var svdt in svDeTais)
@@ -565,7 +565,7 @@ public class RemoveTopicRequest
                 return Json(new
                 {
                     success = true,
-                    message = "Th�m ?? t�i th�nh c�ng!",
+                    message = "Thêm đề tài thành công!",
                     data = new
                     {
                         idDeTai = deTai?.Id ?? 0,
@@ -578,7 +578,7 @@ public class RemoveTopicRequest
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"L?i: {ex.Message}" });
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
 
@@ -598,13 +598,13 @@ public class RemoveTopicRequest
                 {
                     _context.PhienBaoVes.RemoveRange(phienBaoVes);
                     await _context.SaveChangesAsync();
-                    return Json(new { success = true, message = "?� x�a ?? t�i kh?i h?i ??ng!" });
+                    return Json(new { success = true, message = "Đã xóa đề tài khỏi hội đồng!" });
                 }
-                return Json(new { success = false, message = "Kh�ng t�m th?y ?? t�i trong h?i ??ng." });
+                return Json(new { success = false, message = "Không tìm thấy đề tài trong hội đồng." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"L?i: {ex.Message}" });
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
             }
         }
 
@@ -625,7 +625,7 @@ public class RemoveTopicRequest
 
                 if (hd == null)
                 {
-                    TempData["ErrorMessage"] = "Kh�ng t�m th?y h?i ??ng!";
+                    TempData["ErrorMessage"] = "Không tìm thấy hội đồng!";
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -634,11 +634,11 @@ public class RemoveTopicRequest
                 _context.HoiDongBaoCaos.Remove(hd);
 
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "?� x�a h?i ??ng th�nh c�ng!";
+                TempData["SuccessMessage"] = "Đã xóa hội đồng thành công!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"L?i: {ex.Message}";
+                TempData["ErrorMessage"] = $"Lỗi: {ex.Message}";
             }
             return RedirectToAction(nameof(Index));
         }

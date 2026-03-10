@@ -74,6 +74,11 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             }
 
             // Lấy danh sách đề tài của sinh viên
+            if (sinhVien == null)
+            {
+                return View(viewModel);
+            }
+
             var query = _context.DeTais
                 .Include(dt => dt.IdChuyenNganhNavigation)
                 .Include(dt => dt.IdNguoiDeXuatNavigation)
@@ -152,9 +157,10 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                     CongNgheSuDung = model.CongNgheSuDung,
                     YeuCauTinhMoi = model.YeuCauTinhMoi,
                     SanPhamKetQuaDuKien = model.SanPhamKetQuaDuKien,
+                    NhiemVuCuThe = model.NhiemVuCuThe,
                     IdNguoiDeXuat = sinhVien.IdNguoiDung,
                     IdDot = dotDoAn.Id,
-                    TrangThai = "Chờ duyệt"
+                    TrangThai = "CHO_DUYET"
                 };
 
                 _context.DeTais.Add(deTai);
@@ -233,6 +239,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                     deTai.CongNgheSuDung,
                     deTai.YeuCauTinhMoi,
                     deTai.SanPhamKetQuaDuKien,
+                    deTai.NhiemVuCuThe,
                     deTai.TrangThai,
                     TenChuyenNganh = deTai.IdChuyenNganhNavigation?.TenChuyenNganh,
                     SinhViens = deTai.SinhVienDeTais.Select(sv => new
@@ -266,8 +273,8 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 return Json(new { success = false, message = "Không tìm thấy đề tài." });
             }
 
-            // Chỉ cho phép sửa nếu còn ở trạng thái "Chờ duyệt"
-            if (deTai.TrangThai != "Chờ duyệt")
+            // Chỉ cho phép sửa nếu còn ở trạng thái "CHO_DUYET"
+            if (deTai.TrangThai != "CHO_DUYET")
             {
                 return Json(new { success = false, message = "Không thể sửa đề tài đã được duyệt hoặc từ chối." });
             }
@@ -282,6 +289,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 deTai.CongNgheSuDung = model.CongNgheSuDung;
                 deTai.YeuCauTinhMoi = model.YeuCauTinhMoi;
                 deTai.SanPhamKetQuaDuKien = model.SanPhamKetQuaDuKien;
+                deTai.NhiemVuCuThe = model.NhiemVuCuThe;
 
                 await _context.SaveChangesAsync();
 

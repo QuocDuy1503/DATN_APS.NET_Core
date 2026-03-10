@@ -67,14 +67,15 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
             {
                 viewModel.IdDot = dotHienTai.Id;
                 viewModel.TenDot = dotHienTai.TenDot;
+                // Không load sẵn danh sách SV nữa - sẽ tìm kiếm động qua API
             }
 
-            // Lấy danh sách đề tài của giảng viên (GVHD hoặc người đề xuất)
+            // Lấy danh sách đề tài do giảng viên đề xuất
             var idNguoiDung = giangVien.IdNguoiDung;
             viewModel.DanhSachDeTai = await _context.DeTais
                 .Include(dt => dt.IdChuyenNganhNavigation)
                 .Include(dt => dt.IdNguoiDeXuatNavigation)
-                .Where(dt => dt.IdGvhd == idNguoiDung || dt.IdNguoiDeXuat == idNguoiDung)
+                .Where(dt => dt.IdNguoiDeXuat == idNguoiDung)
                 .OrderByDescending(dt => dt.Id)
                 .Select(dt => new DeTaiItem
                 {
@@ -138,6 +139,7 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                     CongNgheSuDung = model.CongNgheSuDung,
                     YeuCauTinhMoi = model.YeuCauTinhMoi,
                     SanPhamKetQuaDuKien = model.SanPhamKetQuaDuKien,
+                    NhiemVuCuThe = model.NhiemVuCuThe,
                     IdNguoiDeXuat = giangVien.IdNguoiDung,
                     IdGvhd = giangVien.IdNguoiDung, // Giảng viên là GVHD của chính đề tài mình đề xuất
                     IdDot = dotDoAn.Id,
@@ -147,15 +149,48 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 _context.DeTais.Add(deTai);
                 await _context.SaveChangesAsync();
 
+                // Thêm sinh viên vào đề tài (nếu có chọn)
+                var sinhVienIds = new List<int>();
+                if (model.IdSinhVien1.HasValue && model.IdSinhVien1.Value > 0)
+                    sinhVienIds.Add(model.IdSinhVien1.Value);
+                if (model.IdSinhVien2.HasValue && model.IdSinhVien2.Value > 0 && model.IdSinhVien2.Value != model.IdSinhVien1)
+                    sinhVienIds.Add(model.IdSinhVien2.Value);
+
+                foreach (var idSv in sinhVienIds)
+                {
+                    // Kiểm tra sinh viên có hợp lệ không (đã đăng ký nguyện vọng được duyệt)
+                    var isValidSv = await _context.DangKyNguyenVongs
+                        .AnyAsync(dk => dk.IdSinhVien == idSv && dk.IdDot == dotDoAn.Id && dk.TrangThai == 1);
+
+                    if (isValidSv)
+                    {
+                        var svDeTai = new SinhVienDeTai
+                        {
+                            IdDeTai = deTai.Id,
+                            IdSinhVien = idSv,
+                            TrangThai = "DA_DUYET", // GV đề xuất nên tự động duyệt SV
+                            NgayDangKy = DateTime.Now
+                        };
+                        _context.SinhVienDeTais.Add(svDeTai);
+                    }
+                }
+
+                if (sinhVienIds.Any())
+                {
+                    await _context.SaveChangesAsync();
+                }
+
                 return Json(new
                 {
                     success = true,
                     message = "Đề xuất đề tài thành công! Vui lòng chờ xét duyệt."
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra. Vui lòng thử lại sau." });
+                // Log lỗi chi tiết để debug
+                var errorMessage = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = $"Có lỗi xảy ra: {errorMessage}" });
             }
         }
 
@@ -189,6 +224,7 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                     deTai.CongNgheSuDung,
                     deTai.YeuCauTinhMoi,
                     deTai.SanPhamKetQuaDuKien,
+                    deTai.NhiemVuCuThe,
                     deTai.TrangThai,
                     TenChuyenNganh = deTai.IdChuyenNganhNavigation?.TenChuyenNganh,
                     SinhViens = deTai.SinhVienDeTais.Select(sv => new
@@ -238,6 +274,7 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 deTai.CongNgheSuDung = model.CongNgheSuDung;
                 deTai.YeuCauTinhMoi = model.YeuCauTinhMoi;
                 deTai.SanPhamKetQuaDuKien = model.SanPhamKetQuaDuKien;
+                deTai.NhiemVuCuThe = model.NhiemVuCuThe;
 
                 await _context.SaveChangesAsync();
 
@@ -273,6 +310,48 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
             });
         }
 
+        // API tìm kiếm sinh viên theo từ khóa (MSSV hoặc Họ tên)
+        [HttpGet]
+        public async Task<IActionResult> TimKiemSinhVien(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 2)
+            {
+                return Json(new { success = true, data = new List<object>() });
+            }
+
+            var dotDoAn = await GetDotDeXuatHienTai();
+            if (dotDoAn == null)
+            {
+                return Json(new { success = false, message = "Không có đợt đề xuất đang mở." });
+            }
+
+            keyword = keyword.Trim().ToLower();
+
+            // Tìm sinh viên đã đăng ký nguyện vọng được duyệt trong đợt hiện tại
+            var danhSachSv = await _context.DangKyNguyenVongs
+                .Include(dk => dk.IdSinhVienNavigation)
+                    .ThenInclude(sv => sv!.IdNguoiDungNavigation)
+                .Include(dk => dk.IdSinhVienNavigation)
+                    .ThenInclude(sv => sv!.IdChuyenNganhNavigation)
+                .Where(dk => dk.IdDot == dotDoAn.Id 
+                    && dk.TrangThai == 1
+                    && (dk.IdSinhVienNavigation!.Mssv!.ToLower().Contains(keyword)
+                        || dk.IdSinhVienNavigation.IdNguoiDungNavigation!.HoTen!.ToLower().Contains(keyword)))
+                .Take(10)
+                .Select(dk => new
+                {
+                    idSinhVien = dk.IdSinhVien,
+                    mssv = dk.IdSinhVienNavigation!.Mssv,
+                    hoTen = dk.IdSinhVienNavigation.IdNguoiDungNavigation!.HoTen,
+                    tenChuyenNganh = dk.IdSinhVienNavigation.IdChuyenNganhNavigation != null
+                        ? dk.IdSinhVienNavigation.IdChuyenNganhNavigation.TenChuyenNganh
+                        : ""
+                })
+                .ToListAsync();
+
+            return Json(new { success = true, data = danhSachSv });
+        }
+
         #region Private Methods
 
         // Lấy đợt đang trong giai đoạn đề xuất đề tài
@@ -287,6 +366,30 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 .FirstOrDefaultAsync();
 
             return dotDoAn;
+        }
+
+        // Lấy danh sách sinh viên đã đăng ký nguyện vọng được duyệt trong đợt
+        private async Task<List<SinhVienDuocChonItem>> GetSinhVienDuocDuyetNguyenVong(int idDot)
+        {
+            // TrangThai = 1 nghĩa là "Đạt" (đã được duyệt)
+            var danhSachSv = await _context.DangKyNguyenVongs
+                .Include(dk => dk.IdSinhVienNavigation)
+                    .ThenInclude(sv => sv!.IdNguoiDungNavigation)
+                .Include(dk => dk.IdSinhVienNavigation)
+                    .ThenInclude(sv => sv!.IdChuyenNganhNavigation)
+                .Where(dk => dk.IdDot == idDot && dk.TrangThai == 1)
+                .Select(dk => new SinhVienDuocChonItem
+                {
+                    IdSinhVien = dk.IdSinhVien ?? 0,
+                    Mssv = dk.IdSinhVienNavigation!.Mssv,
+                    HoTen = dk.IdSinhVienNavigation.IdNguoiDungNavigation!.HoTen,
+                    TenChuyenNganh = dk.IdSinhVienNavigation.IdChuyenNganhNavigation != null 
+                        ? dk.IdSinhVienNavigation.IdChuyenNganhNavigation.TenChuyenNganh 
+                        : ""
+                })
+                .ToListAsync();
+
+            return danhSachSv;
         }
 
         #endregion

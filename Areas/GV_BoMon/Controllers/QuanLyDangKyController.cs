@@ -84,7 +84,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
         }
 
         // GET: Danh sách đăng ký nguyện vọng
-        public IActionResult Index(int? page, int? dotId, int? khoaId, string? chuyenNganhId, string? searchString)
+        public IActionResult Index(int? page, int? dotId, int? khoaId, int? chuyenNganhId, string? searchString)
         {
             int pageSize = 10;
             int pageNumber = page ?? 1;
@@ -92,6 +92,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             // Load Dropdown
             ViewBag.ListDot = new SelectList(_context.DotDoAns.OrderByDescending(d => d.Id), "Id", "TenDot", dotId);
             ViewBag.ListKhoa = new SelectList(_context.KhoaHocs.OrderByDescending(k => k.Id), "Id", "TenKhoa", khoaId);
+            ViewBag.ListChuyenNganh = new SelectList(_context.ChuyenNganhs.OrderBy(cn => cn.TenChuyenNganh), "Id", "TenChuyenNganh", chuyenNganhId);
 
             ViewBag.CurrentDotId = dotId;
             ViewBag.CurrentKhoaId = khoaId;
@@ -129,13 +130,11 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
             }
 
             // Filter by Chuyên ngành
-            if (!string.IsNullOrEmpty(chuyenNganhId))
+            if (chuyenNganhId.HasValue)
             {
                 query = query.Where(dk =>
                     dk.IdSinhVienNavigation != null &&
-                    dk.IdSinhVienNavigation.IdChuyenNganhNavigation != null &&
-                    dk.IdSinhVienNavigation.IdChuyenNganhNavigation.TenChuyenNganh != null &&
-                    dk.IdSinhVienNavigation.IdChuyenNganhNavigation.TenChuyenNganh.Contains(chuyenNganhId)
+                    dk.IdSinhVienNavigation.IdChuyenNganh == chuyenNganhId
                 );
             }
 

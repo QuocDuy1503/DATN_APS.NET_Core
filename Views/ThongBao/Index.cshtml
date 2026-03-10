@@ -7,8 +7,8 @@
     var role = Context.Session.GetString("Role");
     Layout = role switch
     {
-        "SV" => "~/Views/Shared/_Layout_SV.cshtml",
-        "GV" => "~/Views/Shared/_Layout_GV.cshtml",
+        "SINH_VIEN" => "~/Views/Shared/_Layout_SV.cshtml",
+        "GIANG_VIEN" => "~/Views/Shared/_Layout_GV.cshtml",
         "BO_MON" => "~/Views/Shared/_LayoutGVBoMon.cshtml",
         _ => "~/Views/Shared/_LayoutBCNKhoa.cshtml"
     };

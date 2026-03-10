@@ -1,4 +1,4 @@
-﻿@model DATN_TMS.Areas.BCNKhoa.Models.ThongBaoViewModel
+@model DATN_TMS.Areas.BCNKhoa.Models.ThongBaoViewModel
 @{
     ViewData["Title"] = "Cấu hình thông báo";
     var titles = new Dictionary<string, string>
@@ -6,6 +6,7 @@
         {"dangky_nguyenvong", "Đăng ký nguyện vọng"},
         {"duyet_nguyenvong", "Duyệt nguyện vọng"},
         {"dexuat_detai", "Đề xuất đề tài"},
+        {"dangky_detai", "Đăng ký đề tài"},
         {"duyet_detai", "Duyệt đề tài"},
         {"nop_decuong", "Nộp đề cương"},
         {"baocao_giuaki", "Báo cáo giữa kì"},
@@ -17,6 +18,7 @@
         {"dangky_nguyenvong", "Sinh viên"},
         {"duyet_nguyenvong", "Bộ môn, BCN Khoa"},
         {"dexuat_detai", "Sinh viên, Giảng viên"},
+        {"dangky_detai", "Sinh viên"},
         {"duyet_detai", "Thành viên hội đồng"},
         {"nop_decuong", "Sinh viên"},
         {"baocao_giuaki", "Bộ môn, BCN Khoa"},
@@ -140,30 +142,21 @@
                                 <div class="note">Lịch gửi nhắc nhở sử dụng cấu hình mặc định, bạn chỉ cần tùy chỉnh tiêu đề và nội dung.</div>
                             </div>
                             <div>
-                                <div class="flex" style="justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <div class="note" style="margin:0;">Cấu hình thời gian thông báo</div>
-                                    <div class="flex" style="gap:6px;">
-                                        <button type="button" class="btn-ghost btn-toggle-all" data-toggle-all="on" data-group="@i">Bật tất cả</button>
-                                        <button type="button" class="btn-ghost btn-toggle-all" data-toggle-all="off" data-group="@i">Tắt tất cả</button>
-                                    </div>
-                                </div>
+                                <div class="note" style="margin-bottom: 8px;">Cấu hình thời gian thông báo</div>
                                 <div class="time-list">
                                     @for (var j = 0; j < (item.ThoiGians?.Count ?? 0); j++)
                                     {
                                         var tg = item.ThoiGians[j];
                                         <div class="time-item">
-                                            <label class="switch" style="margin:0;">
-                                                <input type="hidden" name="CauHinhs[@i].ThoiGians[@j].TrangThai" value="false" />
-                                                <input type="checkbox" class="time-toggle" data-group="@i" name="CauHinhs[@i].ThoiGians[@j].TrangThai" value="true" @(tg.TrangThai ? "checked" : string.Empty) />
-                                                <span class="slider"></span>
-                                            </label>
+                                            <input type="hidden" name="CauHinhs[@i].ThoiGians[@j].TrangThai" value="true" />
                                             <div class="time-content">
                                                 <div class="time-title">@tg.Title</div>
                                                 <input type="hidden" name="CauHinhs[@i].ThoiGians[@j].Key" value="@tg.Key" />
                                                 <input type="hidden" name="CauHinhs[@i].ThoiGians[@j].MocThoiGian" value="@tg.MocThoiGian" />
                                                 <div class="flex" style="gap: 8px; align-items: center; margin-top: 4px;">
-                                                    <span class="note" style="margin:0;">Số ngày</span>
-                                                    <input type="number" min="0" class="form-control" style="width: 100px;" name="CauHinhs[@i].ThoiGians[@j].SoNgayChenhLech" value="@(tg.SoNgayChenhLech ?? 0)" @(tg.ChoPhepNhapSoNgay ? string.Empty : "readonly") />
+                                                    <span class="note" style="margin:0;">Trước / Sau</span>
+                                                    <input type="number" min="0" class="form-control" style="width: 80px;" name="CauHinhs[@i].ThoiGians[@j].SoNgayChenhLech" value="@(tg.SoNgayChenhLech ?? 0)" />
+                                                    <span class="note" style="margin:0;">ngày</span>
                                                 </div>
                                                 @if (!string.IsNullOrWhiteSpace(tg.GhiChu))
                                                 {
@@ -213,13 +206,5 @@
         if (error && error !== '') {
             Swal.fire({ icon: 'error', title: error, toast: true, timer: 3000, position: 'top-end', showConfirmButton: false });
         }
-
-        document.querySelectorAll('.btn-toggle-all').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const group = btn.dataset.group;
-                const shouldCheck = btn.dataset.toggleAll === 'on';
-                document.querySelectorAll(`.time-toggle[data-group="${group}"]`).forEach(cb => cb.checked = shouldCheck);
-            });
-        });
     });
 </script>
