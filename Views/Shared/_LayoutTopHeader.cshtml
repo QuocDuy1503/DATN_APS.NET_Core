@@ -19,7 +19,7 @@
                             <div class="notif-empty">Đang tải...</div>
                         </div>
                         <div class="notif-footer">
-                            <a asp-controller="ThongBao" asp-action="Index">Xem tất cả</a>
+                            <a asp-area="" asp-controller="ThongBao" asp-action="Index">Xem tất cả</a>
                         </div>
                     </div>
                 </div>
@@ -151,12 +151,8 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ id: item.id })
                     });
-                    const link = item.link;
-                    if (link && link.length > 0) {
-                        window.location.href = link;
-                    } else {
-                        await loadNotifications();
-                    }
+                    // Chuyển đến trang chi tiết thông báo
+                    window.location.href = '/ThongBao/Details/' + item.id;
                 });
 
                 list.appendChild(div);

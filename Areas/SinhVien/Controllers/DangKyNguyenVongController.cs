@@ -7,30 +7,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DATN_TMS.Areas.SinhVien.Controllers
 {
-    [Area("SinhVien")]
-    public class DangKyNguyenVongController : Controller
+    /// <summary>
+    /// Controller đăng ký nguyện vọng cho sinh viên
+    /// BỎ QUA kiểm tra nguyện vọng vì đây là nơi SV đăng ký nguyện vọng
+    /// </summary>
+    public class DangKyNguyenVongController : BaseSinhVienController
     {
-        private readonly QuanLyDoAnTotNghiepContext _context;
-
-        public DangKyNguyenVongController(QuanLyDoAnTotNghiepContext context)
+        public DangKyNguyenVongController(QuanLyDoAnTotNghiepContext context) : base(context)
         {
-            _context = context;
         }
 
-        // Kiểm tra đăng nhập trước mỗi action
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            var sessionRole = HttpContext.Session.GetString("Role");
-            var isStudentByClaim = User?.Identity?.IsAuthenticated == true && (User.IsInRole("SINH_VIEN") || User.IsInRole("SV"));
-            var isStudentBySession = sessionRole == "SINH_VIEN" || sessionRole == "SV";
-
-            if (!isStudentByClaim && !isStudentBySession)
-            {
-                context.Result = RedirectToAction("Login", "Account", new { area = "" });
-                return;
-            }
-            base.OnActionExecuting(context);
-        }
+        /// <summary>
+        /// Bỏ qua kiểm tra nguyện vọng cho controller này
+        /// </summary>
+        protected override bool BoQuaKiemTraNguyenVong => true;
 
         // GET: Hiển thị form đăng ký
         [HttpGet]

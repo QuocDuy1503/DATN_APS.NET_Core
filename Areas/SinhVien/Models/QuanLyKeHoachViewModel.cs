@@ -11,6 +11,7 @@ namespace DATN_TMS.Areas.SinhVien.Models
         public string? TenDot { get; set; }
         public string GiaiDoan { get; set; } = "CHUA_MO";
         public string? ThongBao { get; set; }
+        public string? TrangThaiDeTai { get; set; } // Trạng thái đề tài (CHO_DUYET, DA_DUYET, TU_CHOI)
         public IPagedList<KeHoachItemViewModel>? DanhSachCongViec { get; set; }
     }
 

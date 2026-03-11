@@ -6,28 +6,14 @@ using X.PagedList.Extensions;
 
 namespace DATN_TMS.Areas.SinhVien.Controllers
 {
-    [Area("SinhVien")]
-    public class NhatKyHuongDanController : Controller
+    /// <summary>
+    /// Controller xem nhật ký hướng dẫn cho sinh viên
+    /// Kế thừa BaseSinhVienController để kiểm tra nguyện vọng đã duyệt
+    /// </summary>
+    public class NhatKyHuongDanController : BaseSinhVienController
     {
-        private readonly QuanLyDoAnTotNghiepContext _context;
-
-        public NhatKyHuongDanController(QuanLyDoAnTotNghiepContext context)
+        public NhatKyHuongDanController(QuanLyDoAnTotNghiepContext context) : base(context)
         {
-            _context = context;
-        }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            var sessionRole = HttpContext.Session.GetString("Role");
-            var isStudentByClaim = User?.Identity?.IsAuthenticated == true && (User.IsInRole("SINH_VIEN") || User.IsInRole("SV"));
-            var isStudentBySession = sessionRole == "SINH_VIEN" || sessionRole == "SV";
-
-            if (!isStudentByClaim && !isStudentBySession)
-            {
-                context.Result = RedirectToAction("Login", "Account", new { area = "" });
-                return;
-            }
-            base.OnActionExecuting(context);
         }
 
         [HttpGet]
@@ -36,8 +22,60 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             int pageSize = 10;
             int pageNumber = page ?? 1;
 
+            // Kiểm tra đợt đồ án
+            var dot = await GetDotDoAnActive();
+            if (dot == null)
+            {
+                ViewBag.ThongBao = "Hiện tại chưa có đợt đồ án nào đang hoạt động.";
+                return View(new List<NhatKyHuongDan>().ToPagedList(1, pageSize));
+            }
+
+            ViewBag.TenDot = dot.TenDot;
+
+            // Lấy thông tin sinh viên
+            var sinhVien = await GetSinhVienHienTai();
+            if (sinhVien == null)
+            {
+                ViewBag.ThongBao = "Không tìm thấy thông tin sinh viên. Vui lòng đăng nhập lại.";
+                return View(new List<NhatKyHuongDan>().ToPagedList(1, pageSize));
+            }
+
+            // Kiểm tra SV đã có đề tài được GVHD duyệt
+            var svDeTai = await _context.SinhVienDeTais
+                .Include(svdt => svdt.IdDeTaiNavigation)
+                .FirstOrDefaultAsync(svdt =>
+                    svdt.IdSinhVien == sinhVien.IdNguoiDung &&
+                    svdt.IdDeTaiNavigation != null &&
+                    svdt.IdDeTaiNavigation.IdDot == dot.Id &&
+                    (svdt.TrangThai == "DA_DUYET" || svdt.TrangThai == "Đã duyệt"));
+
+            if (svDeTai == null)
+            {
+                ViewBag.ThongBao = "Bạn chưa được duyệt vào đề tài nào. Vui lòng chờ giảng viên duyệt đăng ký đề tài.";
+                return View(new List<NhatKyHuongDan>().ToPagedList(1, pageSize));
+            }
+
+            // ============================================
+            // BUSINESS RULE: Đề tài phải được HỘI ĐỒNG DUYỆT (TrangThai = DA_DUYET)
+            // ============================================
+            var deTai = svDeTai.IdDeTaiNavigation;
+            if (deTai == null || deTai.TrangThai != "DA_DUYET")
+            {
+                ViewBag.ThongBao = "Đề tài của bạn chưa được hội đồng duyệt. Vui lòng chờ hội đồng xét duyệt đề tài.";
+                ViewBag.MaDeTai = deTai?.MaDeTai;
+                ViewBag.TenDeTai = deTai?.TenDeTai;
+                ViewBag.TrangThaiDeTai = deTai?.TrangThai;
+                return View(new List<NhatKyHuongDan>().ToPagedList(1, pageSize));
+            }
+
+            // Đủ điều kiện - load dữ liệu
+            ViewBag.GiaiDoan = "DA_MO";
+            ViewBag.MaDeTai = deTai.MaDeTai;
+            ViewBag.TenDeTai = deTai.TenDeTai;
+
             var nhatKys = await _context.NhatKyHuongDans
                 .Include(n => n.IdDotNavigation)
+                .Where(n => n.IdDot == dot.Id)
                 .OrderByDescending(n => n.NgayHop)
                 .ToListAsync();
 
@@ -55,14 +93,35 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 return Json(new { success = false, message = "Vui lòng điền đầy đủ các trường bắt buộc." });
             }
 
-            var dot = await _context.DotDoAns
-                .Where(d => d.TrangThai == true)
-                .OrderByDescending(d => d.Id)
-                .FirstOrDefaultAsync();
+            // Kiểm tra đề tài đã được hội đồng duyệt chưa
+            var sinhVien = await GetSinhVienHienTai();
+            if (sinhVien == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy thông tin sinh viên." });
+            }
+
+            var dot = await GetDotDoAnActive();
+            if (dot == null)
+            {
+                return Json(new { success = false, message = "Không tìm thấy đợt đồ án." });
+            }
+
+            var svDeTai = await _context.SinhVienDeTais
+                .Include(svdt => svdt.IdDeTaiNavigation)
+                .FirstOrDefaultAsync(svdt =>
+                    svdt.IdSinhVien == sinhVien.IdNguoiDung &&
+                    svdt.IdDeTaiNavigation != null &&
+                    svdt.IdDeTaiNavigation.IdDot == dot.Id &&
+                    (svdt.TrangThai == "DA_DUYET" || svdt.TrangThai == "Đã duyệt"));
+
+            if (svDeTai?.IdDeTaiNavigation?.TrangThai != "DA_DUYET")
+            {
+                return Json(new { success = false, message = "Đề tài chưa được hội đồng duyệt. Không thể thêm nhật ký." });
+            }
 
             var nhatKy = new NhatKyHuongDan
             {
-                IdDot = dot?.Id,
+                IdDot = dot.Id,
                 NgayHop = DateOnly.TryParse(dto.NgayHop, out var nh) ? nh : null,
                 ThoiGianHop = TimeOnly.TryParse(dto.ThoiGianHop, out var th) ? th : null,
                 HinhThucHop = dto.HinhThucHop,

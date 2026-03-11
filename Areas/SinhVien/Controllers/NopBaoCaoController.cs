@@ -6,30 +6,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DATN_TMS.Areas.SinhVien.Controllers
 {
-    [Area("SinhVien")]
-    public class NopBaoCaoController : Controller
+    /// <summary>
+    /// Controller nộp báo cáo cho sinh viên
+    /// Kế thừa BaseSinhVienController để kiểm tra nguyện vọng đã duyệt
+    /// </summary>
+    public class NopBaoCaoController : BaseSinhVienController
     {
-        private readonly QuanLyDoAnTotNghiepContext _context;
         private readonly IWebHostEnvironment _env;
 
-        public NopBaoCaoController(QuanLyDoAnTotNghiepContext context, IWebHostEnvironment env)
+        public NopBaoCaoController(QuanLyDoAnTotNghiepContext context, IWebHostEnvironment env) : base(context)
         {
-            _context = context;
             _env = env;
-        }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            var sessionRole = HttpContext.Session.GetString("Role");
-            var isStudentByClaim = User?.Identity?.IsAuthenticated == true && (User.IsInRole("SINH_VIEN") || User.IsInRole("SV"));
-            var isStudentBySession = sessionRole == "SINH_VIEN" || sessionRole == "SV";
-
-            if (!isStudentByClaim && !isStudentBySession)
-            {
-                context.Result = RedirectToAction("Login", "Account", new { area = "" });
-                return;
-            }
-            base.OnActionExecuting(context);
         }
 
         [HttpGet]

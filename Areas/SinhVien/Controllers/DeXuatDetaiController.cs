@@ -8,29 +8,14 @@ using X.PagedList.Extensions;
 
 namespace DATN_TMS.Areas.SinhVien.Controllers
 {
-    [Area("SinhVien")]
-    public class DeXuatDeTaiController : Controller
+    /// <summary>
+    /// Controller đề xuất đề tài cho sinh viên
+    /// Kế thừa BaseSinhVienController để kiểm tra nguyện vọng đã duyệt
+    /// </summary>
+    public class DeXuatDeTaiController : BaseSinhVienController
     {
-        private readonly QuanLyDoAnTotNghiepContext _context;
-
-        public DeXuatDeTaiController(QuanLyDoAnTotNghiepContext context)
+        public DeXuatDeTaiController(QuanLyDoAnTotNghiepContext context) : base(context)
         {
-            _context = context;
-        }
-
-        // Kiểm tra đăng nhập
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            var sessionRole = HttpContext.Session.GetString("Role");
-            var isStudentByClaim = User?.Identity?.IsAuthenticated == true && (User.IsInRole("SINH_VIEN") || User.IsInRole("SV"));
-            var isStudentBySession = sessionRole == "SINH_VIEN" || sessionRole == "SV";
-
-            if (!isStudentByClaim && !isStudentBySession)
-            {
-                context.Result = RedirectToAction("Login", "Account", new { area = "" });
-                return;
-            }
-            base.OnActionExecuting(context);
         }
 
         // GET: Danh sách đề tài + form đề xuất
@@ -135,6 +120,44 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 return Json(new { success = false, message = "Không tìm thấy thông tin sinh viên." });
             }
 
+            // ============================================
+            // BUSINESS RULE: Bắt buộc chọn GVHD khi SV đề xuất
+            // ============================================
+            if (!model.IdGvhd.HasValue || model.IdGvhd.Value <= 0)
+            {
+                return Json(new { success = false, message = "Vui lòng chọn Giảng viên hướng dẫn. Trường này là bắt buộc." });
+            }
+
+            // ============================================
+            // BUSINESS RULE #1: Ràng buộc 1 SV - 1 Đề tài
+            // ============================================
+            var svDaCoDeTai = await _context.SinhVienDeTais
+                .AnyAsync(svdt => svdt.IdSinhVien == sinhVien.IdNguoiDung 
+                    && svdt.IdDeTaiNavigation!.IdDot == dotDoAn.Id);
+            if (svDaCoDeTai)
+            {
+                return Json(new { success = false, message = "Bạn đã có đề tài trong đợt này, không thể đề xuất thêm." });
+            }
+
+            // Kiểm tra sinh viên thứ 2 (nếu có)
+            DATN_TMS.Models.SinhVien? sinhVien2 = null;
+            if (!string.IsNullOrEmpty(model.MssvSinhVien2))
+            {
+                sinhVien2 = await _context.SinhViens
+                    .FirstOrDefaultAsync(sv => sv.Mssv == model.MssvSinhVien2);
+
+                if (sinhVien2 is not null)
+                {
+                    var sv2DaCoDeTai = await _context.SinhVienDeTais
+                        .AnyAsync(svdt => svdt.IdSinhVien == sinhVien2.IdNguoiDung 
+                            && svdt.IdDeTaiNavigation!.IdDot == dotDoAn.Id);
+                    if (sv2DaCoDeTai)
+                    {
+                        return Json(new { success = false, message = $"Sinh viên {model.MssvSinhVien2} đã có đề tài, không thể thêm vào." });
+                    }
+                }
+            }
+
             // Kiểm tra mã đề tài đã tồn tại chưa
             var maDeTaiTonTai = await _context.DeTais
                 .AnyAsync(dt => dt.MaDeTai == model.MaDeTai && dt.IdDot == dotDoAn.Id);
@@ -146,7 +169,9 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
 
             try
             {
-                // Tạo đề tài mới
+                // ============================================
+                // BUSINESS RULE #2: SV chọn GVHD => tự động phân công và duyệt
+                // ============================================
                 var deTai = new DeTai
                 {
                     MaDeTai = model.MaDeTai,
@@ -159,6 +184,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                     SanPhamKetQuaDuKien = model.SanPhamKetQuaDuKien,
                     NhiemVuCuThe = model.NhiemVuCuThe,
                     IdNguoiDeXuat = sinhVien.IdNguoiDung,
+                    IdGvhd = model.IdGvhd, // Bắt buộc có GVHD
                     IdDot = dotDoAn.Id,
                     TrangThai = "CHO_DUYET"
                 };
@@ -167,32 +193,29 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 await _context.SaveChangesAsync();
 
                 // Thêm sinh viên vào đề tài
+                // Nếu đã chọn GVHD => SV tự động được duyệt (TrangThai = "DA_DUYET" hoặc "Đã duyệt")
+                var trangThaiSV = model.IdGvhd.HasValue ? "DA_DUYET" : "CHO_DUYET";
+
                 var svDeTai1 = new SinhVienDeTai
                 {
                     IdDeTai = deTai.Id,
                     IdSinhVien = sinhVien.IdNguoiDung,
-                    TrangThai = "Đang thực hiện",
+                    TrangThai = trangThaiSV,
                     NgayDangKy = DateTime.Now
                 };
                 _context.SinhVienDeTais.Add(svDeTai1);
 
                 // Nếu có sinh viên thứ 2
-                if (!string.IsNullOrEmpty(model.MssvSinhVien2))
+                if (sinhVien2 is not null)
                 {
-                    var sinhVien2 = await _context.SinhViens
-                        .FirstOrDefaultAsync(sv => sv.Mssv == model.MssvSinhVien2);
-
-                    if (sinhVien2 != null)
+                    var svDeTai2 = new SinhVienDeTai
                     {
-                        var svDeTai2 = new SinhVienDeTai
-                        {
-                            IdDeTai = deTai.Id,
-                            IdSinhVien = sinhVien2.IdNguoiDung,
-                            TrangThai = "Đang thực hiện",
-                            NgayDangKy = DateTime.Now
-                        };
-                        _context.SinhVienDeTais.Add(svDeTai2);
-                    }
+                        IdDeTai = deTai.Id,
+                        IdSinhVien = sinhVien2.IdNguoiDung,
+                        TrangThai = trangThaiSV,
+                        NgayDangKy = DateTime.Now
+                    };
+                    _context.SinhVienDeTais.Add(svDeTai2);
                 }
 
                 await _context.SaveChangesAsync();
@@ -203,9 +226,10 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                     message = "Đề xuất đề tài thành công! Vui lòng chờ xét duyệt."
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra. Vui lòng thử lại sau." });
+                var errorMessage = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = $"Có lỗi xảy ra: {errorMessage}" });
             }
         }
 
@@ -323,6 +347,44 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 ngayBatDau = dotDoAn.NgayBatDauDeXuatDeTai,
                 ngayKetThuc = dotDoAn.NgayKetThucDeXuatDeTai
             });
+        }
+
+        // API tìm kiếm GVHD theo từ khóa (Mã GV hoặc Họ tên)
+        // Tìm tất cả giảng viên (không giới hạn chỉ GV đã đề xuất đề tài)
+        [HttpGet]
+        public async Task<IActionResult> TimKiemGVHD(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword) || keyword.Length < 2)
+            {
+                return Json(new { success = true, data = new List<object>() });
+            }
+
+            var dotDoAn = await GetDotDeXuatHienTai();
+            if (dotDoAn == null)
+            {
+                return Json(new { success = false, message = "Không có đợt đề xuất đang mở." });
+            }
+
+            keyword = keyword.Trim().ToLower();
+
+            // Tìm tất cả giảng viên theo từ khóa
+            var danhSachGv = await _context.GiangViens
+                .Include(gv => gv.IdNguoiDungNavigation)
+                .Include(gv => gv.IdBoMonNavigation)
+                .Where(gv => gv.MaGv!.ToLower().Contains(keyword)
+                    || gv.IdNguoiDungNavigation!.HoTen!.ToLower().Contains(keyword))
+                .Take(10)
+                .Select(gv => new
+                {
+                    idGiangVien = gv.IdNguoiDung,
+                    maGv = gv.MaGv,
+                    hoTen = gv.IdNguoiDungNavigation!.HoTen,
+                    hocVi = gv.HocVi,
+                    tenBoMon = gv.IdBoMonNavigation != null ? gv.IdBoMonNavigation.TenBoMon : ""
+                })
+                .ToListAsync();
+
+            return Json(new { success = true, data = danhSachGv });
         }
 
         #region Private Methods

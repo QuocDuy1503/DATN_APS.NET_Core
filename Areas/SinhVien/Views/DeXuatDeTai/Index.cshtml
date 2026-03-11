@@ -348,6 +348,105 @@
     .detail-row:last-child { border-bottom: none; }
     .detail-label { font-weight: 600; color: #333; font-size: 13px; margin-bottom: 4px; }
     .detail-value { color: #666; font-size: 13px; }
+
+    /* ===============================================
+       AUTOCOMPLETE SEARCH STYLES (GVHD)
+    =============================================== */
+    .gv-search-wrapper {
+        position: relative;
+    }
+    .gv-search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        height: 36px;
+        box-sizing: border-box;
+    }
+    .gv-search-input:focus {
+        outline: none;
+        border-color: #484BE0;
+        box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1);
+    }
+    .gv-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        display: none;
+    }
+    .gv-search-results.show {
+        display: block;
+    }
+    .gv-search-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .gv-search-item:last-child {
+        border-bottom: none;
+    }
+    .gv-search-item:hover {
+        background-color: #f5f5f5;
+    }
+    .gv-search-item .gv-magv {
+        font-weight: 600;
+        color: #484BE0;
+    }
+    .gv-search-item .gv-name {
+        color: #333;
+    }
+    .gv-search-item .gv-bomon {
+        font-size: 11px;
+        color: #888;
+        margin-top: 2px;
+    }
+    .gv-search-no-result {
+        padding: 12px;
+        text-align: center;
+        color: #888;
+        font-size: 13px;
+    }
+    .gv-selected-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #e8f0fe;
+        border: 1px solid #484BE0;
+        border-radius: 4px;
+        padding: 6px 10px;
+        margin-top: 6px;
+    }
+    .gv-selected-badge .gv-info {
+        flex: 1;
+        font-size: 13px;
+    }
+    .gv-selected-badge .gv-info .magv {
+        font-weight: 600;
+        color: #484BE0;
+    }
+    .gv-selected-badge .btn-remove-gv {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0;
+        line-height: 1;
+    }
+    .gv-selected-badge .btn-remove-gv:hover {
+        color: #a71d2a;
+    }
 </style>
 
 <div class="content-body">
@@ -544,6 +643,22 @@
                     <label>Nhiệm vụ cụ thể</label>
                     <textarea asp-for="NhiemVuCuThe" class="form-control" rows="3" placeholder="Nhập nhiệm vụ cụ thể"></textarea>
                 </div>
+
+                <div class="form-group">
+                    <label>Giảng viên hướng dẫn <span class="required">*</span></label>
+                    <div class="gv-search-wrapper">
+                        <input type="hidden" asp-for="IdGvhd" id="IdGvhd" />
+                        <input type="text" id="searchGvhd" class="gv-search-input" placeholder="Nhập mã GV hoặc họ tên để tìm..." autocomplete="off" required />
+                        <div id="resultsGvhd" class="gv-search-results"></div>
+                    </div>
+                    <div id="selectedGvhd" class="gv-selected-badge" style="display: none;">
+                        <div class="gv-info">
+                            <span class="magv"></span> - <span class="name"></span> <span class="hocvi" style="color:#666;"></span>
+                        </div>
+                        <button type="button" class="btn-remove-gv" onclick="removeGvhd()">&times;</button>
+                    </div>
+                    <small class="text-muted" style="color:#dc3545; display:block; margin-top:4px;" id="gvhdError" hidden>Vui lòng chọn Giảng viên hướng dẫn</small>
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -645,6 +760,22 @@ document.querySelectorAll('.modal-overlay').forEach(function(modal) {
 
 document.getElementById('formDeXuat').addEventListener('submit', function(e) {
     e.preventDefault();
+
+    // Validate GVHD bắt buộc
+    var idGvhd = document.getElementById('IdGvhd').value;
+    var gvhdError = document.getElementById('gvhdError');
+    var searchGvhdInput = document.getElementById('searchGvhd');
+
+    if (!idGvhd || idGvhd === '' || idGvhd === '0') {
+        gvhdError.hidden = false;
+        searchGvhdInput.style.borderColor = '#dc3545';
+        searchGvhdInput.focus();
+        return false;
+    } else {
+        gvhdError.hidden = true;
+        searchGvhdInput.style.borderColor = '#ddd';
+    }
+
     var btnSave = document.getElementById('btnSave');
     var btnText = btnSave.querySelector('.btn-text');
     var btnLoading = btnSave.querySelector('.btn-loading');
@@ -704,6 +835,111 @@ document.getElementById('txtSearch').addEventListener('input', function() {
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay.show').forEach(function(m) { m.classList.remove('show'); });
+    }
+});
+
+// ===============================================
+// SCRIPT TÌM KIẾM GVHD ĐỘNG
+// ===============================================
+var searchTimerGvhd = null;
+
+// Tìm kiếm GVHD
+document.getElementById('searchGvhd').addEventListener('input', function() {
+    var self = this;
+    clearTimeout(searchTimerGvhd);
+    searchTimerGvhd = setTimeout(function() {
+        searchGVHD(self.value);
+    }, 300);
+});
+
+function searchGVHD(keyword) {
+    var resultsDiv = document.getElementById('resultsGvhd');
+
+    if (!keyword || keyword.length < 2) {
+        resultsDiv.classList.remove('show');
+        resultsDiv.innerHTML = '';
+        return;
+    }
+
+    fetch('/SinhVien/DeXuatDeTai/TimKiemGVHD?keyword=' + encodeURIComponent(keyword))
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success && data.data.length > 0) {
+                var html = '';
+                data.data.forEach(function(gv) {
+                    html += '<div class="gv-search-item" onclick="selectGVHD(' + gv.idGiangVien + ', \'' + escapeHtml(gv.maGv) + '\', \'' + escapeHtml(gv.hoTen) + '\', \'' + escapeHtml(gv.hocVi || '') + '\')">';
+                    html += '<div><span class="gv-magv">' + escapeHtml(gv.maGv) + '</span> - <span class="gv-name">' + escapeHtml(gv.hoTen) + '</span>';
+                    if (gv.hocVi) {
+                        html += ' <span style="color:#888;">(' + escapeHtml(gv.hocVi) + ')</span>';
+                    }
+                    html += '</div>';
+                    if (gv.tenBoMon) {
+                        html += '<div class="gv-bomon">Bộ môn: ' + escapeHtml(gv.tenBoMon) + '</div>';
+                    }
+                    html += '</div>';
+                });
+                resultsDiv.innerHTML = html;
+                resultsDiv.classList.add('show');
+            } else {
+                resultsDiv.innerHTML = '<div class="gv-search-no-result">Không tìm thấy giảng viên phù hợp</div>';
+                resultsDiv.classList.add('show');
+            }
+        })
+        .catch(function() {
+            resultsDiv.innerHTML = '<div class="gv-search-no-result">Có lỗi xảy ra</div>';
+            resultsDiv.classList.add('show');
+        });
+}
+
+function selectGVHD(id, maGv, hoTen, hocVi) {
+    // Gán giá trị
+    document.getElementById('IdGvhd').value = id;
+    document.getElementById('searchGvhd').value = '';
+    document.getElementById('resultsGvhd').classList.remove('show');
+    document.getElementById('resultsGvhd').innerHTML = '';
+
+    // Hiển thị badge đã chọn
+    var badge = document.getElementById('selectedGvhd');
+    badge.querySelector('.magv').textContent = maGv;
+    badge.querySelector('.name').textContent = hoTen;
+    badge.querySelector('.hocvi').textContent = hocVi ? '(' + hocVi + ')' : '';
+    badge.style.display = 'flex';
+
+    // Ẩn ô input và ẩn lỗi
+    document.getElementById('searchGvhd').style.display = 'none';
+    document.getElementById('gvhdError').hidden = true;
+    document.getElementById('searchGvhd').style.borderColor = '#ddd';
+}
+
+function removeGvhd() {
+    document.getElementById('IdGvhd').value = '';
+    document.getElementById('selectedGvhd').style.display = 'none';
+    document.getElementById('searchGvhd').style.display = 'block';
+    document.getElementById('searchGvhd').value = '';
+    // Hiện thông báo lỗi khi xóa GVHD (vì trường này bắt buộc)
+    document.getElementById('gvhdError').hidden = false;
+    document.getElementById('searchGvhd').style.borderColor = '#dc3545';
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Đóng dropdown khi click bên ngoài
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.gv-search-wrapper')) {
+        document.querySelectorAll('.gv-search-results').forEach(function(el) {
+            el.classList.remove('show');
+        });
+    }
+});
+
+// Reset form khi mở modal tạo mới (update existing event listener)
+document.getElementById('btnOpenModal').addEventListener('click', function() {
+    if (!this.disabled) {
+        // Reset GVHD selection
+        removeGvhd();
     }
 });
 </script>

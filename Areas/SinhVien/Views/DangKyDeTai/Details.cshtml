@@ -1,15 +1,24 @@
-@model DATN_TMS.Areas.SinhVien.Models.ChiTietDangKyDeTaiViewModel
+﻿@model DATN_TMS.Areas.SinhVien.Models.ChiTietDangKyDeTaiViewModel
 @{
     ViewData["Title"] = "Chi tiết đề tài: " + Model.MaDeTai;
 
     var giaiDoan = Model.GiaiDoan ?? "DA_KET_THUC";
     var dangMo = giaiDoan == "DANG_MO";
     var daDangKyNay = Model.DaDangKyDeTaiNay;
-    var daDangKyKhac = Model.DaDangKyDeTaiKhac;
     var trangThaiSV = Model.TrangThaiDangKyCuaSV;
-    var fullSlot = Model.DaToanBoSlot;
+    var daDuSiSo = Model.DaDuSiSo; // Đã đủ 2/2 SV được duyệt
+    var svDaDuyetDeTaiKhac = Model.SvDaDuyetDeTaiKhac; // SV đã được duyệt ở đề tài khác
 
-    var canRegister = dangMo && !daDangKyNay && !daDangKyKhac && !fullSlot;
+    // BUSINESS RULE #3: Khóa đăng ký đề tài SV tự đề xuất
+    var laDeTaiSVDeXuat = Model.LaDeTaiSVTuDeXuat;
+
+    // Điều kiện đăng ký: 
+    // - Trong giai đoạn mở
+    // - Chưa đăng ký đề tài này
+    // - Chưa được duyệt ở đề tài khác
+    // - Đề tài chưa đủ sĩ số
+    // - Không phải đề tài SV đề xuất
+    var canRegister = dangMo && !daDangKyNay && !svDaDuyetDeTaiKhac && !daDuSiSo && !laDeTaiSVDeXuat;
     var canCancel = dangMo && daDangKyNay && trangThaiSV == "Chờ GVHD duyệt";
 }
 
@@ -205,42 +214,128 @@
                 </div>
 
                 <div class="slot-info">
-                    <div>Số lượng đăng ký</div>
-                    <div class="slot-count">@Model.SoLuongDaDangKy / 2</div>
-                    <div style="font-size:12px; color:#9ca3af;">(@Model.SoLuongDaDuyet đã được duyệt)</div>
+                    <div>Số lượt đăng ký</div>
+                    <div class="slot-count">@Model.SoLuotDangKy</div>
+                    <div style="font-size:12px; color:#9ca3af;">
+                        Trạng thái sĩ số: <strong style="color: @(Model.DaDuSiSo ? "#166534" : "#854d0e");">@Model.TrangThaiSiSo</strong>
+                    </div>
                 </div>
 
-                <!-- DANH SÁCH THÀNH VIÊN -->
-                @if (Model.DanhSachThanhVien.Any())
+                @if (Model.DaDuSiSo)
                 {
+                    <div class="notice-box notice-info" style="margin-bottom:16px; background:#dcfce7; border-color:#86efac; color:#166534;">
+                        <i class="fa-solid fa-check-circle" style="color:#22c55e;"></i>
+                        <span>Đề tài đã đủ số lượng sinh viên được duyệt (@Model.TrangThaiSiSo).</span>
+                    </div>
+                }
+
+                <!-- DANH SÁCH SINH VIÊN ĐÃ ĐƯỢC DUYỆT / NHÓM CỦA BẠN -->
+                @{
+                    var danhSachDaDuyet = Model.DanhSachLuotDangKy.Where(l => l.DaDuyet).ToList();
+                    var nhomCuaToi = Model.DanhSachLuotDangKy.FirstOrDefault(l => l.LaSvHienTai && !l.DaDuyet);
+                }
+
+                @if (danhSachDaDuyet.Any())
+                {
+                    <div style="font-size:12px; font-weight:600; color:#166534; margin-bottom:8px;">
+                        <i class="fa-solid fa-user-check"></i> Sinh viên đã được duyệt
+                    </div>
                     <div class="member-list">
-                        @foreach (var tv in Model.DanhSachThanhVien)
+                        @foreach (var luot in danhSachDaDuyet)
                         {
-                            <div class="member-box @(tv.LaSvHienTai ? "is-me" : "")">
+                            <div class="member-box @(luot.LaSvHienTai ? "is-me" : "")">
                                 <div class="member-header">
-                                    <div class="member-name">
-                                        @tv.HoTen
-                                        @if (tv.LaSvHienTai)
-                                        {
-                                            <span class="me-tag">Bạn</span>
-                                        }
-                                    </div>
-                                    <span class="member-badge @tv.StatusCss">@tv.TrangThai</span>
+                                    <span class="member-badge member-approved">Đã duyệt</span>
+                                    @if (luot.LaSvHienTai)
+                                    {
+                                        <span class="me-tag">Nhóm của bạn</span>
+                                    }
                                 </div>
-                                <div class="member-mssv">MSSV: @tv.Mssv</div>
-                                @if (!string.IsNullOrEmpty(tv.NgayDangKy))
+
+                                <div class="member-row">
+                                    <span class="member-label">SV 1:</span>
+                                    <span class="member-info">@luot.Mssv1 - @luot.HoTen1</span>
+                                </div>
+
+                                @if (!string.IsNullOrEmpty(luot.Mssv2))
                                 {
-                                    <div class="member-date">Đăng ký: @tv.NgayDangKy</div>
+                                    <div class="member-row">
+                                        <span class="member-label">SV 2:</span>
+                                        <span class="member-info">@luot.Mssv2 - @luot.HoTen2</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="member-row member-empty">
+                                        <span class="member-label">SV 2:</span>
+                                        <span class="member-info">(Làm đồ án 1 người)</span>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(luot.NgayDangKy))
+                                {
+                                    <div class="member-date">Đăng ký: @luot.NgayDangKy</div>
                                 }
                             </div>
                         }
                     </div>
                 }
-                else
+
+                @if (nhomCuaToi != null)
+                {
+                    <div style="font-size:12px; font-weight:600; color:#d97706; margin-bottom:8px; margin-top:12px;">
+                        <i class="fa-solid fa-clock"></i> Đăng ký của bạn (đang chờ duyệt)
+                    </div>
+                    <div class="member-list">
+                        <div class="member-box is-me">
+                            <div class="member-header">
+                                @{
+                                    var trangThaiHienThi = nhomCuaToi.TrangThai switch
+                                    {
+                                        "Chờ GVHD duyệt" => "Chờ duyệt",
+                                        "CHO_GVHD_DUYET" => "Chờ duyệt",
+                                        "TU_CHOI" or "Từ chối" => "Từ chối",
+                                        "DA_DUYET" or "Đã duyệt" => "Đã duyệt",
+                                        _ => nhomCuaToi.TrangThai ?? "Chờ duyệt"
+                                    };
+                                }
+                                <span class="member-badge member-pending">@trangThaiHienThi</span>
+                                <span class="me-tag">Nhóm của bạn</span>
+                            </div>
+
+                            <div class="member-row">
+                                <span class="member-label">SV 1:</span>
+                                <span class="member-info">@nhomCuaToi.Mssv1 - @nhomCuaToi.HoTen1</span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(nhomCuaToi.Mssv2))
+                            {
+                                <div class="member-row">
+                                    <span class="member-label">SV 2:</span>
+                                    <span class="member-info">@nhomCuaToi.Mssv2 - @nhomCuaToi.HoTen2</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="member-row member-empty">
+                                    <span class="member-label">SV 2:</span>
+                                    <span class="member-info">(Làm đồ án 1 người)</span>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(nhomCuaToi.NgayDangKy))
+                            {
+                                <div class="member-date">Đăng ký: @nhomCuaToi.NgayDangKy</div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (!danhSachDaDuyet.Any() && nhomCuaToi == null)
                 {
                     <div class="notice-box notice-muted" style="margin-bottom:16px;">
                         <i class="fa-solid fa-info-circle"></i>
-                        <span>Chưa có sinh viên nào đăng ký đề tài này.</span>
+                        <span>Chưa có sinh viên nào được duyệt vào đề tài này.</span>
                     </div>
                 }
 
@@ -252,11 +347,11 @@
                         <span>Giai đoạn đăng ký đã kết thúc. Không thể thực hiện thao tác đăng ký hoặc hủy.</span>
                     </div>
                 }
-                else if (daDangKyKhac)
+                else if (svDaDuyetDeTaiKhac)
                 {
                     <div class="notice-box notice-info">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <span>Bạn đã đăng ký đề tài khác trong đợt này. Mỗi sinh viên chỉ được đăng ký 1 đề tài trong 1 đợt.</span>
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>Bạn đã được duyệt vào một đề tài khác. Không thể đăng ký thêm.</span>
                     </div>
                 }
                 else if (daDangKyNay)
@@ -268,24 +363,53 @@
                         </button>
                     }
                 }
-                else if (fullSlot)
+                else if (daDuSiSo && !daDangKyNay)
                 {
                     <div class="notice-box notice-warning">
                         <i class="fa-solid fa-user-slash"></i>
-                        <span>Đề tài đã đủ số lượng sinh viên đăng ký, không thể đăng ký thêm.</span>
+                        <span>Đề tài đã đủ số lượng sinh viên (@Model.TrangThaiSiSo), không thể đăng ký.</span>
+                    </div>
+                }
+                else if (laDeTaiSVDeXuat)
+                {
+                    <div class="notice-box notice-info">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>Đề tài này do sinh viên tự đề xuất, không cho phép đăng ký.</span>
                     </div>
                 }
                 else if (canRegister)
                 {
                     <div class="register-form">
-                        <div class="form-field">
-                            <label>MSSV</label>
-                            <input type="text" class="form-input" value="@Model.MssvSinhVien" readonly>
+                        <div class="form-section-title">
+                            <i class="fa-solid fa-user"></i> Sinh viên đại diện (Bạn)
                         </div>
                         <div class="form-field">
-                            <label>Họ và tên</label>
-                            <input type="text" class="form-input" value="@Model.HoTenSinhVien" readonly>
+                            <div class="sv-info-row">
+                                <span class="sv-mssv">@Model.MssvSinhVien</span>
+                                <span class="sv-name">@Model.HoTenSinhVien</span>
+                            </div>
                         </div>
+
+                        <div class="form-section-title" style="margin-top:15px;">
+                            <i class="fa-solid fa-user-plus"></i> Sinh viên thứ 2 (không bắt buộc)
+                        </div>
+                        <div class="form-field">
+                            <div class="autocomplete-wrapper">
+                                <input type="text" class="form-input" id="txtTimSV2" placeholder="Nhập MSSV hoặc họ tên để tìm...">
+                                <input type="hidden" id="hidIdSinhVien2" value="">
+                                <div id="autocompleteResults" class="autocomplete-results"></div>
+                            </div>
+                            <div id="selectedSV2" class="selected-sv2" style="display:none;">
+                                <div class="sv2-info">
+                                    <span id="sv2Mssv"></span> - <span id="sv2HoTen"></span>
+                                </div>
+                                <button type="button" class="btn-remove-sv2" onclick="removeSV2()">
+                                    <i class="fa-solid fa-times"></i>
+                                </button>
+                            </div>
+                            
+                        </div>
+
                         <button type="button" class="btn-register" id="btnDangKy" data-id="@Model.Id">
                             <i class="fa-solid fa-paper-plane"></i> Đăng ký đề tài
                         </button>
@@ -295,6 +419,140 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Thêm styles cho member row */
+    .member-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        font-size: 13px;
+    }
+    .member-label {
+        font-weight: 600;
+        color: #6b7280;
+        min-width: 45px;
+    }
+    .member-info {
+        color: #1f2937;
+    }
+    .member-row.member-empty .member-info {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+    /* Form section title */
+    .form-section-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .form-section-title i {
+        color: var(--primary);
+    }
+
+    /* SV info row */
+    .sv-info-row {
+        display: flex;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #f3f4f6;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+    .sv-mssv {
+        font-weight: 600;
+        color: var(--primary);
+    }
+    .sv-name {
+        color: #374151;
+    }
+
+    /* Autocomplete */
+    .autocomplete-wrapper {
+        position: relative;
+    }
+    .autocomplete-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .autocomplete-results.show {
+        display: block;
+    }
+    .autocomplete-item {
+        padding: 10px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    .autocomplete-item:hover {
+        background: #f0f1ff;
+    }
+    .autocomplete-item .ac-mssv {
+        font-weight: 600;
+        color: var(--primary);
+    }
+    .autocomplete-item .ac-name {
+        color: #374151;
+        margin-left: 8px;
+    }
+    .autocomplete-empty {
+        padding: 12px;
+        text-align: center;
+        color: #9ca3af;
+        font-size: 13px;
+    }
+
+    /* Selected SV2 */
+    .selected-sv2 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: #e8f4fd;
+        border: 1px solid #b6d4fe;
+        border-radius: 6px;
+        margin-top: 8px;
+    }
+    .sv2-info {
+        font-size: 13px;
+        color: #1e40af;
+    }
+    .btn-remove-sv2 {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        padding: 4px 8px;
+        font-size: 14px;
+    }
+    .btn-remove-sv2:hover {
+        color: #b02a37;
+    }
+
+    .form-hint {
+        font-size: 11px;
+        color: #9ca3af;
+        margin-top: 4px;
+        display: block;
+    }
+</style>
 
 <script>
     var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value
@@ -306,13 +564,104 @@
         return el ? el.value : '';
     }
 
+    // ============================================
+    // AUTOCOMPLETE TÌM KIẾM SINH VIÊN THỨ 2
+    // ============================================
+    var txtTimSV2 = document.getElementById('txtTimSV2');
+    var autocompleteResults = document.getElementById('autocompleteResults');
+    var hidIdSinhVien2 = document.getElementById('hidIdSinhVien2');
+    var selectedSV2 = document.getElementById('selectedSV2');
+    var searchTimeout = null;
+
+    if (txtTimSV2) {
+        txtTimSV2.addEventListener('input', function() {
+            var keyword = this.value.trim();
+
+            clearTimeout(searchTimeout);
+
+            if (keyword.length < 2) {
+                autocompleteResults.classList.remove('show');
+                return;
+            }
+
+            searchTimeout = setTimeout(function() {
+                fetch('@Url.Action("TimKiemSinhVien2", "DangKyDeTai", new { area = "SinhVien" })?keyword=' + encodeURIComponent(keyword))
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success && data.data.length > 0) {
+                            var html = '';
+                            data.data.forEach(function(sv) {
+                                html += '<div class="autocomplete-item" data-id="' + sv.idSinhVien + '" data-mssv="' + sv.mssv + '" data-hoten="' + sv.hoTen + '">';
+                                html += '<span class="ac-mssv">' + sv.mssv + '</span>';
+                                html += '<span class="ac-name">' + sv.hoTen + '</span>';
+                                html += '</div>';
+                            });
+                            autocompleteResults.innerHTML = html;
+                            autocompleteResults.classList.add('show');
+
+                            // Bind click events
+                            document.querySelectorAll('.autocomplete-item').forEach(function(item) {
+                                item.addEventListener('click', function() {
+                                    selectSV2(
+                                        this.getAttribute('data-id'),
+                                        this.getAttribute('data-mssv'),
+                                        this.getAttribute('data-hoten')
+                                    );
+                                });
+                            });
+                        } else {
+                            autocompleteResults.innerHTML = '<div class="autocomplete-empty">Không tìm thấy sinh viên phù hợp</div>';
+                            autocompleteResults.classList.add('show');
+                        }
+                    })
+                    .catch(function() {
+                        autocompleteResults.classList.remove('show');
+                    });
+            }, 300);
+        });
+
+        // Ẩn autocomplete khi click ra ngoài
+        document.addEventListener('click', function(e) {
+            if (!txtTimSV2.contains(e.target) && !autocompleteResults.contains(e.target)) {
+                autocompleteResults.classList.remove('show');
+            }
+        });
+    }
+
+    function selectSV2(id, mssv, hoTen) {
+        hidIdSinhVien2.value = id;
+        document.getElementById('sv2Mssv').textContent = mssv;
+        document.getElementById('sv2HoTen').textContent = hoTen;
+        selectedSV2.style.display = 'flex';
+        txtTimSV2.style.display = 'none';
+        autocompleteResults.classList.remove('show');
+    }
+
+    function removeSV2() {
+        hidIdSinhVien2.value = '';
+        selectedSV2.style.display = 'none';
+        txtTimSV2.style.display = 'block';
+        txtTimSV2.value = '';
+    }
+
+    // ============================================
+    // ĐĂNG KÝ ĐỀ TÀI
+    // ============================================
     var btnDangKy = document.getElementById('btnDangKy');
     if (btnDangKy) {
         btnDangKy.addEventListener('click', function () {
             var idDeTai = this.getAttribute('data-id');
+            var idSinhVien2Elem = document.getElementById('hidIdSinhVien2');
+            var idSinhVien2 = idSinhVien2Elem ? idSinhVien2Elem.value : '';
+            var sv2HoTenElem = document.getElementById('sv2HoTen');
+
+            var confirmText = idSinhVien2 
+                ? 'Bạn sẽ đăng ký đề tài này cùng với ' + (sv2HoTenElem ? sv2HoTenElem.textContent : '') + '?'
+                : 'Bạn sẽ đăng ký đề tài này một mình?';
+
             Swal.fire({
                 title: 'Xác nhận đăng ký?',
-                text: 'Bạn chắc chắn muốn đăng ký đề tài này?',
+                text: confirmText,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#484BE0',
@@ -321,31 +670,46 @@
                 cancelButtonText: 'Hủy'
             }).then(function (result) {
                 if (result.isConfirmed) {
+                    var formData = new FormData();
+                    formData.append('idDeTai', idDeTai);
+                    formData.append('__RequestVerificationToken', getToken());
+                    if (idSinhVien2) {
+                        formData.append('idSinhVien2', idSinhVien2);
+                    }
+
                     fetch('@Url.Action("DangKy", "DangKyDeTai", new { area = "SinhVien" })', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
                             'RequestVerificationToken': getToken()
                         },
-                        body: 'idDeTai=' + idDeTai + '&__RequestVerificationToken=' + encodeURIComponent(getToken())
+                        body: formData
                     })
-                    .then(function (r) { return r.json(); })
+                    .then(function (r) { 
+                        if (!r.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return r.json(); 
+                    })
                     .then(function (data) {
                         if (data.success) {
-                            Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false })
+                            Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 2000, showConfirmButton: false })
                                 .then(function () { location.reload(); });
                         } else {
                             Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
                         }
                     })
-                    .catch(function () {
-                        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' });
+                    .catch(function (err) {
+                        console.error('Error:', err);
+                        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra khi gửi yêu cầu.' });
                     });
                 }
             });
         });
     }
 
+    // ============================================
+    // HỦY ĐĂNG KÝ
+    // ============================================
     var btnHuy = document.getElementById('btnHuyDangKy');
     if (btnHuy) {
         btnHuy.addEventListener('click', function () {
@@ -361,15 +725,21 @@
                 cancelButtonText: 'Đóng'
             }).then(function (result) {
                 if (result.isConfirmed) {
+                    var formData = new FormData();
+                    formData.append('idDeTai', idDeTai);
+                    formData.append('__RequestVerificationToken', getToken());
+
                     fetch('@Url.Action("HuyDangKy", "DangKyDeTai", new { area = "SinhVien" })', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
                             'RequestVerificationToken': getToken()
                         },
-                        body: 'idDeTai=' + idDeTai + '&__RequestVerificationToken=' + encodeURIComponent(getToken())
+                        body: formData
                     })
-                    .then(function (r) { return r.json(); })
+                    .then(function (r) { 
+                        if (!r.ok) throw new Error('Network error');
+                        return r.json(); 
+                    })
                     .then(function (data) {
                         if (data.success) {
                             Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false })
@@ -378,7 +748,8 @@
                             Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
                         }
                     })
-                    .catch(function () {
+                    .catch(function (err) {
+                        console.error('Error:', err);
                         Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' });
                     });
                 }

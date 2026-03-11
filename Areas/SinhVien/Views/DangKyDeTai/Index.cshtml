@@ -45,6 +45,16 @@
 
     .registered-tag { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #e8f4fd; color: #484BE0; border: 1px solid #b6d4fe; margin-left: 6px; white-space: nowrap; }
 
+    /* Badge sĩ số */
+    .siso-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .siso-du { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .siso-chua-du { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+
+    /* Status tag cho cột Trạng thái */
+    .status-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+    .status-approved { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .status-pending { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+
     .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
     .action-btn:hover { background: #eef2ff; color: #3538b2; }
 
@@ -95,20 +105,21 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width:4%;">STT</th>
-                            <th style="width:11%;">Mã đề tài</th>
-                            <th style="width:35%;">Tên đề tài</th>
-                            <th style="width:14%;">Chuyên ngành</th>
-                            <th style="width:16%;">GVHD</th>
-                            <th style="text-align:center; width:12%;">Trạng thái</th>
-                            <th style="text-align:center; width:8%;">Thao tác</th>
+                            <th style="width:5%;">STT</th>
+                            <th style="width:10%;">Mã đề tài</th>
+                            <th style="width:28%;">Tên đề tài</th>
+                            <th style="width:12%;">Chuyên ngành</th>
+                            <th style="width:12%;">GVHD</th>
+                            <th style="text-align:center; width:10%;">Sĩ số</th>
+                            <th style="text-align:center; width:13%;">Trạng thái</th>
+                            <th style="text-align:center; width:10%;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (giaiDoan == "CHUA_MO")
                         {
                             <tr class="table-msg-row msg-warning">
-                                <td colspan="7">
+                                <td colspan="8">
                                     <span class="table-msg-icon"><i class="fa-regular fa-clock"></i></span>
                                     <div class="table-msg-title">Chưa đến giai đoạn đăng ký</div>
                                     <div class="table-msg-text">@ViewBag.Message</div>
@@ -125,18 +136,28 @@
                                     <td>@stt</td>
                                     <td>
                                         @item.MaDeTai
-                                        @if (item.DaDangKy)
+                                        @if (item.LaDeTaiSVTuDeXuat)
                                         {
-                                            <span class="registered-tag">Đã đăng ký</span>
+                                            <span class="registered-tag" style="background:#6c757d;">SV đề xuất</span>
                                         }
                                     </td>
                                     <td class="td-ten-detai" title="@item.TenDeTai">@item.TenDeTai</td>
                                     <td>@item.Nganh</td>
                                     <td>@item.GVHD</td>
                                     <td style="text-align:center;">
-                                        <span class="status-badge @item.StatusCss">
-                                            @(item.TrangThai == "DA_DUYET" ? "Đã duyệt" : item.TrangThai == "CHO_DUYET" ? "Chờ duyệt" : item.TrangThai == "TU_CHOI" ? "Từ chối" : item.TrangThai)
+                                        <span class="siso-badge @(item.DaDuNguoi ? "siso-du" : "siso-chua-du")">
+                                            @item.TrangThaiSiSo
                                         </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        @if (item.SvDaDuyetDeTaiNay)
+                                        {
+                                            <span class="status-tag status-approved">Đã duyệt</span>
+                                        }
+                                        else if (item.SvDaDangKyDeTaiNay)
+                                        {
+                                            <span class="status-tag status-pending">Đã đăng ký</span>
+                                        }
                                     </td>
                                     <td style="text-align:center;">
                                         <a asp-action="Details" asp-route-id="@item.IdDeTai" class="action-btn" title="Xem chi tiết">
@@ -149,7 +170,7 @@
                         else
                         {
                             <tr class="table-msg-row msg-info">
-                                <td colspan="7">
+                                <td colspan="8">
                                     <span class="table-msg-icon"><i class="fa-solid fa-folder-open"></i></span>
                                     <div class="table-msg-title">Không có đề tài</div>
                                     <div class="table-msg-text">Không có đề tài nào phù hợp.</div>

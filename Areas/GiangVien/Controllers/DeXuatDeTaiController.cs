@@ -126,6 +126,33 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 return Json(new { success = false, message = "Mã đề tài đã tồn tại trong đợt này." });
             }
 
+            // ============================================
+            // BUSINESS RULE #1: Ràng buộc 1 SV - 1 Đề tài
+            // Kiểm tra trước khi tạo đề tài
+            // ============================================
+            var sinhVienIds = new List<int>();
+            if (model.IdSinhVien1.HasValue && model.IdSinhVien1.Value > 0)
+                sinhVienIds.Add(model.IdSinhVien1.Value);
+            if (model.IdSinhVien2.HasValue && model.IdSinhVien2.Value > 0 && model.IdSinhVien2.Value != model.IdSinhVien1)
+                sinhVienIds.Add(model.IdSinhVien2.Value);
+
+            foreach (var idSv in sinhVienIds)
+            {
+                var svDaCoDeTai = await _context.SinhVienDeTais
+                    .Include(svdt => svdt.IdSinhVienNavigation)
+                    .AnyAsync(svdt => svdt.IdSinhVien == idSv 
+                        && svdt.IdDeTaiNavigation!.IdDot == dotDoAn.Id);
+
+                if (svDaCoDeTai)
+                {
+                    var svInfo = await _context.SinhViens
+                        .Include(sv => sv.IdNguoiDungNavigation)
+                        .FirstOrDefaultAsync(sv => sv.IdNguoiDung == idSv);
+                    var tenSv = svInfo?.IdNguoiDungNavigation?.HoTen ?? svInfo?.Mssv ?? idSv.ToString();
+                    return Json(new { success = false, message = $"Sinh viên '{tenSv}' đã có đề tài, không thể thực hiện thao tác." });
+                }
+            }
+
             try
             {
                 // Tạo đề tài mới
@@ -150,12 +177,6 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 await _context.SaveChangesAsync();
 
                 // Thêm sinh viên vào đề tài (nếu có chọn)
-                var sinhVienIds = new List<int>();
-                if (model.IdSinhVien1.HasValue && model.IdSinhVien1.Value > 0)
-                    sinhVienIds.Add(model.IdSinhVien1.Value);
-                if (model.IdSinhVien2.HasValue && model.IdSinhVien2.Value > 0 && model.IdSinhVien2.Value != model.IdSinhVien1)
-                    sinhVienIds.Add(model.IdSinhVien2.Value);
-
                 foreach (var idSv in sinhVienIds)
                 {
                     // Kiểm tra sinh viên có hợp lệ không (đã đăng ký nguyện vọng được duyệt)

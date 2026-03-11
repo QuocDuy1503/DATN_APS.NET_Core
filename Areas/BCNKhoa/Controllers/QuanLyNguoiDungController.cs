@@ -104,7 +104,14 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
             // Đếm số lượng theo vai trò (cho stat cards)
             ViewBag.CountSV = await _context.SinhViens.CountAsync();
-            ViewBag.CountGV = await _context.GiangViens.CountAsync();
+
+            // Đếm giảng viên: Loại trừ những người có vai trò BCN_KHOA hoặc BO_MON
+            // Vì họ được đếm riêng ở CountBCN và CountBM
+            ViewBag.CountGV = await _context.NguoiDungs
+                .Where(nd => nd.GiangVien != null 
+                    && !nd.IdVaiTros.Any(v => v.MaVaiTro == "BCN_KHOA" || v.MaVaiTro == "BO_MON"))
+                .CountAsync();
+
             ViewBag.CountBCN = await _context.NguoiDungs.CountAsync(nd => nd.IdVaiTros.Any(v => v.MaVaiTro == "BCN_KHOA"));
             ViewBag.CountBM = await _context.NguoiDungs.CountAsync(nd => nd.IdVaiTros.Any(v => v.MaVaiTro == "BO_MON"));
             ViewBag.CountNone = await _context.NguoiDungs.CountAsync(nd => !nd.IdVaiTros.Any());

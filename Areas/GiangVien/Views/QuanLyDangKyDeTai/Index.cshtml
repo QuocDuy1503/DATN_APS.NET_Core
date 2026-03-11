@@ -29,12 +29,12 @@
 
     .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
     .table-scroll { flex: 1; overflow-y: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
     thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; }
     tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
     tbody tr:hover { background: #f9f9f9; }
 
-    td.td-ten-detai { max-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    td.td-ten-detai { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
     .action-btn:hover { background: #eef2ff; color: #3538b2; }
@@ -51,6 +51,21 @@
     .pagination li a:hover { border-color: #484BE0; color: #484BE0; }
     .pagination li.active span { background: #484BE0; border-color: #484BE0; color: #fff; box-shadow: 0 4px 12px rgba(72, 75, 224, 0.25); }
     .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
+
+    /* Badge số lượng đăng ký */
+    .sl-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 24px;
+        padding: 0 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .sl-badge.has-reg { background: #dbeafe; color: #1e40af; }
+    .sl-badge.no-reg { background: #f3f4f6; color: #6b7280; }
 </style>
 
 <div class="content-body dkdt-page">
@@ -83,12 +98,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width:50px;">STT</th>
-                            <th style="width:120px;">Mã đề tài</th>
-                            <th>Tên đề tài</th>
-                            <th style="width:160px;">Chuyên ngành</th>
-                            <th style="text-align:center; width:100px;">SL đăng ký</th>
-                            <th style="text-align:center; width:70px;">Thao tác</th>
+                            <th style="width:50px; text-align:center;">STT</th>
+                            <th style="width:100px;">Mã đề tài</th>
+                            <th style="width:280px;">Tên đề tài</th>
+                            <th style="width:80px;">Chuyên ngành</th>
+                            <th style="text-align:center; width:150px;">Số lượng đăng ký</th>
+                            <th style="text-align:center; width:80px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,12 +113,17 @@
                             foreach (var item in Model)
                             {
                                 stt++;
+                                var hasSV = item.SoLuongDangKy > 0;
                                 <tr>
-                                    <td>@stt</td>
+                                    <td style="text-align:center;">@stt</td>
                                     <td>@item.MaDeTai</td>
                                     <td class="td-ten-detai" title="@item.TenDeTai">@item.TenDeTai</td>
                                     <td>@item.ChuyenNganh</td>
-                                    <td style="text-align:center;">@item.SoLuongDangKy / 2</td>
+                                    <td style="text-align:center;">
+                                        <span class="sl-badge @(hasSV ? "has-reg" : "no-reg")">
+                                            @item.SoLuongDangKy
+                                        </span>
+                                    </td>
                                     <td style="text-align:center;">
                                         <a asp-action="Detail" asp-route-id="@item.IdDeTai" class="action-btn" title="Xem chi tiết">
                                             <i class="fa-solid fa-eye"></i>

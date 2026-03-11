@@ -294,7 +294,7 @@ CREATE TABLE SinhVien_DeTai (
     id INT IDENTITY(1,1) PRIMARY KEY,
     id_de_tai INT,
     id_sinh_vien INT,
-    trang_thai VARCHAR(20),
+    trang_thai NVARCHAR(50),
     ngay_dang_ky DATETIME DEFAULT GETDATE(),
     nhan_xet NVARCHAR(MAX)
 );

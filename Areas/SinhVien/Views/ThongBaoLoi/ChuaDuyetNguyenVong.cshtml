@@ -1,0 +1,200 @@
+@{
+    ViewData["Title"] = "Thông báo";
+    Layout = "~/Views/Shared/_Layout_SV.cshtml";
+    
+    var errorType = ViewBag.ErrorType as string ?? "CHUA_DANG_KY";
+    var errorMessage = ViewBag.ErrorMessage as string ?? "Bạn chưa đủ điều kiện để sử dụng chức năng này.";
+    
+    // Xác định icon và màu sắc dựa trên loại lỗi
+    var iconClass = errorType switch
+    {
+        "KHONG_CO_DOT" => "fa-calendar-xmark",
+        "CHUA_DANG_KY" => "fa-file-circle-exclamation",
+        "CHO_DUYET" => "fa-hourglass-half",
+        "KHONG_DAT" => "fa-circle-xmark",
+        _ => "fa-triangle-exclamation"
+    };
+    
+    var iconColor = errorType switch
+    {
+        "KHONG_CO_DOT" => "#6c757d",
+        "CHUA_DANG_KY" => "#ffc107",
+        "CHO_DUYET" => "#17a2b8",
+        "KHONG_DAT" => "#dc3545",
+        _ => "#ffc107"
+    };
+    
+    var title = errorType switch
+    {
+        "KHONG_CO_DOT" => "Chưa có đợt đồ án",
+        "CHUA_DANG_KY" => "Chưa đăng ký nguyện vọng",
+        "CHO_DUYET" => "Đang chờ duyệt nguyện vọng",
+        "KHONG_DAT" => "Không đủ điều kiện",
+        _ => "Thông báo"
+    };
+}
+
+<style>
+    .error-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 200px);
+        padding: 40px 20px;
+        text-align: center;
+    }
+    
+    .error-icon {
+        font-size: 80px;
+        margin-bottom: 25px;
+        animation: pulse 2s infinite;
+    }
+    
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+    }
+    
+    .error-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+    
+    .error-message {
+        font-size: 16px;
+        color: #666;
+        max-width: 500px;
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
+    
+    .error-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        max-width: 600px;
+        width: 100%;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        padding: 12px 25px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        border: none;
+    }
+    
+    .btn-primary-action {
+        background: #484BE0;
+        color: #fff;
+    }
+    .btn-primary-action:hover {
+        background: #3538b2;
+        color: #fff;
+    }
+    
+    .btn-secondary-action {
+        background: #f3f4f6;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+    .btn-secondary-action:hover {
+        background: #e5e7eb;
+        color: #333;
+    }
+    
+    .info-box {
+        background: #e8f4fd;
+        border: 1px solid #b6d4fe;
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-top: 25px;
+        text-align: left;
+        font-size: 13px;
+        color: #084298;
+    }
+    
+    .info-box i {
+        margin-right: 8px;
+    }
+    
+    .step-list {
+        margin-top: 10px;
+        padding-left: 25px;
+    }
+    
+    .step-list li {
+        margin-bottom: 6px;
+    }
+</style>
+
+<div class="content-body">
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-icon" style="color: @iconColor;">
+                <i class="fa-solid @iconClass"></i>
+            </div>
+            
+            <h1 class="error-title">@title</h1>
+            <p class="error-message">@errorMessage</p>
+            
+            <div class="action-buttons">
+                @if (errorType == "CHUA_DANG_KY")
+                {
+                    <a href="@Url.Action("Index", "DangKyNguyenVong", new { area = "SinhVien" })" class="btn-action btn-primary-action">
+                        <i class="fa-solid fa-file-signature"></i> Đăng ký nguyện vọng
+                    </a>
+                }
+                
+                <a href="@Url.Action("Index", "Home", new { area = "" })" class="btn-action btn-secondary-action">
+                    <i class="fa-solid fa-home"></i> Về trang chủ
+                </a>
+            </div>
+            
+            @if (errorType == "CHUA_DANG_KY")
+            {
+                <div class="info-box">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <strong>Hướng dẫn:</strong>
+                    <ol class="step-list">
+                        <li>Truy cập menu <strong>"Đăng ký nguyện vọng"</strong></li>
+                        <li>Kiểm tra điều kiện và gửi đăng ký</li>
+                        <li>Chờ phòng Đào tạo duyệt nguyện vọng</li>
+                        <li>Sau khi được duyệt, bạn có thể sử dụng các chức năng khác</li>
+                    </ol>
+                </div>
+            }
+            else if (errorType == "CHO_DUYET")
+            {
+                <div class="info-box">
+                    <i class="fa-solid fa-clock"></i>
+                    Nguyện vọng của bạn đang được xem xét. Vui lòng kiểm tra lại sau hoặc liên hệ phòng Đào tạo để biết thêm thông tin.
+                </div>
+            }
+            else if (errorType == "KHONG_DAT")
+            {
+                <div class="info-box" style="background: #fef2f2; border-color: #fecaca; color: #991b1b;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Nếu bạn cho rằng có sai sót, vui lòng liên hệ phòng Đào tạo với các thông tin: MSSV, Họ tên, Lý do khiếu nại.
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -45,6 +45,10 @@ namespace DATN_TMS.Areas.SinhVien.Models
         [Display(Name = "MSSV thứ hai")]
         public string? MssvSinhVien2 { get; set; }
 
+        // Giảng viên hướng dẫn (tùy chọn)
+        [Display(Name = "Giảng viên hướng dẫn")]
+        public int? IdGvhd { get; set; }
+
         // Hidden
         public int? IdDot { get; set; }
         public string? TenDot { get; set; }

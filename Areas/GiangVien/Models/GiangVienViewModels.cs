@@ -114,13 +114,43 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string? CongNghe { get; set; }
         public string? KetQuaDuKien { get; set; }
         public string? NhiemVuCuThe { get; set; }
-        public int SoLuongDangKy { get; set; }
+        public int SoLuongNhom { get; set; } // Số nhóm đăng ký
         public int SoLuongDaDuyet { get; set; }
-        public bool CoTheDuyet { get; set; } // Cho biết có được phép duyệt không (sau khi kết thúc giai đoạn đăng ký)
-        public string? ThongBaoGiaiDoan { get; set; } // Thông báo về giai đoạn
-        public List<SinhVienDangKyDetailGVItem> DanhSachSV { get; set; } = new();
+        public bool CoTheDuyet { get; set; }
+        public string? ThongBaoGiaiDoan { get; set; }
+        public List<NhomDangKyGVItem> DanhSachNhom { get; set; } = new();
     }
 
+    // Nhóm đăng ký (1 hoặc 2 SV)
+    public class NhomDangKyGVItem
+    {
+        // SV 1 (bắt buộc)
+        public int IdSvDeTai1 { get; set; }
+        public int? IdSinhVien1 { get; set; }
+        public string? Mssv1 { get; set; }
+        public string? HoTen1 { get; set; }
+        public string? Email1 { get; set; }
+        public string? KhoaHoc1 { get; set; }
+        public double? TinChiTichLuy1 { get; set; }
+        public double? GPA1 { get; set; }
+
+        // SV 2 (không bắt buộc)
+        public int? IdSvDeTai2 { get; set; }
+        public int? IdSinhVien2 { get; set; }
+        public string? Mssv2 { get; set; }
+        public string? HoTen2 { get; set; }
+        public string? Email2 { get; set; }
+        public string? KhoaHoc2 { get; set; }
+        public double? TinChiTichLuy2 { get; set; }
+        public double? GPA2 { get; set; }
+
+        public string? TrangThai { get; set; }
+        public string? StatusCss { get; set; }
+        public string? NgayDangKy { get; set; }
+        public string? NhanXet { get; set; }
+    }
+
+    // Giữ lại cho backward compatibility
     public class SinhVienDangKyDetailGVItem
     {
         public int IdSvDeTai { get; set; }

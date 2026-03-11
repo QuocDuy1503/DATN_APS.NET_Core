@@ -57,7 +57,7 @@
         padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px;
         background: #fafafa; display: flex; flex-direction: column; gap: 6px;
     }
-    .member-header { display: flex; justify-content: space-between; align-items: center; }
+    .member-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .member-name { font-weight: 600; font-size: 13px; color: #1f2937; display: flex; align-items: center; gap: 6px; }
     .member-mssv { font-size: 12px; color: #6b7280; }
     .member-date { font-size: 11px; color: #9ca3af; }
@@ -72,7 +72,7 @@
     .member-rejected { color: #dc3545; background: #fef2f2; border: 1px solid #ef4444; }
     .member-default { color: #6b7280; background: #f3f4f6; border: 1px solid #d1d5db; }
 
-    .member-actions { display: flex; gap: 6px; margin-top: 6px; }
+    .member-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e5e7eb; }
 
     .btn-approve {
         padding: 6px 14px; border: none; border-radius: 5px; cursor: pointer;
@@ -88,12 +88,51 @@
     }
     .btn-reject:hover { background: #dc2626; }
 
+    .btn-view-kqht {
+        padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer;
+        font-size: 12px; background: #e0e7ff; color: #4338ca;
+        transition: 0.2s; display: inline-flex; align-items: center; gap: 4px;
+        text-decoration: none;
+    }
+    .btn-view-kqht:hover { background: #c7d2fe; color: #3730a3; }
+
     .notice-box {
         padding: 12px 14px; border-radius: 6px; font-size: 13px;
         display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
     }
     .notice-box i { margin-top: 2px; flex-shrink: 0; }
     .notice-muted { background: #f3f4f6; border: 1px solid #e5e7eb; color: #6b7280; }
+
+    /* Styles cho nhóm */
+    .sv-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        font-size: 13px;
+    }
+    .sv-label {
+        font-weight: 600;
+        color: #6b7280;
+        min-width: 45px;
+    }
+    .sv-info {
+        color: #1f2937;
+    }
+    .sv-row.sv-empty .sv-info {
+        color: #9ca3af;
+        font-style: italic;
+    }
+    .nhom-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        background: #dbeafe;
+        color: #1e40af;
+        margin-left: 8px;
+    }
 
     @@media (max-width: 992px) {
         .detail-container { flex-direction: column; }
@@ -185,53 +224,128 @@
                 }
 
                 <div class="slot-info">
-                    <div>Số lượng đăng ký</div>
-                    <div class="slot-count">@Model.SoLuongDangKy / 2</div>
-                    <div style="font-size:12px; color:#9ca3af;">(@Model.SoLuongDaDuyet đã được duyệt)</div>
+                    <div>Số lượt đăng ký</div>
+                    <div class="slot-count">@Model.SoLuongNhom</div>
+                    <div style="font-size:12px; color:#9ca3af;">(@Model.SoLuongDaDuyet lượt đã được duyệt)</div>
                 </div>
 
-                @if (Model.DanhSachSV.Any())
+                @if (Model.DanhSachNhom.Any())
                 {
                     <div class="member-list">
-                        @foreach (var sv in Model.DanhSachSV)
+                        @foreach (var nhom in Model.DanhSachNhom)
                         {
+                            var laNhom2Nguoi = !string.IsNullOrEmpty(nhom.Mssv2);
+                            var trangThaiText = nhom.TrangThai switch
+                            {
+                                "DA_DUYET" or "Đã duyệt" => "Đã duyệt",
+                                "TU_CHOI" or "Từ chối" => "Từ chối",
+                                "Chờ GVHD duyệt" => "Chờ duyệt",
+                                _ => nhom.TrangThai
+                            };
+
                             <div class="member-box">
                                 <div class="member-header">
-                                    <div class="member-name">@sv.HoTen</div>
-                                    <span class="member-badge @sv.StatusCss">
-                                        @(sv.TrangThai == "DA_DUYET" ? "Đã duyệt" : sv.TrangThai == "TU_CHOI" ? "Từ chối" : sv.TrangThai == "Chờ GVHD duyệt" ? "Chờ duyệt" : sv.TrangThai)
-                                    </span>
+                                    <span class="member-badge @nhom.StatusCss">@trangThaiText</span>
+                                    @if (laNhom2Nguoi)
+                                    {
+                                        <span class="nhom-tag">Nhóm 2 người</span>
+                                    }
                                 </div>
-                                <div class="member-mssv">MSSV: @sv.Mssv</div>
-                                @if (!string.IsNullOrEmpty(sv.KhoaHoc))
+
+                                <!-- SV 1 -->
+                                <div class="sv-row">
+                                    <span class="sv-label">SV 1:</span>
+                                    <span class="sv-info">@nhom.Mssv1 - @nhom.HoTen1</span>
+                                    <button type="button" class="btn-view-kqht" data-id="@nhom.IdSinhVien1" data-name="@nhom.HoTen1" data-mssv="@nhom.Mssv1" title="Xem kết quả học tập">
+                                        <i class="fa-solid fa-graduation-cap"></i>
+                                    </button>
+                                </div>
+                                @if (!string.IsNullOrEmpty(nhom.Email1))
                                 {
-                                    <div class="member-mssv">Khóa: @sv.KhoaHoc</div>
+                                    <div class="member-email" style="margin-left: 53px;">@nhom.Email1</div>
                                 }
-                                @if (!string.IsNullOrEmpty(sv.Email))
+                                @if (nhom.TinChiTichLuy1.HasValue || nhom.GPA1.HasValue)
                                 {
-                                    <div class="member-email">@sv.Email</div>
-                                }
-                                @if (!string.IsNullOrEmpty(sv.NgayDangKy))
-                                {
-                                    <div class="member-date">Đăng ký: @sv.NgayDangKy</div>
+                                    <div style="margin-left: 53px; font-size: 11px; color: #6b7280;">
+                                        @if (nhom.TinChiTichLuy1.HasValue)
+                                        {
+                                            <span>TC: <strong>@nhom.TinChiTichLuy1</strong></span>
+                                        }
+                                        @if (nhom.GPA1.HasValue)
+                                        {
+                                            <span style="margin-left: 8px;">GPA: <strong>@nhom.GPA1?.ToString("0.00")</strong></span>
+                                        }
+                                    </div>
                                 }
 
-                                @if (sv.TrangThai == "Chờ GVHD duyệt" && Model.CoTheDuyet)
+                                <!-- SV 2 -->
+                                @if (laNhom2Nguoi)
+                                {
+                                    <div class="sv-row">
+                                        <span class="sv-label">SV 2:</span>
+                                        <span class="sv-info">@nhom.Mssv2 - @nhom.HoTen2</span>
+                                        <button type="button" class="btn-view-kqht" data-id="@nhom.IdSinhVien2" data-name="@nhom.HoTen2" data-mssv="@nhom.Mssv2" title="Xem kết quả học tập">
+                                            <i class="fa-solid fa-graduation-cap"></i>
+                                        </button>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(nhom.Email2))
+                                    {
+                                        <div class="member-email" style="margin-left: 53px;">@nhom.Email2</div>
+                                    }
+                                    @if (nhom.TinChiTichLuy2.HasValue || nhom.GPA2.HasValue)
+                                    {
+                                        <div style="margin-left: 53px; font-size: 11px; color: #6b7280;">
+                                            @if (nhom.TinChiTichLuy2.HasValue)
+                                            {
+                                                <span>TC: <strong>@nhom.TinChiTichLuy2</strong></span>
+                                            }
+                                            @if (nhom.GPA2.HasValue)
+                                            {
+                                                <span style="margin-left: 8px;">GPA: <strong>@nhom.GPA2?.ToString("0.00")</strong></span>
+                                            }
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="sv-row sv-empty">
+                                        <span class="sv-label">SV 2:</span>
+                                        <span class="sv-info">(Làm đồ án 1 người)</span>
+                                    </div>
+                                }
+
+                                @if (!string.IsNullOrEmpty(nhom.NgayDangKy))
+                                {
+                                    <div class="member-date">Đăng ký: @nhom.NgayDangKy</div>
+                                }
+
+                                @{
+                                    var daDuyet = nhom.TrangThai == "DA_DUYET" || nhom.TrangThai == "Đã duyệt";
+                                    var daTuChoi = nhom.TrangThai == "TU_CHOI" || nhom.TrangThai == "Từ chối";
+                                }
+
+                                @if (!daDuyet && !daTuChoi)
                                 {
                                     <div class="member-actions">
-                                        <button type="button" class="btn-approve btn-duyet" data-id="@sv.IdSvDeTai" data-name="@sv.HoTen">
-                                            <i class="fa-solid fa-check"></i> Duyệt
+                                        <button type="button" class="btn-approve btn-duyet-nhom" 
+                                                data-id1="@nhom.IdSvDeTai1" 
+                                                data-id2="@(nhom.IdSvDeTai2 ?? 0)"
+                                                data-name="@(laNhom2Nguoi ? nhom.HoTen1 + " và " + nhom.HoTen2 : nhom.HoTen1)">
+                                            <i class="fa-solid fa-check"></i> Duyệt @(laNhom2Nguoi ? "nhóm" : "")
                                         </button>
-                                        <button type="button" class="btn-reject btn-tuchoi" data-id="@sv.IdSvDeTai" data-name="@sv.HoTen">
+                                        <button type="button" class="btn-reject btn-tuchoi-nhom" 
+                                                data-id1="@nhom.IdSvDeTai1" 
+                                                data-id2="@(nhom.IdSvDeTai2 ?? 0)"
+                                                data-name="@(laNhom2Nguoi ? nhom.HoTen1 + " và " + nhom.HoTen2 : nhom.HoTen1)">
                                             <i class="fa-solid fa-xmark"></i> Từ chối
                                         </button>
                                     </div>
                                 }
 
-                                @if (sv.TrangThai == "TU_CHOI" && !string.IsNullOrEmpty(sv.NhanXet))
+                                @if (daTuChoi && !string.IsNullOrEmpty(nhom.NhanXet))
                                 {
                                     <div class="member-nhanxet">
-                                        <i class="fa-solid fa-comment-dots"></i> @sv.NhanXet
+                                        <i class="fa-solid fa-comment-dots"></i> @nhom.NhanXet
                                     </div>
                                 }
                             </div>
@@ -256,16 +370,21 @@
         return el ? el.value : '';
     }
 
-    var apiUrl = '@Url.Action("DuyetSinhVien", "QuanLyDangKyDeTai", new { area = "GiangVien" })';
+    var apiUrlNhom = '@Url.Action("DuyetNhom", "QuanLyDangKyDeTai", new { area = "GiangVien" })';
 
-    // Duyệt
-    document.querySelectorAll('.btn-duyet').forEach(function (btn) {
+    // Duyệt nhóm
+    document.querySelectorAll('.btn-duyet-nhom').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            var idSvDeTai = parseInt(this.getAttribute('data-id'));
+            var idSvDeTai1 = parseInt(this.getAttribute('data-id1'));
+            var idSvDeTai2 = parseInt(this.getAttribute('data-id2')) || 0;
             var name = this.getAttribute('data-name');
+            var laNhom = idSvDeTai2 > 0;
+
             Swal.fire({
                 title: 'Xác nhận duyệt?',
-                html: 'Bạn chắc chắn muốn duyệt sinh viên <b>' + name + '</b> vào đề tài này?',
+                html: laNhom 
+                    ? 'Bạn chắc chắn muốn duyệt nhóm gồm <b>' + name + '</b> vào đề tài này?'
+                    : 'Bạn chắc chắn muốn duyệt sinh viên <b>' + name + '</b> vào đề tài này?',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#22c55e',
@@ -274,15 +393,25 @@
                 cancelButtonText: 'Hủy'
             }).then(function (result) {
                 if (result.isConfirmed) {
-                    fetch(apiUrl, {
+                    var formData = new FormData();
+                    formData.append('idSvDeTai1', idSvDeTai1);
+                    if (idSvDeTai2 > 0) {
+                        formData.append('idSvDeTai2', idSvDeTai2);
+                    }
+                    formData.append('action', 'approve');
+                    formData.append('__RequestVerificationToken', getToken());
+
+                    fetch(apiUrlNhom, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
                             'RequestVerificationToken': getToken()
                         },
-                        body: JSON.stringify({ idSvDeTai: idSvDeTai, action: 'approve' })
+                        body: formData
                     })
-                    .then(function (r) { return r.json(); })
+                    .then(function (r) { 
+                        if (!r.ok) throw new Error('Network error');
+                        return r.json(); 
+                    })
                     .then(function (data) {
                         if (data.success) {
                             Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false })
@@ -291,7 +420,8 @@
                             Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
                         }
                     })
-                    .catch(function () {
+                    .catch(function (err) {
+                        console.error('Error:', err);
                         Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' });
                     });
                 }
@@ -299,14 +429,19 @@
         });
     });
 
-    // Từ chối
-    document.querySelectorAll('.btn-tuchoi').forEach(function (btn) {
+    // Từ chối nhóm
+    document.querySelectorAll('.btn-tuchoi-nhom').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            var idSvDeTai = parseInt(this.getAttribute('data-id'));
+            var idSvDeTai1 = parseInt(this.getAttribute('data-id1'));
+            var idSvDeTai2 = parseInt(this.getAttribute('data-id2')) || 0;
             var name = this.getAttribute('data-name');
+            var laNhom = idSvDeTai2 > 0;
+
             Swal.fire({
-                title: 'Từ chối sinh viên?',
-                html: 'Vui lòng nhập lý do từ chối sinh viên <b>' + name + '</b>:',
+                title: laNhom ? 'Từ chối nhóm?' : 'Từ chối sinh viên?',
+                html: laNhom 
+                    ? 'Vui lòng nhập lý do từ chối nhóm gồm <b>' + name + '</b>:'
+                    : 'Vui lòng nhập lý do từ chối sinh viên <b>' + name + '</b>:',
                 input: 'textarea',
                 inputPlaceholder: 'Nhập lý do từ chối...',
                 inputAttributes: { 'aria-label': 'Lý do từ chối' },
@@ -323,15 +458,26 @@
                 }
             }).then(function (result) {
                 if (result.isConfirmed) {
-                    fetch(apiUrl, {
+                    var formData = new FormData();
+                    formData.append('idSvDeTai1', idSvDeTai1);
+                    if (idSvDeTai2 > 0) {
+                        formData.append('idSvDeTai2', idSvDeTai2);
+                    }
+                    formData.append('action', 'reject');
+                    formData.append('nhanXet', result.value);
+                    formData.append('__RequestVerificationToken', getToken());
+
+                    fetch(apiUrlNhom, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
                             'RequestVerificationToken': getToken()
                         },
-                        body: JSON.stringify({ idSvDeTai: idSvDeTai, action: 'reject', nhanXet: result.value })
+                        body: formData
                     })
-                    .then(function (r) { return r.json(); })
+                    .then(function (r) { 
+                        if (!r.ok) throw new Error('Network error');
+                        return r.json(); 
+                    })
                     .then(function (data) {
                         if (data.success) {
                             Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false })
@@ -340,11 +486,73 @@
                             Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
                         }
                     })
-                    .catch(function () {
+                    .catch(function (err) {
+                        console.error('Error:', err);
                         Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' });
                     });
                 }
             });
+        });
+    });
+
+    // Xem kết quả học tập
+    var apiUrlKQHT = '@Url.Action("GetKetQuaHocTap", "QuanLyDangKyDeTai", new { area = "GiangVien" })';
+
+    document.querySelectorAll('.btn-view-kqht').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var idSinhVien = this.getAttribute('data-id');
+            var hoTen = this.getAttribute('data-name');
+            var mssv = this.getAttribute('data-mssv');
+
+            fetch(apiUrlKQHT + '?idSinhVien=' + idSinhVien)
+                .then(function (r) { return r.json(); })
+                .then(function (result) {
+                    if (result.success) {
+                        var tableHtml = '<div style="max-height: 400px; overflow-y: auto;">';
+                        tableHtml += '<table style="width:100%; border-collapse:collapse; font-size:12px;">';
+                        tableHtml += '<thead><tr style="background:#f3f4f6;">';
+                        tableHtml += '<th style="padding:8px; border:1px solid #e5e7eb; text-align:center;">STT</th>';
+                        tableHtml += '<th style="padding:8px; border:1px solid #e5e7eb;">Mã HP</th>';
+                        tableHtml += '<th style="padding:8px; border:1px solid #e5e7eb;">Tên học phần</th>';
+                        tableHtml += '<th style="padding:8px; border:1px solid #e5e7eb; text-align:center;">TC</th>';
+                        tableHtml += '<th style="padding:8px; border:1px solid #e5e7eb; text-align:center;">Điểm</th>';
+                        tableHtml += '<th style="padding:8px; border:1px solid #e5e7eb; text-align:center;">Điểm chữ</th>';
+                        tableHtml += '</tr></thead><tbody>';
+
+                        if (result.data.length > 0) {
+                            result.data.forEach(function (item, index) {
+                                tableHtml += '<tr>';
+                                tableHtml += '<td style="padding:6px 8px; border:1px solid #e5e7eb; text-align:center;">' + (item.stt || (index + 1)) + '</td>';
+                                tableHtml += '<td style="padding:6px 8px; border:1px solid #e5e7eb;">' + (item.maHocPhan || '') + '</td>';
+                                tableHtml += '<td style="padding:6px 8px; border:1px solid #e5e7eb;">' + (item.tenHocPhan || '') + '</td>';
+                                tableHtml += '<td style="padding:6px 8px; border:1px solid #e5e7eb; text-align:center;">' + (item.soTinChi || '') + '</td>';
+                                tableHtml += '<td style="padding:6px 8px; border:1px solid #e5e7eb; text-align:center;">' + (item.diemSo || '') + '</td>';
+                                tableHtml += '<td style="padding:6px 8px; border:1px solid #e5e7eb; text-align:center; font-weight:600;">' + (item.diemChu || '') + '</td>';
+                                tableHtml += '</tr>';
+                            });
+                        } else {
+                            tableHtml += '<tr><td colspan="6" style="padding:20px; text-align:center; color:#9ca3af;">Chưa có dữ liệu kết quả học tập</td></tr>';
+                        }
+
+                        tableHtml += '</tbody></table></div>';
+                        tableHtml += '<div style="margin-top:12px; padding:10px; background:#f0fdf4; border-radius:6px; text-align:center;">';
+                        tableHtml += '<span style="font-size:13px; color:#166534;"><strong>Tổng tín chỉ:</strong> ' + (result.tongKet.tongTinChi || 0) + ' | <strong>GPA:</strong> ' + (result.tongKet.gpa ? result.tongKet.gpa.toFixed(2) : '0.00') + '</span>';
+                        tableHtml += '</div>';
+
+                        Swal.fire({
+                            title: '<i class="fa-solid fa-graduation-cap" style="color:#4338ca;"></i> Kết quả học tập',
+                            html: '<div style="text-align:left; margin-bottom:12px;"><strong>' + mssv + '</strong> - ' + hoTen + '</div>' + tableHtml,
+                            width: '700px',
+                            showCloseButton: true,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể lấy kết quả học tập.' });
+                    }
+                })
+                .catch(function () {
+                    Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra khi tải dữ liệu.' });
+                });
         });
     });
 </script>

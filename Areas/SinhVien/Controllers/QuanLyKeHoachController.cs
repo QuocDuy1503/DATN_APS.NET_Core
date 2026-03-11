@@ -7,30 +7,17 @@ using X.PagedList.Extensions;
 
 namespace DATN_TMS.Areas.SinhVien.Controllers
 {
-    [Area("SinhVien")]
-    public class QuanLyKeHoachController : Controller
+    /// <summary>
+    /// Controller quản lý kế hoạch công việc cho sinh viên
+    /// Kế thừa BaseSinhVienController để kiểm tra nguyện vọng đã duyệt
+    /// </summary>
+    public class QuanLyKeHoachController : BaseSinhVienController
     {
-        private readonly QuanLyDoAnTotNghiepContext _context;
         private readonly IWebHostEnvironment _env;
 
-        public QuanLyKeHoachController(QuanLyDoAnTotNghiepContext context, IWebHostEnvironment env)
+        public QuanLyKeHoachController(QuanLyDoAnTotNghiepContext context, IWebHostEnvironment env) : base(context)
         {
-            _context = context;
             _env = env;
-        }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            var sessionRole = HttpContext.Session.GetString("Role");
-            var isStudentByClaim = User?.Identity?.IsAuthenticated == true && (User.IsInRole("SINH_VIEN") || User.IsInRole("SV"));
-            var isStudentBySession = sessionRole == "SINH_VIEN" || sessionRole == "SV";
-
-            if (!isStudentByClaim && !isStudentBySession)
-            {
-                context.Result = RedirectToAction("Login", "Account", new { area = "" });
-                return;
-            }
-            base.OnActionExecuting(context);
         }
 
         // ============ INDEX ============
@@ -51,14 +38,6 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
 
             vm.TenDot = dot.TenDot;
 
-            // Kiểm tra giai đoạn duyệt đề tài đã kết thúc chưa
-            if (!KiemTraGiaiDoanDuyetKetThuc(dot))
-            {
-                var ngayKT = dot.NgayKetThucDuyetDeXuatDeTai?.ToString("dd/MM/yyyy") ?? "chưa xác định";
-                vm.ThongBao = $"Giai đoạn duyệt đề tài chưa kết thúc. Bảng kế hoạch sẽ được mở sau khi giai đoạn duyệt kết thúc vào ngày {ngayKT}.";
-                return View(vm);
-            }
-
             var sinhVien = await GetSinhVienDangNhap();
             if (sinhVien == null)
             {
@@ -66,7 +45,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 return View(vm);
             }
 
-            // Kiểm tra SV đã có đề tài duyệt trong đợt
+            // Kiểm tra SV đã có đề tài được GVHD duyệt
             var svDeTai = await _context.SinhVienDeTais
                 .Include(svdt => svdt.IdDeTaiNavigation)
                     .ThenInclude(dt => dt!.IdGvhdNavigation)
@@ -75,7 +54,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                     svdt.IdSinhVien == sinhVien.IdNguoiDung &&
                     svdt.IdDeTaiNavigation != null &&
                     svdt.IdDeTaiNavigation.IdDot == dot.Id &&
-                    svdt.TrangThai == "DA_DUYET");
+                    (svdt.TrangThai == "DA_DUYET" || svdt.TrangThai == "Đã duyệt"));
 
             if (svDeTai == null)
             {
@@ -83,11 +62,24 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 return View(vm);
             }
 
+            // ============================================
+            // BUSINESS RULE: Đề tài phải được HỘI ĐỒNG DUYỆT (TrangThai = DA_DUYET)
+            // ============================================
+            var deTai = svDeTai.IdDeTaiNavigation;
+            if (deTai == null || deTai.TrangThai != "DA_DUYET")
+            {
+                vm.ThongBao = "Đề tài của bạn chưa được hội đồng duyệt. Vui lòng chờ hội đồng xét duyệt đề tài.";
+                vm.MaDeTai = deTai?.MaDeTai;
+                vm.TenDeTai = deTai?.TenDeTai;
+                vm.TrangThaiDeTai = deTai?.TrangThai;
+                return View(vm);
+            }
+
             // Đủ điều kiện — load dữ liệu
             vm.GiaiDoan = "DA_MO";
-            vm.MaDeTai = svDeTai.IdDeTaiNavigation?.MaDeTai;
-            vm.TenDeTai = svDeTai.IdDeTaiNavigation?.TenDeTai;
-            vm.TenGVHD = svDeTai.IdDeTaiNavigation?.IdGvhdNavigation?.IdNguoiDungNavigation?.HoTen;
+            vm.MaDeTai = deTai.MaDeTai;
+            vm.TenDeTai = deTai.TenDeTai;
+            vm.TenGVHD = deTai.IdGvhdNavigation?.IdNguoiDungNavigation?.HoTen;
 
             var keHoachs = await _context.KeHoachCongViecs
                 .Where(k => k.IdSinhVien == sinhVien.IdNguoiDung && k.IdDot == dot.Id)
@@ -330,12 +322,6 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             return await _context.SinhViens
                 .Include(sv => sv.IdNguoiDungNavigation)
                 .FirstOrDefaultAsync(sv => sv.Mssv == mssv);
-        }
-
-        private static bool KiemTraGiaiDoanDuyetKetThuc(DotDoAn dot)
-        {
-            if (dot.NgayKetThucDuyetDeXuatDeTai == null) return false;
-            return DateOnly.FromDateTime(DateTime.Now) > dot.NgayKetThucDuyetDeXuatDeTai;
         }
 
         private async Task<List<SinhVienGợiYItem>> GetDanhSachSinhVienCungDeTai()

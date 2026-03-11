@@ -6,28 +6,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DATN_TMS.Areas.SinhVien.Controllers
 {
-    [Area("SinhVien")]
-    public class KetQuaBaoCaoController : Controller
+    /// <summary>
+    /// Controller xem kết quả báo cáo cho sinh viên
+    /// Kế thừa BaseSinhVienController để kiểm tra nguyện vọng đã duyệt
+    /// </summary>
+    public class KetQuaBaoCaoController : BaseSinhVienController
     {
-        private readonly QuanLyDoAnTotNghiepContext _context;
-
-        public KetQuaBaoCaoController(QuanLyDoAnTotNghiepContext context)
+        public KetQuaBaoCaoController(QuanLyDoAnTotNghiepContext context) : base(context)
         {
-            _context = context;
-        }
-
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            var sessionRole = HttpContext.Session.GetString("Role");
-            var isStudentByClaim = User?.Identity?.IsAuthenticated == true && (User.IsInRole("SINH_VIEN") || User.IsInRole("SV"));
-            var isStudentBySession = sessionRole == "SINH_VIEN" || sessionRole == "SV";
-
-            if (!isStudentByClaim && !isStudentBySession)
-            {
-                context.Result = RedirectToAction("Login", "Account", new { area = "" });
-                return;
-            }
-            base.OnActionExecuting(context);
         }
 
         [HttpGet]
