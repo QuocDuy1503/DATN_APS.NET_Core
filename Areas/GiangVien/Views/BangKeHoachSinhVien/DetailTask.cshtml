@@ -1,0 +1,453 @@
+@model DetailTaskViewModel
+@{
+    ViewData["Title"] = "Chi tiết công việc";
+}
+
+<style>
+    :root { --primary: #484BE0; }
+
+    .content-body.kh-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+
+    .kh-page .content-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 140px);
+    }
+
+    /* Header */
+    .page-header-row { margin-bottom: 10px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    /* Breadcrumb */
+    .breadcrumb-nav { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f5f5f5; }
+    .breadcrumb { display: flex; align-items: center; list-style: none; padding: 0; margin: 0; font-size: 13px; background: transparent; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: var(--primary); text-decoration: underline; }
+    .breadcrumb-item.active { color: #333; font-weight: 600; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: #ccc; }
+
+    /* Meta card */
+    .meta-card {
+        background: #f0f4ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: #333;
+    }
+    .meta-card strong { color: #1e3a5f; }
+
+    /* Status badges */
+    .status-badge { padding: 5px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; display: inline-block; }
+    .status-pending { background: #6b7280; }
+    .status-running { background: #2563eb; }
+    .status-waiting { background: #f59e0b; }
+    .status-completed { background: #16a34a; }
+
+    /* Form Layout */
+    .form-container { display: flex; flex-direction: column; gap: 20px; }
+    
+    .form-row { display: flex; gap: 16px; }
+    .form-row .col-2-3 { flex: 2; }
+    .form-row .col-1-3 { flex: 1; }
+    .form-row .col-1-2 { flex: 1; }
+
+    .form-group { margin-bottom: 0; }
+    
+    .form-label { 
+        display: block;
+        font-size: 13px; 
+        font-weight: 600;
+        color: #444; 
+        margin-bottom: 6px; 
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #f9fafb;
+        color: #555;
+        font-size: 13px;
+        box-sizing: border-box;
+        outline: none;
+    }
+
+    textarea.form-input { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+    /* Date grid */
+    .date-grid-wrapper { display: flex; gap: 16px; }
+    .date-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .ghi-chu-box { flex: 1; }
+
+    /* Section divider */
+    .section-divider { margin: 8px 0 16px; padding-top: 16px; border-top: 1px solid #eee; }
+
+    /* Bottom section */
+    .bottom-section { display: flex; gap: 16px; }
+    .bottom-section .col-1-2 { flex: 1; }
+
+    .content-box {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 16px;
+        min-height: 140px;
+        background: #fff;
+    }
+
+    .box-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .box-title i { color: var(--primary); }
+
+    /* File list */
+    .file-list { display: flex; flex-direction: column; gap: 8px; }
+    
+    .file-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    .file-icon { font-size: 20px; flex-shrink: 0; }
+    .file-icon.pdf { color: #dc2626; }
+    .file-icon.image { color: #2563eb; }
+
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { 
+        font-weight: 500; 
+        color: #333; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
+    }
+    .file-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+    .file-btn {
+        padding: 4px 8px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: 0.15s;
+    }
+    .file-btn-view { background: #e0e7ff; color: #4338ca; text-decoration: none; }
+    .file-btn-view:hover { background: #c7d2fe; }
+
+    /* Duyệt section */
+    .duyet-section {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 16px;
+        background: #fffbeb;
+    }
+
+    .duyet-section.approved {
+        background: #f0fdf4;
+        border-color: #86efac;
+    }
+
+    .nhanxet-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 13px;
+        resize: vertical;
+        min-height: 80px;
+        font-family: inherit;
+        margin-top: 8px;
+    }
+    .nhanxet-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1);
+    }
+
+    /* Buttons */
+    .btn-row { margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; }
+
+    .btn-back {
+        padding: 10px 28px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #333;
+        transition: 0.15s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-back:hover { background: #f3f4f6; }
+
+    .btn-approve {
+        padding: 10px 28px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: #16a34a;
+        color: #fff;
+        transition: 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-approve:hover { background: #15803d; }
+
+    .btn-reject {
+        padding: 10px 28px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: #dc2626;
+        color: #fff;
+        transition: 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-reject:hover { background: #b91c1c; }
+
+    .nhanxet-content { font-size: 13px; color: #333; white-space: pre-wrap; line-height: 1.6; }
+    .nhanxet-empty { color: #9ca3af; font-style: italic; }
+</style>
+
+<div class="content-body kh-page">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Chi tiết công việc</h2>
+        </div>
+
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Quản lý kế hoạch sinh viên</a></li>
+                <li class="breadcrumb-item"><a asp-action="Detail" asp-route-id="@Model.IdDeTai">Danh sách công việc</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.TenCongViec</li>
+            </ol>
+        </nav>
+
+        <div class="meta-card">
+            <div><strong>Đợt:</strong> @(Model.TenDot ?? "---")</div>
+            <div>
+                <strong>Trạng thái:</strong>
+                <span class="status-badge @Model.StatusCss">@Model.StatusText</span>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <!-- Row 1: Tên công việc + Người phụ trách -->
+            <div class="form-row">
+                <div class="col-2-3">
+                    <div class="form-group">
+                        <label class="form-label">Tên công việc</label>
+                        <input type="text" class="form-input" value="@Model.TenCongViec" readonly>
+                    </div>
+                </div>
+                <div class="col-1-3">
+                    <div class="form-group">
+                        <label class="form-label">Người thực hiện</label>
+                        <input type="text" class="form-input" value="@Model.NguoiPhuTrach" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Mô tả -->
+            <div class="form-group">
+                <label class="form-label">Mô tả công việc</label>
+                <textarea class="form-input" readonly>@Model.MoTaCongViec</textarea>
+            </div>
+
+            <!-- Row 3: Date grid -->
+            <div class="date-grid-wrapper">
+                <div class="date-grid">
+                    <div class="form-group">
+                        <label class="form-label">Ngày bắt đầu</label>
+                        <input type="date" class="form-input" value="@Model.NgayBatDau" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày kết thúc</label>
+                        <input type="date" class="form-input" value="@Model.NgayKetThuc" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày bắt đầu thực tế</label>
+                        <input type="date" class="form-input" value="@Model.NgayBatDauThucTe" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày kết thúc thực tế</label>
+                        <input type="date" class="form-input" value="@Model.NgayKetThucThucTe" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 4: File minh chứng + Nhận xét/Duyệt -->
+            <div class="section-divider"></div>
+            
+            <div class="bottom-section">
+                <div class="col-1-2">
+                    <div class="content-box">
+                        <div class="box-title">
+                            <i class="fa-solid fa-paperclip"></i> File minh chứng
+                        </div>
+                        
+                        @if (Model.DanhSachFileMinhChung.Any())
+                        {
+                            <div class="file-list">
+                                @foreach (var file in Model.DanhSachFileMinhChung)
+                                {
+                                    var isPdf = file.LoaiFile == "PDF";
+                                    var iconClass = isPdf ? "fa-file-pdf pdf" : "fa-file-image image";
+                                    <div class="file-item">
+                                        <i class="fa-solid @iconClass file-icon"></i>
+                                        <div class="file-info">
+                                            <div class="file-name">@file.TenFile</div>
+                                            <div class="file-meta">@file.NgayNop</div>
+                                        </div>
+                                        <a href="@file.DuongDan" target="_blank" class="file-btn file-btn-view">
+                                            <i class="fa-solid fa-eye"></i> Xem
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="font-size: 13px; color: #9ca3af; text-align: center; padding: 20px;">
+                                Chưa có file minh chứng
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="col-1-2">
+                    @if (Model.CanDuyet)
+                    {
+                        <div class="duyet-section">
+                            <div class="box-title">
+                                <i class="fa-solid fa-check-circle"></i> Duyệt công việc
+                            </div>
+                            <div style="font-size: 13px; color: #856404; margin-bottom: 8px;">
+                                Sinh viên đã hoàn thành công việc này và đang chờ xác nhận từ bạn.
+                            </div>
+                            <label class="form-label" style="margin-top: 12px;">Nhận xét <span style="color: #dc2626;">*</span></label>
+                            <textarea class="nhanxet-input" id="nhanXet" placeholder="Nhập nhận xét (bắt buộc)..."></textarea>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="content-box @(Model.StatusCss == "status-completed" ? "approved" : "")">
+                            <div class="box-title">
+                                <i class="fa-solid fa-comment-dots"></i> Nhận xét của giảng viên
+                            </div>
+                            <div class="nhanxet-content">
+                                @if (!string.IsNullOrEmpty(Model.GhiChu))
+                                {
+                                    @Model.GhiChu
+                                }
+                                else
+                                {
+                                    <span class="nhanxet-empty">Chưa có nhận xét từ giảng viên.</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Button row -->
+            @if (Model.CanDuyet)
+            {
+                <div class="btn-row">
+                    <button type="button" class="btn-reject" onclick="duyetKeHoach('reject')">
+                        <i class="fa-solid fa-rotate-left"></i> Trả lại
+                    </button>
+                    <button type="button" class="btn-approve" onclick="duyetKeHoach('approve')">
+                        <i class="fa-solid fa-check"></i> Duyệt
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+<script>
+    const getToken = () => document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+    const keHoachId = @Model.Id;
+
+    async function duyetKeHoach(action) {
+        const nhanXet = document.getElementById('nhanXet')?.value?.trim() ?? '';
+        const actionText = action === 'approve' ? 'duyệt' : 'trả lại';
+
+        // Validate nhận xét bắt buộc
+        if (!nhanXet) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thiếu nhận xét',
+                text: 'Vui lòng nhập nhận xét trước khi duyệt công việc.',
+                confirmButtonColor: '#484BE0'
+            });
+            document.getElementById('nhanXet').focus();
+            return;
+        }
+
+        const result = await Swal.fire({
+            icon: 'question',
+            title: 'Xác nhận',
+            text: `Bạn có chắc muốn ${actionText} công việc này?`,
+            showCancelButton: true,
+            confirmButtonText: 'Xác nhận',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: action === 'approve' ? '#16a34a' : '#dc2626'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const res = await fetch('@Url.Action("DuyetKeHoach", "BangKeHoachSinhVien", new { area = "GiangVien" })', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getToken()
+                },
+                body: JSON.stringify({ id: keHoachId, action, nhanXet })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                await Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false });
+                window.location.href = '@Url.Action("Detail", "BangKeHoachSinhVien", new { area = "GiangVien", id = Model.IdDeTai })';
+            } else {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message, confirmButtonColor: '#484BE0' });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.', confirmButtonColor: '#484BE0' });
+        }
+    }
+</script>

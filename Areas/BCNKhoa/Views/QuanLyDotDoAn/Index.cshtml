@@ -1,6 +1,7 @@
 ﻿@using X.PagedList.Mvc.Core;
 @using X.PagedList;
-@model X.PagedList.IPagedList<DATN_TMS.Models.DotDoAn>
+@using DATN_TMS.Areas.BCNKhoa.Models.ViewModels;
+@model X.PagedList.IPagedList<DotDoAnIndexItem>
 
 @{
     ViewData["Title"] = "Quản lý đợt đồ án";
@@ -40,8 +41,14 @@
     tbody td { padding: 12px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
     tbody tr:hover { background: #f9f9f9; }
 
-    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
-    .status-running { background: #16a34a; }
+    /* Trạng thái badges */
+    .status-badge { padding: 6px 12px; border-radius: 10px; font-size: 11px; font-weight: 600; color: #fff; display: inline-block; white-space: nowrap; }
+    .status-pending { background: #6b7280; } /* Chưa diễn ra - Xám */
+    .status-preparing { background: #8b5cf6; } /* Chuẩn bị - Tím */
+    .status-running { background: #2563eb; } /* Bắt đầu thực hiện - Xanh dương */
+    .status-midterm { background: #f59e0b; } /* Giữa kỳ - Cam */
+    .status-final { background: #dc2626; } /* Cuối kỳ - Đỏ */
+    .status-closed { background: #374151; } /* Kết thúc - Đen */
 
     .pagination-container { display: flex; justify-content: center; margin-top: 12px; margin-top: auto; padding-top: 8px; }
     .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
@@ -49,6 +56,11 @@
     .pagination li a:hover { border-color: #2563eb; color: #2563eb; }
     .pagination li.active span { background: #0d6efd; border-color: #0d6efd; color: #fff; box-shadow: 0 6px 18px rgba(13,110,253,0.25); }
     .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
+
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .action-btn:hover { background: #eef2ff; color: #3538b2; }
+    .btn-delete-icon { color: #dc2626; }
+    .btn-delete-icon:hover { background: #fef2f2; color: #b91c1c; }
 </style>
 
 <div class="content-body dotdoan-page">
@@ -108,8 +120,8 @@
                             <th>Khóa</th>
                             <th>Ngày bắt đầu</th>
                             <th>Ngày kết thúc</th>
-                            <th>Trạng thái</th>
-                            <th>Thao tác</th>
+                            <th style="text-align:center;">Trạng thái</th>
+                            <th style="text-align:center;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -117,24 +129,17 @@
                         {
                             <tr>
                                 <td>@item.TenDot</td>
-                                <td>@item.IdKhoaHocNavigation?.TenKhoa</td>
+                                <td>@item.TenKhoaHoc</td>
                                 <td>@(item.NgayBatDauDot.HasValue ? item.NgayBatDauDot.Value.ToString("dd/MM/yyyy") : "---")</td>
                                 <td>@(item.NgayKetThucDot.HasValue ? item.NgayKetThucDot.Value.ToString("dd/MM/yyyy") : "---")</td>
-                                <td>
-                                    @if (item.TrangThai == true)
-                                    {
-                                        <span class="status-badge status-running">Đang diễn ra</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="status-badge">Đã đóng</span>
-                                    }
+                                <td style="text-align:center;">
+                                    <span class="status-badge @item.TrangThaiCss">@item.TrangThaiText</span>
                                 </td>
-                                <td>
+                                <td style="text-align:center;">
                                     <a asp-action="Edit" asp-route-id="@item.Id" class="action-btn btn-edit-icon" title="Sửa">
                                         <i class="fa-regular fa-pen-to-square"></i>
                                     </a>
-                                    <button type="button" class="action-btn btn-delete-icon btn-delete-confirm" data-id="@item.Id" title="Xóa" style="border:none; background:none; cursor:pointer;">
+                                    <button type="button" class="action-btn btn-delete-icon btn-delete-confirm" data-id="@item.Id" title="Xóa">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
                                 </td>
@@ -144,7 +149,7 @@
                 </table>
             </div>
         </div>
-        
+
         <partial name="_CreateModal" />
 
         <div class="pagination-container">

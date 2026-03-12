@@ -141,18 +141,19 @@
                     <div class="notif-icon"><i class="fa-regular fa-bell"></i></div>
                     <div class="notif-content">
                         <p class="n-title" title="${item.tieuDe ?? ''}">${item.tieuDe ?? ''}</p>
-                        <p class="n-desc">${item.noiDung ?? ''}</p>
                         <p class="n-time">${formatTime(item.ngayTao)}</p>
                     </div>`;
 
                 div.addEventListener('click', async () => {
-                    await fetch('/ThongBao/MarkAsRead', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: item.id })
-                    });
-                    // Chuyển đến trang chi tiết thông báo
-                    window.location.href = '/ThongBao/Details/' + item.id;
+                    if (!item.trangThaiXem) {
+                        await fetch('/ThongBao/MarkAsRead', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: item.id })
+                        });
+                    }
+                    // Chuyển đến trang danh sách thông báo
+                    window.location.href = '/ThongBao/Index';
                 });
 
                 list.appendChild(div);

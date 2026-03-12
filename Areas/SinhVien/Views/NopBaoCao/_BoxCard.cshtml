@@ -1,14 +1,26 @@
 @model NopBaoCaoBoxItem
 
 <a asp-action="Detail" asp-route-loai="@Model.LoaiBaoCao" class="box-card">
-    @if (Model.DangMo)
-    {
-        <span class="box-open-tag"><i class="fa-solid fa-unlock"></i> Đang mở</span>
-    }
-    else
-    {
-        <span class="box-closed-tag"><i class="fa-solid fa-lock"></i> Chưa mở</span>
-    }
+    @* Trạng thái giai đoạn: Chưa mở / Đang mở / Đã đóng *@
+    <span class="phase-tag @Model.TrangThaiGiaiDoanCss">
+        @if (Model.TrangThaiGiaiDoan == "DANG_MO")
+        {
+            <i class="fa-solid fa-unlock"></i>
+        }
+        else if (Model.TrangThaiGiaiDoan == "DA_DONG")
+        {
+            <i class="fa-solid fa-lock"></i>
+        }
+        else if (Model.TrangThaiGiaiDoan == "CHUA_MO")
+        {
+            <i class="fa-regular fa-clock"></i>
+        }
+        else
+        {
+            <i class="fa-solid fa-circle-question"></i>
+        }
+        @Model.TrangThaiGiaiDoanText
+    </span>
 
     <div class="box-icon @ViewData["IconClass"]">
         <i class="@ViewData["Icon"]"></i>
@@ -18,13 +30,13 @@
 
     <div class="box-time">
         <i class="fa-regular fa-clock"></i>
-        @if (Model.ThoiGianBatDau != null && Model.ThoiGianKetThuc != null)
+        @if (!string.IsNullOrEmpty(Model.ThoiGianBatDau) && !string.IsNullOrEmpty(Model.ThoiGianKetThuc))
         {
             <span>@Model.ThoiGianBatDau — @Model.ThoiGianKetThuc</span>
         }
         else
         {
-            <span>Chưa cấu hình thời gian</span>
+            <span style="color: #9ca3af; font-style: italic;">Chưa cấu hình thời gian</span>
         }
     </div>
 

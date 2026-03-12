@@ -44,7 +44,7 @@
     table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
     thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; }
     tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
-    tbody tr { cursor: pointer; transition: background 0.15s; }
+    tbody tr { cursor: default; transition: background 0.15s; }
     tbody tr:hover { background: #f8f9ff; }
     tbody tr.unread { background: #faf8ff; }
     tbody tr.unread:hover { background: #f3f0ff; }
@@ -54,9 +54,9 @@
     tr.unread .notif-icon { background: #484BE0; color: #fff; }
 
     .notif-content-cell { }
-    .notif-title { font-weight: 700; color: #333; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notif-title { font-weight: 700; color: #333; margin-bottom: 4px; }
     tr.unread .notif-title { color: #1a1a2e; }
-    .notif-desc { color: #666; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .notif-desc { color: #555; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
 
     .notif-time-cell { width: 140px; text-align: center; color: #888; font-size: 12px; }
     .notif-status-cell { width: 120px; text-align: center; }
@@ -196,12 +196,24 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Click vào row để xem chi tiết
+        // Click vào row để đánh dấu đã đọc (không chuyển trang)
         const rows = document.querySelectorAll('tbody tr[data-id]');
         rows.forEach(row => {
-            row.addEventListener('click', () => {
+            row.addEventListener('click', async () => {
                 const id = row.dataset.id;
-                window.location.href = '/ThongBao/Details/' + id;
+                if (row.classList.contains('unread')) {
+                    await markAsRead(id);
+                    row.classList.remove('unread');
+                    row.classList.add('read');
+                    const badge = row.querySelector('.status-badge');
+                    if (badge) {
+                        badge.classList.remove('badge-unread');
+                        badge.classList.add('badge-read');
+                        badge.textContent = 'Đã đọc';
+                    }
+                    const actionCell = row.querySelector('.notif-action-cell');
+                    if (actionCell) actionCell.innerHTML = '';
+                }
             });
         });
 

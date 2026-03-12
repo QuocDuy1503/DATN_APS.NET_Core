@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using X.PagedList.Extensions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DATN_TMS.Areas.BCNKhoa.Controllers
 {
@@ -17,6 +16,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         {
             _context = context;
         }
+
         public IActionResult Index(int? page, int? khoaId, string? namHoc, string searchString)
         {
             int pageSize = 10;
@@ -38,6 +38,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 })
                 .ToList();
             ViewBag.ListNamHoc = listNamHoc;
+
             var query = _context.DotDoAns
                 .Include(d => d.IdKhoaHocNavigation) 
                 .Include(d => d.IdHocKiNavigation)
@@ -69,10 +70,28 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                query = query.Where(d => d.TenDot.Contains(searchString));
+                query = query.Where(d => d.TenDot != null && d.TenDot.Contains(searchString));
             }
 
-            var result = query.OrderByDescending(d => d.Id).ToPagedList(pageNumber, pageSize);
+            // Chuyển đổi sang ViewModel với trạng thái động
+            var dotDoAns = query.OrderByDescending(d => d.Id).ToList();
+            var result = dotDoAns.Select(d =>
+            {
+                var (code, text, css) = DotDoAnStatusHelper.GetTrangThai(d);
+                return new DotDoAnIndexItem
+                {
+                    Id = d.Id,
+                    TenDot = d.TenDot,
+                    TenKhoaHoc = d.IdKhoaHocNavigation?.TenKhoa,
+                    NgayBatDauDot = d.NgayBatDauDot,
+                    NgayKetThucDot = d.NgayKetThucDot,
+                    TrangThaiActive = d.TrangThai,
+                    TrangThaiCode = code,
+                    TrangThaiText = text,
+                    TrangThaiCss = css
+                };
+            }).ToList().ToPagedList(pageNumber, pageSize);
+
             return View(result);
         }
 

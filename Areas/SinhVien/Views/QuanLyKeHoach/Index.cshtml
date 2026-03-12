@@ -97,11 +97,6 @@
     }
     .btn-cancel-modal:hover { background: #f3f4f6; }
 
-    .suggest-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 6px 6px; max-height: 160px; overflow-y: auto; z-index: 10; display: none; }
-    .suggest-list.active { display: block; }
-    .suggest-item { padding: 8px 12px; font-size: 13px; cursor: pointer; }
-    .suggest-item:hover { background: #f0f4ff; }
-
     /* Pagination */
     .pagination-container { display: flex; justify-content: center; margin-top: auto; padding-top: 12px; }
     .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
@@ -140,8 +135,7 @@
                             <option value="">-- Tất cả --</option>
                             <option value="Chưa thực hiện">Chưa thực hiện</option>
                             <option value="Đang thực hiện">Đang thực hiện</option>
-                            <option value="Chờ GV duyệt">Chờ GV duyệt</option>
-                            <option value="Đã duyệt">Đã duyệt</option>
+                            <option value="Đã hoàn thành">Đã hoàn thành</option>
                         </select>
                     </div>
                 </div>
@@ -237,10 +231,15 @@
                             <label>Mô tả công việc <span class="required">*</span></label>
                             <textarea id="fMoTa" placeholder="Nhập mô tả..."></textarea>
                         </div>
-                        <div class="form-group" style="position:relative;">
+                        <div class="form-group">
                             <label>Người phụ trách <span class="required">*</span></label>
-                            <input type="text" id="fNguoiPhuTrach" placeholder="Nhập MSSV hoặc họ tên..." autocomplete="off">
-                            <div class="suggest-list" id="suggestList"></div>
+                            <select id="fNguoiPhuTrach">
+
+                                @foreach (var sv in Model.DanhSachSinhVienDeTai)
+                                {
+                                    <option value="@sv.HoTen">@sv.HoTen</option>
+                                }
+                            </select>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -288,40 +287,18 @@
 
     // --- Modal ---
     var modal = document.getElementById('createModal');
-    document.getElementById('btnOpenCreate').addEventListener('click', function () { modal.classList.add('active'); });
+    document.getElementById('btnOpenCreate').addEventListener('click', function () { 
+        modal.classList.add('active'); 
+        // Reset form khi mở modal
+        document.getElementById('fTenCongViec').value = '';
+        document.getElementById('fMoTa').value = '';
+        document.getElementById('fNguoiPhuTrach').value = '';
+        document.getElementById('fNgayBD').value = '';
+        document.getElementById('fNgayKT').value = '';
+    });
     document.getElementById('btnCloseModal').addEventListener('click', function () { modal.classList.remove('active'); });
     document.getElementById('btnCancelModal').addEventListener('click', function () { modal.classList.remove('active'); });
     modal.addEventListener('click', function (e) { if (e.target === modal) modal.classList.remove('active'); });
-
-    // --- Auto-suggest người phụ trách ---
-    var inputNPT = document.getElementById('fNguoiPhuTrach');
-    var suggestList = document.getElementById('suggestList');
-    var suggestTimeout = null;
-    inputNPT.addEventListener('input', function () {
-        clearTimeout(suggestTimeout);
-        var val = this.value;
-        if (val.length < 1) { suggestList.classList.remove('active'); return; }
-        suggestTimeout = setTimeout(function () {
-            fetch('@Url.Action("TimSinhVien", "QuanLyKeHoach", new { area = "SinhVien" })' + '?keyword=' + encodeURIComponent(val))
-                .then(function (r) { return r.json(); })
-                .then(function (list) {
-                    suggestList.innerHTML = '';
-                    if (list.length === 0) { suggestList.classList.remove('active'); return; }
-                    list.forEach(function (sv) {
-                        var div = document.createElement('div');
-                        div.className = 'suggest-item';
-                        div.textContent = sv.mssv + ' - ' + sv.hoTen;
-                        div.addEventListener('click', function () {
-                            inputNPT.value = sv.mssv + ' - ' + sv.hoTen;
-                            suggestList.classList.remove('active');
-                        });
-                        suggestList.appendChild(div);
-                    });
-                    suggestList.classList.add('active');
-                });
-        }, 300);
-    });
-    document.addEventListener('click', function (e) { if (!inputNPT.contains(e.target) && !suggestList.contains(e.target)) suggestList.classList.remove('active'); });
 
     // --- Submit ---
     function getToken() { var el = document.querySelector('input[name="__RequestVerificationToken"]'); return el ? el.value : ''; }
@@ -329,7 +306,7 @@
     document.getElementById('btnSubmitCreate').addEventListener('click', function () {
         var ten = document.getElementById('fTenCongViec').value.trim();
         var mota = document.getElementById('fMoTa').value.trim();
-        var npt = document.getElementById('fNguoiPhuTrach').value.trim();
+        var npt = document.getElementById('fNguoiPhuTrach').value;
         var bd = document.getElementById('fNgayBD').value;
         var kt = document.getElementById('fNgayKT').value;
 

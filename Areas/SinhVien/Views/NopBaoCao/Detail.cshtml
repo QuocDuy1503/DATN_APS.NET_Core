@@ -1,12 +1,12 @@
 @model NopBaoCaoDetailViewModel
 @{
     ViewData["Title"] = Model.TieuDe;
-
-    var canUpload = Model.DangMo && Model.TrangThai != "DA_DUYET";
     var hasFile = !string.IsNullOrEmpty(Model.FilePath);
 }
 
 <style>
+    :root { --primary: #484BE0; }
+
     .content-card {
         background-color: #fff;
         border-radius: 8px;
@@ -14,60 +14,54 @@
         box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
 
-    .form-header {
-        display: flex;
+    /* Page Header */
+    .page-header-row { margin-bottom: 10px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    /* Breadcrumb - thống nhất với DangKyDeTai/Details */
+    .breadcrumb-nav { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #f5f5f5; }
+    .breadcrumb { display: flex; align-items: center; list-style: none; padding: 0; margin: 0; font-size: 13px; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: var(--primary); text-decoration: underline; }
+    .breadcrumb-item.active { color: #333; font-weight: 600; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: #ccc; }
+
+    /* Phase tag - thống nhất với BoxCard */
+    .phase-tag {
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 4px;
+        padding: 4px 10px;
+        display: inline-flex;
         align-items: center;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
+        gap: 5px;
     }
 
-    .btn-back-circle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        background-color: #f3f4f6;
-        color: #555;
-        border-radius: 50%;
-        text-decoration: none;
-        transition: 0.2s;
-        font-size: 14px;
-    }
+    .phase-pending { color: #6b7280; background: #f3f4f6; border: 1px solid #e5e7eb; }
+    .phase-open { color: #16a34a; background: #f0fdf4; border: 1px solid #bbf7d0; }
+    .phase-closed { color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; }
+    .phase-unconfigured { color: #9ca3af; background: #f9fafb; border: 1px solid #e5e7eb; }
 
-    .btn-back-circle:hover {
-        background-color: #e5e7eb;
-        color: #2563eb;
-        transform: translateX(-2px);
-    }
-
-    .form-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1f2937;
-        margin: 0;
-    }
-
+    /* Meta card - thống nhất với Index */
     .meta-card {
         background: #f0f4ff;
         border: 1px solid #dbeafe;
         border-radius: 8px;
         padding: 14px 18px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         display: flex;
-        gap: 24px;
+        gap: 20px;
         align-items: center;
         flex-wrap: wrap;
         font-size: 13px;
         color: #333;
     }
 
-    .meta-card strong {
-        color: #1e3a5f;
-    }
+    .meta-card strong { color: #1e3a5f; }
 
+    .meta-item { display: flex; align-items: center; gap: 6px; }
+
+    /* Status badge - thống nhất với BoxCard */
     .status-badge {
         padding: 5px 12px;
         border-radius: 10px;
@@ -82,22 +76,149 @@
     .status-rejected { background: #dc2626; }
     .status-default { background: #6b7280; }
 
-    .section {
-        margin-bottom: 22px;
+    /* Alert boxes */
+    .alert-box {
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
+
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+
+    /* Section */
+    .section { margin-bottom: 20px; }
 
     .section-title {
         font-size: 14px;
         font-weight: 700;
         color: #2c3e50;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
-    .field {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 14px;
+    .section-title i { color: var(--primary); }
+
+    /* Topic info */
+    .topic-info {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        font-size: 13px;
     }
+
+    .topic-info .label { color: #6b7280; margin-bottom: 4px; }
+    .topic-info .value { font-weight: 600; color: #1f2937; }
+
+    /* File card */
+    .file-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 16px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+    }
+
+    .file-icon { color: #dc2626; font-size: 28px; }
+
+    .file-details { flex: 1; }
+    .file-name { font-weight: 600; color: #1f2937; font-size: 13px; margin-bottom: 2px; }
+    .file-meta { font-size: 12px; color: #6b7280; }
+
+    .file-actions { display: flex; gap: 8px; }
+
+    .file-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: 0.15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+    }
+
+    .file-btn-view { background: #e0e7ff; color: #4338ca; }
+    .file-btn-view:hover { background: #c7d2fe; }
+
+    .file-btn-delete { background: #fee2e2; color: #dc2626; }
+    .file-btn-delete:hover { background: #fecaca; }
+
+    .submitter-info {
+        margin-top: 10px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 12px;
+        color: #4b5563;
+    }
+
+    .badge-you {
+        background: #dcfce7;
+        color: #166534;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 6px;
+    }
+
+    /* Upload zone */
+    .dropzone {
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 30px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: 0.2s;
+        background: #fafafa;
+    }
+
+    .dropzone:hover { border-color: var(--primary); background: #f0f4ff; }
+    .dropzone.drag-over { border-color: var(--primary); background: #e8edff; border-style: solid; }
+
+    .dropzone-icon { font-size: 32px; color: #9ca3af; margin-bottom: 8px; }
+    .dropzone-text { font-size: 13px; color: #6b7280; }
+    .dropzone-text strong { color: var(--primary); }
+    .dropzone-hint { font-size: 11px; color: #9ca3af; margin-top: 6px; }
+    .dropzone-hint .required { color: #dc2626; font-weight: 600; }
+
+    .file-input-hidden { display: none; }
+
+    .selected-file {
+        margin-top: 12px;
+        padding: 10px 14px;
+        background: #f0f4ff;
+        border: 1px solid #dbeafe;
+        border-radius: 6px;
+        font-size: 13px;
+        color: var(--primary);
+        font-weight: 600;
+        display: none;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .selected-file.show { display: flex; }
+
+    /* Form field */
+    .field { margin-bottom: 16px; }
 
     .field label {
         display: block;
@@ -107,323 +228,390 @@
         font-size: 13px;
     }
 
-    .field .value {
-        width: 100%;
-        padding: 10px 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        background-color: #f9fafb;
-        color: #333;
-        font-size: 13px;
-        min-height: 38px;
-        box-sizing: border-box;
-    }
-
     .field textarea {
         width: 100%;
         padding: 10px 14px;
-        border: 1px solid #ddd;
+        border: 1px solid #d1d5db;
         border-radius: 6px;
         font-size: 13px;
         resize: vertical;
         min-height: 80px;
         box-sizing: border-box;
+        font-family: inherit;
     }
 
     .field textarea:focus {
         outline: none;
-        border-color: #484BE0;
+        border-color: var(--primary);
         box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1);
     }
 
-    .upload-zone {
-        border: 2px dashed #d1d5db;
-        border-radius: 8px;
-        padding: 30px 20px;
-        text-align: center;
-        color: #6b7280;
+    .field .value {
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #f9fafb;
         font-size: 13px;
-        cursor: pointer;
-        transition: 0.2s;
-        position: relative;
     }
 
-    .upload-zone:hover {
-        border-color: #484BE0;
-        background: #f8f9ff;
-    }
-
-    .upload-zone input[type="file"] {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
-    }
-
-    .upload-zone i {
-        font-size: 28px;
-        color: #9ca3af;
-        display: block;
-        margin-bottom: 10px;
-    }
-
-    .upload-zone .hint {
-        font-size: 12px;
-        color: #9ca3af;
-        margin-top: 6px;
-    }
-
-    .file-current {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 16px;
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
+    /* Comment box */
+    .comment-box {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
         border-radius: 8px;
-        font-size: 13px;
-        margin-bottom: 12px;
-    }
-
-    .file-current i {
-        color: #16a34a;
-        font-size: 16px;
-    }
-
-    .file-current a {
-        color: #2563eb;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    .file-current a:hover {
-        text-decoration: underline;
-    }
-
-    .nhan-xet-box {
         padding: 14px 16px;
-        background: #fffbeb;
-        border: 1px solid #fde68a;
-        border-radius: 8px;
         font-size: 13px;
-        color: #78350f;
-        white-space: pre-wrap;
+        color: #4b5563;
         line-height: 1.6;
+        white-space: pre-wrap;
     }
+
+    .comment-empty {
+        color: #9ca3af;
+        font-style: italic;
+        text-align: center;
+    }
+
+    /* Buttons */
+    .btn-row { margin-top: 20px; display: flex; gap: 12px; }
 
     .btn {
-        padding: 8px 16px;
+        padding: 10px 24px;
         border-radius: 6px;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
         cursor: pointer;
         border: none;
-        transition: all 0.2s;
-    }
-
-    .btn-primary {
-        background: #484BE0;
-        color: #fff;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-        background: #3538b2;
-    }
-
-    .btn-primary:disabled {
-        background: #9ca3af;
-        cursor: not-allowed;
-    }
-
-    .actions {
-        margin-top: 20px;
-        display: flex;
-        gap: 10px;
-    }
-
-    .alert-success {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        color: #166534;
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 13px;
-        margin-bottom: 16px;
-    }
-
-    .alert-error {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        color: #991b1b;
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 13px;
-        margin-bottom: 16px;
-    }
-
-    .time-tag {
-        font-size: 12px;
-        color: #6b7280;
-        display: flex;
+        transition: 0.15s;
+        display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
 
-    .grid-2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #3538b2; }
+    .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
 
     @@media (max-width: 768px) {
-        .grid-2 { grid-template-columns: 1fr; }
-        .meta-card { flex-direction: column; gap: 8px; }
+        .meta-card { flex-direction: column; gap: 10px; align-items: flex-start; }
     }
 </style>
 
 <div class="content-body">
     <div class="content-card">
-        <div class="form-header">
-            <a asp-action="Index" class="btn-back-circle" title="Quay lại">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-            <h3 class="form-title">@Model.TieuDe</h3>
+        <!-- Page Header -->
+        <div class="page-header-row">
+            <h2 class="page-title">@Model.TieuDe</h2>
         </div>
 
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Nộp báo cáo</a></li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    @(Model.LoaiBaoCao == "DE_CUONG" ? "Đề cương" : Model.LoaiBaoCao == "GIUA_KY" ? "Giữa kỳ" : "Cuối kỳ")
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Alerts -->
         @if (TempData["Success"] != null)
         {
-            <div class="alert-success">
+            <div class="alert-box alert-success">
                 <i class="fa-solid fa-circle-check"></i> @TempData["Success"]
             </div>
         }
         @if (TempData["Error"] != null)
         {
-            <div class="alert-error">
+            <div class="alert-box alert-error">
                 <i class="fa-solid fa-triangle-exclamation"></i> @TempData["Error"]
             </div>
         }
 
+        <!-- Meta info -->
         <div class="meta-card">
-            <div><strong>Đợt:</strong> @(Model.TenDot ?? "---")</div>
-            <div>
-                <strong>Trạng thái gửi:</strong>
-                @if (hasFile)
-                {
-                    <span style="color:#16a34a; font-weight:600;">Đã nộp</span>
-                }
-                else
-                {
-                    <span style="color:#6b7280; font-weight:600;">Chưa nộp</span>
-                }
+            <div class="meta-item">
+                <i class="fa-solid fa-calendar-days"></i>
+                <strong>Đợt:</strong> @(Model.TenDot ?? "---")
             </div>
-            <div>
-                <strong>Trạng thái duyệt:</strong>
-                <span class="status-badge @Model.TrangThaiCss">@Model.TrangThaiText</span>
-            </div>
-            <div class="time-tag">
+            <div class="meta-item">
                 <i class="fa-regular fa-clock"></i>
-                @if (Model.ThoiGianBatDau != null && Model.ThoiGianKetThuc != null)
+                @if (!string.IsNullOrEmpty(Model.ThoiGianBatDau) && !string.IsNullOrEmpty(Model.ThoiGianKetThuc))
                 {
                     <span>@Model.ThoiGianBatDau — @Model.ThoiGianKetThuc</span>
+                    @if (Model.DangMo && Model.SoNgayConLai.HasValue && Model.SoNgayConLai <= 2)
+                    {
+                        <span style="color:#dc2626; font-weight:600; margin-left:6px;">
+                            (Còn @Model.SoNgayConLai ngày)
+                        </span>
+                    }
                 }
                 else
                 {
-                    <span>Chưa cấu hình</span>
+                    <span style="color:#9ca3af;">Chưa cấu hình</span>
                 }
-                @if (Model.DangMo)
-                {
-                    <span style="color:#16a34a; font-weight:600; font-size:11px; border:1px solid #bbf7d0; background:#f0fdf4; padding:2px 8px; border-radius:4px; margin-left:4px;">Đang mở</span>
-                }
+            </div>
+            <div class="meta-item">
+                <span class="phase-tag @Model.TrangThaiGiaiDoanCss">
+                    @if (Model.TrangThaiGiaiDoan == "DANG_MO")
+                    {
+                        <i class="fa-solid fa-unlock"></i>
+                    }
+                    else if (Model.TrangThaiGiaiDoan == "DA_DONG")
+                    {
+                        <i class="fa-solid fa-lock"></i>
+                    }
+                    else if (Model.TrangThaiGiaiDoan == "CHUA_MO")
+                    {
+                        <i class="fa-regular fa-clock"></i>
+                    }
+                    else
+                    {
+                        <i class="fa-solid fa-circle-question"></i>
+                    }
+                    @Model.TrangThaiGiaiDoanText
+                </span>
+            </div>
+            <div class="meta-item">
+                <strong>Trạng thái nộp:</strong>
+                <span class="status-badge @Model.TrangThaiCss">@Model.TrangThaiText</span>
             </div>
         </div>
 
+        <!-- Topic info -->
+        @if (!string.IsNullOrEmpty(Model.TenDeTai))
+        {
+            <div class="topic-info">
+                <div class="label"><i class="fa-solid fa-book"></i> Đề tài</div>
+                <div class="value">@Model.MaDeTai — @Model.TenDeTai</div>
+            </div>
+        }
+
+        <!-- Thông báo nhóm -->
+        @if (Model.DanhSachNhom.Count > 1)
+        {
+            <div class="alert-box alert-info">
+                <i class="fa-solid fa-users"></i>
+                <span>Nhóm có <strong>@Model.DanhSachNhom.Count sinh viên</strong>. Một thành viên nộp sẽ ghi nhận cho cả nhóm.</span>
+            </div>
+        }
+
+        <!-- File hiện tại -->
         @if (hasFile)
         {
-            <div class="file-current">
-                <i class="fa-solid fa-file-pdf"></i>
-                <a href="@Model.FilePath" target="_blank">@Model.TenFile</a>
-                @if (!string.IsNullOrEmpty(Model.NgaySuaDoiCuoi))
+            <div class="section">
+                <div class="section-title">
+                    <i class="fa-solid fa-file-pdf"></i> File đã nộp
+                </div>
+                <div class="file-card">
+                    <i class="fa-solid fa-file-pdf file-icon"></i>
+                    <div class="file-details">
+                        <div class="file-name">@Model.TenFile</div>
+                        <div class="file-meta">
+                            @if (!string.IsNullOrEmpty(Model.KichThuocFile))
+                            {
+                                <span>@Model.KichThuocFile</span><span> • </span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.NgaySuaDoiCuoi))
+                            {
+                                <span>Nộp: @Model.NgaySuaDoiCuoi</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <a href="@Model.FilePath" target="_blank" class="file-btn file-btn-view">
+                            <i class="fa-solid fa-eye"></i> Xem
+                        </a>
+                        @if (Model.CanDelete)
+                        {
+                            <button type="button" class="file-btn file-btn-delete" onclick="xoaFile()">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
+                        }
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.NguoiNop))
                 {
-                    <span style="color:#6b7280; font-size:12px; margin-left:auto;">Sửa đổi lần cuối: @Model.NgaySuaDoiCuoi</span>
+                    <div class="submitter-info">
+                        <i class="fa-solid fa-user"></i> Người nộp: <strong>@Model.NguoiNop</strong>
+                        @if (Model.LaNguoiDaiDien)
+                        {
+                            <span class="badge-you">Bạn</span>
+                        }
+                    </div>
                 }
             </div>
         }
 
-        <form asp-action="NopFile" method="post" enctype="multipart/form-data">
+        <!-- Form nộp file -->
+        <form asp-action="NopFile" method="post" enctype="multipart/form-data" id="uploadForm">
             <input type="hidden" name="loai" value="@Model.LoaiBaoCao" />
 
-            @if (canUpload)
+            @if (Model.CanUpload)
             {
                 <div class="section">
                     <div class="section-title">
-                        @(hasFile ? "Nộp lại file" : "Nộp file")
-                    </div>
-                    <div class="upload-zone" id="dropZone">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
-                        <div>Kéo thả file hoặc <strong>nhấn để chọn</strong></div>
-                        <div class="hint">.pdf, .doc, .docx, .zip — Tối đa 50MB</div>
-                        <div id="selectedFileName" style="margin-top:8px; font-weight:600; color:#484BE0;"></div>
-                        <input type="file" name="file" id="fileInput"
-                               accept=".pdf,.doc,.docx,.zip" />
+                        @(hasFile ? "Nộp lại file" : "Nộp file báo cáo")
+                    </div>
+
+                    <div class="dropzone" id="dropzone">
+                        <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                        <div class="dropzone-text">
+                            Kéo thả file hoặc <strong>nhấn để chọn</strong>
+                        </div>
+                        <div class="dropzone-hint">
+                            <span class="required">Chỉ file PDF</span> — Tối đa 50MB
+                        </div>
+                        <input type="file" name="file" id="fileInput" class="file-input-hidden" accept=".pdf" />
+                    </div>
+
+                    <div class="selected-file" id="selectedFile">
+                        <i class="fa-solid fa-file-pdf" style="color:#dc2626;"></i>
+                        <span id="selectedFileName"></span>
                     </div>
                 </div>
 
                 <div class="field">
-                    <label>Ghi chú gửi kèm</label>
-                    <textarea name="ghiChu" placeholder="Nhập ghi chú cho GVHD (nếu có)...">@Model.GhiChuGui</textarea>
+                    <label>Ghi chú (tùy chọn)</label>
+                    <textarea name="ghiChu" placeholder="Nhập ghi chú cho GVHD...">@Model.GhiChuGui</textarea>
                 </div>
-            }
-            else if (Model.TrangThai == "DA_DUYET")
-            {
-                @if (!string.IsNullOrEmpty(Model.GhiChuGui))
-                {
-                    <div class="field">
-                        <label>Ghi chú đã gửi</label>
-                        <div class="value">@Model.GhiChuGui</div>
-                    </div>
-                }
-            }
-            else if (!Model.DangMo)
-            {
-                @if (!string.IsNullOrEmpty(Model.GhiChuGui))
-                {
-                    <div class="field">
-                        <label>Ghi chú đã gửi</label>
-                        <div class="value">@Model.GhiChuGui</div>
-                    </div>
-                }
-            }
 
-            @if (!string.IsNullOrEmpty(Model.NhanXetGVHD))
-            {
-                <div class="section">
-                    <div class="section-title">Nhận xét GVHD</div>
-                    <div class="nhan-xet-box">@Model.NhanXetGVHD</div>
-                </div>
-            }
-
-            @if (canUpload)
-            {
-                <div class="actions">
+                <div class="btn-row">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-paper-plane"></i> @(hasFile ? "Nộp lại báo cáo" : "Nộp báo cáo")
+                        <i class="fa-solid fa-paper-plane"></i>
+                        @(hasFile ? "Nộp lại" : "Nộp báo cáo")
                     </button>
                 </div>
             }
+            else if (!string.IsNullOrEmpty(Model.LyDoKhongTheNop))
+            {
+                <div class="alert-box alert-warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>@Model.LyDoKhongTheNop</span>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.GhiChuGui))
+                {
+                    <div class="field">
+                        <label>Ghi chú đã gửi</label>
+                        <div class="value">@Model.GhiChuGui</div>
+                    </div>
+                }
+            }
         </form>
+
+        <!-- Nhận xét GVHD -->
+        <div class="section" style="margin-top: 24px;">
+            <div class="section-title">
+                <i class="fa-solid fa-comment-dots"></i> Nhận xét của giảng viên
+            </div>
+            @if (!string.IsNullOrEmpty(Model.NhanXetGVHD))
+            {
+                <div class="comment-box">@Model.NhanXetGVHD</div>
+            }
+            else
+            {
+                <div class="comment-box comment-empty">Chưa có nhận xét.</div>
+            }
+        </div>
     </div>
 </div>
 
+@Html.AntiForgeryToken()
 <script>
-    var fileInput = document.getElementById('fileInput');
-    var selectedFileName = document.getElementById('selectedFileName');
-    if (fileInput) {
-        fileInput.addEventListener('change', function () {
-            if (fileInput.files.length > 0) {
-                selectedFileName.textContent = fileInput.files[0].name;
-            } else {
-                selectedFileName.textContent = '';
-            }
+    const getToken = () => document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+    const loaiBaoCao = '@Model.LoaiBaoCao';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const selectedFile = document.getElementById('selectedFile');
+        const selectedFileName = document.getElementById('selectedFileName');
+
+        if (!dropzone || !fileInput) return;
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('drag-over');
         });
+
+        dropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext !== 'pdf') {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Chỉ chấp nhận file PDF.', confirmButtonColor: '#484BE0' });
+                fileInput.value = '';
+                selectedFile.classList.remove('show');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: 'File vượt quá 50MB.', confirmButtonColor: '#484BE0' });
+                fileInput.value = '';
+                selectedFile.classList.remove('show');
+                return;
+            }
+
+            selectedFileName.textContent = file.name;
+            selectedFile.classList.add('show');
+
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+        }
+    });
+
+    async function xoaFile() {
+        const result = await Swal.fire({
+            icon: 'warning',
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc muốn xóa file đã nộp?',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#dc2626'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const fd = new FormData();
+            fd.append('loai', loaiBaoCao);
+            fd.append('__RequestVerificationToken', getToken());
+
+            const res = await fetch('@Url.Action("XoaFile", "NopBaoCao", new { area = "SinhVien" })', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getToken() },
+                body: fd
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                await Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false });
+                location.reload();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message, confirmButtonColor: '#484BE0' });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.', confirmButtonColor: '#484BE0' });
+        }
     }
 </script>

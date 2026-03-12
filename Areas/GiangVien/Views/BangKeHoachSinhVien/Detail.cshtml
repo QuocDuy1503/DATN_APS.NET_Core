@@ -1,429 +1,363 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout_GV.cshtml";
-}
+@using X.PagedList.Mvc.Core;
+@using X.PagedList;
+@model BangKeHoachSVDetailViewModel
 @{
-    ViewData["Title"] = "Giảng viên";
+    ViewData["Title"] = "Tiến độ sinh viên";
+    var hasData = Model.DanhSachCongViec != null && Model.DanhSachCongViec.Any();
 }
-<div class="content-body">
+
+<style>
+    .content-body.kh-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .kh-page .content-card {
+        background: #fff; border-radius: 8px; padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+        min-height: calc(100vh - 140px); font-family: inherit;
+    }
+    .page-header-row { margin-bottom: 10px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    /* Breadcrumb */
+    .breadcrumb-nav { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f5f5f5; }
+    .breadcrumb { display: flex; align-items: center; list-style: none; padding: 0; margin: 0; font-size: 13px; background: transparent; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: #484BE0; text-decoration: underline; }
+    .breadcrumb-item.active { color: #333; font-weight: 600; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: #ccc; }
+
+    /* Stats cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 14px 12px;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: #484BE0;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    .stat-card.progress-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: #fff;
+    }
+
+    .stat-card.progress-card .stat-value { color: #fff; }
+    .stat-card.progress-card .stat-label { color: rgba(255,255,255,0.85); }
+
+    .progress-large {
+        height: 10px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 6px;
+    }
+
+    .progress-large-fill {
+        height: 100%;
+        background: #fff;
+        border-radius: 5px;
+        transition: width 0.5s;
+    }
+
+    /* Section */
+    .section { margin-bottom: 20px; }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .section-title i { color: #484BE0; }
+
+    /* Member */
+    .member-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .member-tag {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    /* Filter tabs */
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+
+    .filter-tab {
+        padding: 7px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 18px;
+        background: #fff;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-tab:hover { border-color: #484BE0; color: #484BE0; }
+    .filter-tab.active { background: #484BE0; color: #fff; border-color: #484BE0; }
+
+    .filter-tab .count {
+        background: rgba(0,0,0,0.1);
+        padding: 2px 7px;
+        border-radius: 10px;
+        font-size: 10px;
+    }
+
+    .filter-tab.active .count { background: rgba(255,255,255,0.25); }
+
+    /* Table */
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 11px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; }
+    tbody td { padding: 11px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    tbody tr:hover { background: #f9f9f9; }
+    tbody tr.highlight { background: #fffbeb; }
+    td.td-ten { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Status badge */
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+        display: inline-block;
+    }
+
+    .status-completed { background: #16a34a; }
+    .status-running { background: #2563eb; }
+    .status-waiting { background: #f59e0b; }
+    .status-pending { background: #6b7280; }
+
+    /* Action buttons */
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .action-btn:hover { background: #eef2ff; color: #3538b2; }
+
+    .text-center-empty { text-align: center; color: #6b7280; padding: 40px !important; }
+
+    /* Pagination */
+    .pagination-container { display: flex; justify-content: center; margin-top: auto; padding-top: 12px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; font-size: 13px; }
+    .pagination li a:hover { border-color: #484BE0; color: #484BE0; }
+    .pagination li.active span { background: #484BE0; border-color: #484BE0; color: #fff; box-shadow: 0 4px 12px rgba(72, 75, 224, 0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
+
+    @@media (max-width: 992px) {
+        .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @@media (max-width: 768px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+
+<div class="content-body kh-page">
     <div class="content-card">
-        <div class="form-header">
-            <a href="QLDA_Kehoach.html" class="btn-back-circle" title="Quay lại danh sách">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-            <h3 class="form-title">Chi tiết bảng kế hoạch</h3>
+        <div class="page-header-row">
+            <h2 class="page-title">Tiến độ sinh viên</h2>
         </div>
 
-        <div class="topic-box">
-            <div class="topic-grid">
-                <div class="topic-section full-width">
-                    <strong>Tên công việc</strong>
-                    <div class="editable multiline" contenteditable="true">
-                        Nhập tên công việc...
-                    </div>
-                </div>
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Quản lý kế hoạch sinh viên</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.TenDeTai</li>
+            </ol>
+        </nav>
 
-                <div class="topic-section">
-                    <strong>Người thực hiện</strong>
-                    <div class="editable multiline" contenteditable="true">
-                        Nhập tên người thực hiện...
-                    </div>
-                </div>
-
-
-                <div class="topic-section">
-                    <strong>Trạng thái</strong>
-                    <ul>
-                        <select class="status-select" style="width: 150px;">
-                            <option value="todo">Chưa thực hiện</option>
-                            <option value="doing">Đang thực hiện</option>
-                            <option value="wait">Chờ giảng viên duyệt</option>
-                            <option value="done">Đã duyệt</option>
-
-                        </select>
-
-                    </ul>
-                </div>
-
-                <div class="topic-section">
-                    <strong>Ngày kết thúc ước tính</strong>
-                    <input type="date" class="form-input">
-                </div>
-
-                <div class="topic-section">
-                    <strong>Ngày kết thúc thực tế</strong>
-                    <input type="date" class="form-input">
-                </div>
-
-                <div class="topic-section full-width">
-                    <strong>Mô tả</strong>
-                    <div class="editable multiline" contenteditable="true">
-                        Nhập mô tả công việc...
-                    </div>
-                </div>
-                <div class="topic-section full-width">
-                    <strong>File minh chứng</strong>
-                    <input type="file" class="form-input file-input">
-                </div>
-                <div class="btn-wrapper-right">
-                    <button class="btn-confirm btn-small">Xác nhận</button>
-                </div>
-
-
-
+        <!-- Stats - 6 boxes -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">@Model.TongCongViec</div>
+                <div class="stat-label">Tổng công việc</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #6b7280;">@Model.ChuaThucHien</div>
+                <div class="stat-label">Chưa thực hiện</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #2563eb;">@Model.DangThucHien</div>
+                <div class="stat-label">Đang thực hiện</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #f59e0b;">@Model.ChoXacNhan</div>
+                <div class="stat-label">Chờ duyệt</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #16a34a;">@Model.DaHoanThanh</div>
+                <div class="stat-label">Đã hoàn thành</div>
+            </div>
+            <div class="stat-card progress-card">
+                <div class="stat-value">@Model.TienDoTongQuat%</div>
+                <div class="stat-label">Tiến độ</div>
+                <div class="progress-large">
+                    <div class="progress-large-fill" style="width: @Model.TienDoTongQuat%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Members -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fa-solid fa-users"></i> Thành viên nhóm
+            </div>
+            <div class="member-grid">
+                @foreach (var sv in Model.DanhSachSinhVien)
+                {
+                    <span class="member-tag">@sv.HoTen</span>
+                }
+            </div>
+        </div>
+
+        <!-- Work list -->
+        <div class="section">
+            <div class="section-title">
+                <i class="fa-solid fa-list-check"></i> Danh sách công việc
+            </div>
+
+            <!-- Filter tabs -->
+            <div class="filter-tabs">
+                <button type="button" class="filter-tab active" onclick="filterTasks('all', this)">
+                    Tất cả <span class="count">@Model.TongCongViec</span>
+                </button>
+                <button type="button" class="filter-tab" onclick="filterTasks('waiting', this)">
+                    <i class="fa-solid fa-clock"></i> Chờ duyệt <span class="count">@Model.ChoXacNhan</span>
+                </button>
+                <button type="button" class="filter-tab" onclick="filterTasks('running', this)">
+                    <i class="fa-solid fa-spinner"></i> Đang thực hiện <span class="count">@Model.DangThucHien</span>
+                </button>
+                <button type="button" class="filter-tab" onclick="filterTasks('completed', this)">
+                    <i class="fa-solid fa-check"></i> Đã hoàn thành <span class="count">@Model.DaHoanThanh</span>
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <div class="table-scroll">
+                    <table id="taskTable">
+                        <thead>
+                            <tr>
+                                <th style="width:45px;">STT</th>
+                                <th>Tên công việc</th>
+                                <th style="width:140px;">Người thực hiện</th>
+                                <th style="width:95px; text-align:center;">Ngày bắt đầu</th>
+                                <th style="width:95px; text-align:center;">Ngày kết thúc</th>
+                                <th style="width:95px; text-align:center;">BĐ thực tế</th>
+                                <th style="width:95px; text-align:center;">KT thực tế</th>
+                                <th style="width:95px; text-align:center;">Trạng thái</th>
+                                <th style="width:70px; text-align:center;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (hasData)
+                            {
+                                foreach (var cv in Model.DanhSachCongViec)
+                                {
+                                    var rowClass = cv.CanDuyet ? "highlight" : "";
+                                    var dataStatus = cv.StatusCss?.Replace("status-", "") ?? "pending";
+                                    <tr class="@rowClass" data-status="@dataStatus">
+                                        <td>@cv.Stt</td>
+                                        <td class="td-ten" title="@cv.TenCongViec"><strong>@cv.TenCongViec</strong></td>
+                                        <td>@cv.NguoiThucHien</td>
+                                        <td style="text-align:center;">@cv.NgayBatDau</td>
+                                        <td style="text-align:center;">@cv.NgayKetThuc</td>
+                                        <td style="text-align:center;">@(cv.NgayBDThucTe ?? "---")</td>
+                                        <td style="text-align:center;">@(cv.NgayKTThucTe ?? "---")</td>
+                                        <td style="text-align:center;">
+                                            <span class="status-badge @cv.StatusCss">@cv.StatusText</span>
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <a asp-action="DetailTask" asp-route-id="@cv.Id" class="action-btn" title="Xem chi tiết">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center-empty">
+                                        <i class="fa-solid fa-inbox" style="font-size: 28px; margin-bottom: 10px; display: block;"></i>
+                                        Chưa có công việc nào được tạo.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @if (hasData && Model.DanhSachCongViec!.PageCount > 1)
+            {
+                <div class="pagination-container">
+                    @Html.PagedListPager(Model.DanhSachCongViec!, p => Url.Action("Detail", new { id = Model.IdDeTai, page = p }),
+                        new PagedListRenderOptions
+                        {
+                            LiElementClasses = new string[] { "page-item" },
+                            PageClasses = new string[] { "page-link" },
+                            DisplayLinkToPreviousPage = PagedListDisplayMode.Always,
+                            DisplayLinkToNextPage = PagedListDisplayMode.Always,
+                            LinkToPreviousPageFormat = "«",
+                            LinkToNextPageFormat = "»",
+                            EllipsesFormat = "...",
+                            MaximumPageNumbersToDisplay = 5
+                        })
+                </div>
+            }
         </div>
     </div>
 </div>
-<style>
-        .topic-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr); /* 2 cột */
-        gap: 16px;
-    }
-    .editable {
-        padding: 6px 8px;
-        border: 1px dashed #b0b0b0;
-        border-radius: 6px;
-        min-height: 32px;
-        font-size: 13px;
-        color: #374151;
-        cursor: text;
-    }
 
-    .editable:focus {
-        outline: none;
-        border-color: #2563eb;
-        background: #ffffff;
-    }
+<script>
+    function filterTasks(status, btn) {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
 
-    .editable.multiline {
-        min-height: 60px;
+        document.querySelectorAll('#taskTable tbody tr').forEach(row => {
+            if (status === 'all') {
+                row.style.display = '';
+            } else {
+                const rowStatus = row.getAttribute('data-status');
+                row.style.display = rowStatus === status ? '' : 'none';
+            }
+        });
     }
-    .form-input {
-        width: 100%;
-        height: 34px;
-        padding: 6px 8px;
-        font-size: 13px;
-        border-radius: 6px;
-        border: 1px solid #b0b0b0;
-        color: #474747;
-    }
-
-    .form-input:focus {
-        outline: none;
-        border-color: #2563eb;
-        background: #f9fafb;
-    }
-    .file-input {
-        padding: 4px;
-        font-size: 13px;
-        border: 1px dashed #d1d5db;
-        border-radius: 6px;
-        background: #f9fafb;
-        cursor: pointer;
-    }
-
-    .file-input:hover {
-        border-color: #2563eb;
-    }
-
-    /* Container */
-    .topic-section ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    /* Select trạng thái */
-    .status-select {
-        width: 150px;
-        height: 34px;
-        padding: 4px 8px;
-        font-size: 13px;
-        border-radius: 6px;
-        border: 1px solid #d1d5db;
-        background-color: #ffffff;
-        color: #374151;
-        cursor: pointer;
-    }
-
-    /* Focus */
-    .status-select:focus {
-        outline: none;
-        border-color: #2563eb;
-        background: #ffffff;
-    }
-    .btn-confirm {
-        padding: 8px 16px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #ffffff;
-
-        background-color: #2563eb;   /* xanh */
-        border: none;
-        border-radius: 6px;
-
-        cursor: pointer;
-    }
-
-    /* Hover */
-    .btn-confirm:hover {
-        background-color: #2563eb;
-    }
-
-    /* Active */
-    .btn-confirm:active {
-        background-color: #2b3ddd;
-    }
-    /* Form đang dùng grid 2 cột */
-    .topic-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    /* Wrapper của nút */
-    .btn-wrapper-right {
-        grid-column: 1 / -1;      /* ⬅️ CHIẾM CẢ HÀNG GRID */
-        display: flex;
-        justify-content: flex-end;/* ⬅️ ÉP SÁT PHẢI */
-        margin-top: 12px;
-    }
-
-    /* Nút */
-    .btn-confirm {
-        background-color: #2563eb;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .btn-confirm.btn-small {
-        width: auto !important;
-        min-width: 120px;
-        height: 38px;
-        padding: 8px 18px;
-    }
-
-
-
-    /* Disable (khi không cho xác nhận) */
-    .btn-confirm:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-    }
-    /* Ô chiếm full hàng */
-    .full-width {
-        grid-column: 1 / -1; /* chiếm toàn bộ grid */
-    }
-
-    /* File input full width */
-    .file-input {
-        width: 100%;
-        height: 38px;
-        padding: 6px;
-        border: 1px dashed #d1d5db;
-        border-radius: 6px;
-        background: #ffffff;
-        cursor: pointer;
-    }
-    .form-header {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .btn-back-circle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        background-color: #f3f4f6;
-        color: #555;
-        border-radius: 50%;
-        text-decoration: none;
-        transition: 0.2s;
-        font-size: 14px;
-    }
-
-    .btn-back-circle:hover {
-        background-color: #e5e7eb;
-        color: var(--primary-red);
-        transform: translateX(-2px);
-    }
-
-        .filter-wrapper {
-        display: flex;
-        gap: 20px;
-        align-items: flex-end;
-        flex-wrap: wrap;
-        align-items: flex-end;
-    }
-
-    .filter-item {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .filter-item label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #555;
-    }
-
-    .filter-item select {
-        padding: 8px 12px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 13px;
-        min-width: 200px;
-        background-color: white;
-        cursor: pointer;
-    }
-
-    .filter-item select:focus {
-        border-color: var(--primary-red);
-        outline: none;
-    }
-    .status-text {
-        font-weight: 600;
-    }
-    .status-approved { color: #1e7e34; }
-    .status-rejected { color: #dc3545; }
-    .status-pending { color: #856404; }
-
-    .link-detail {
-        color: #007bff;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 13px;
-    }
-    .link-detail:hover {
-        text-decoration: underline;
-    }
-    /* ===== TOPIC BOX (DỌC) ===== */
-    .topic-box {
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 16px 18px;
-        margin-bottom: 20px;
-        border: 1px solid #e5e7eb;
-    }
-
-    /* Tiêu đề đề tài */
-    .topic-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: #111827;
-        line-height: 1.4;
-        margin-bottom: 12px;
-
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    /* Badge số lượng */
-    .topic-title .count {
-        font-size: 13px;
-        font-weight: 500;
-        color: #374151;
-        background: #f3f4f6;
-        padding: 4px 10px;
-        border-radius: 6px;
-        white-space: nowrap;
-    }
-
-    /* BỎ GRID → CHUYỂN DỌC */
-    .topic-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    /* Mỗi khối thông tin */
-    .topic-section {
-        background: #f9fafb;
-        border-radius: 8px;
-        padding: 12px 14px;
-        border: 1px solid #e5e7eb;
-    }
-
-    /* Tiêu đề từng khối */
-    .topic-section strong {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 6px;
-    }
-
-    /* Danh sách */
-    .topic-section ul {
-        margin: 0;
-        padding-left: 18px;
-    }
-
-    .topic-section li {
-        font-size: 13px;
-        color: #374151;
-        line-height: 1.5;
-    }
-
-    /* ===== BUTTON ACTION ===== */
-    .icon-btn {
-        width: 34px;
-        height: 34px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-
-        display: inline-flex;
-        align-items: center;
-
-        font-size: 14px;
-        color: #ffffff; /* ICON KHÔNG MÀU */
-        margin-right: 6px;
-    }
-
-    /* Đồng ý */
-    .icon-btn.approve {
-        background-color: #22c55e;
-    }
-
-    /* Từ chối */
-    .icon-btn.reject {
-        background-color: #ef4444;
-    }
-
-    /* Hover */
-    .icon-btn:hover {
-        opacity: 0.85;
-    }
-
-    /* Disable (sau khi duyệt) */
-    .icon-btn:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-    }
-    /* Icon xem kết quả học tập */
-    .view-score i {
-        font-size: 20px;          /* TO HƠN */
-        color: #6b7280;           /* XÁM */
-        cursor: pointer;
-    }
-
-    /* Hover (nên có) */
-    .view-score i:hover {
-        color: #374151;
-    }
-
-</style>
+</script>

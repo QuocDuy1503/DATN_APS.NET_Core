@@ -138,33 +138,6 @@ namespace DATN_TMS.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(int id)
-        {
-            var userId = await GetCurrentUserId();
-            if (userId == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var notif = await _context.ThongBaos
-                .FirstOrDefaultAsync(tb => tb.Id == id && tb.IdNguoiNhan == userId);
-
-            if (notif == null)
-            {
-                TempData["ErrorMessage"] = "Không tìm th?y thông báo.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (notif.TrangThaiXem != true)
-            {
-                notif.TrangThaiXem = true;
-                await _context.SaveChangesAsync();
-            }
-
-            return View(notif);
-        }
-
-        [HttpGet]
         public async Task<IActionResult> Open(int id)
         {
             var userId = await GetCurrentUserId();

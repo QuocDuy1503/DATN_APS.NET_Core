@@ -7,88 +7,249 @@
 }
 
 <style>
-    .content-body.kh-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
-    .kh-page .content-card {
-        background: #fff; border-radius: 8px; padding: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); font-family: inherit;
-    }
-    .form-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-    .btn-back-circle {
-        display: flex; align-items: center; justify-content: center;
-        width: 36px; height: 36px; background: #f3f4f6; color: #555;
-        border-radius: 50%; text-decoration: none; transition: 0.2s; font-size: 14px;
-    }
-    .btn-back-circle:hover { background: #e5e7eb; color: #484BE0; transform: translateX(-2px); }
-    .form-title { font-size: 18px; font-weight: 700; color: #1f2937; margin: 0; }
+    :root { --primary: #484BE0; }
 
+    .content-body.kh-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+
+    .kh-page .content-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 140px);
+    }
+
+    /* Header */
+    .page-header-row { margin-bottom: 10px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    /* Breadcrumb */
+    .breadcrumb-nav { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f5f5f5; }
+    .breadcrumb { display: flex; align-items: center; list-style: none; padding: 0; margin: 0; font-size: 13px; background: transparent; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: var(--primary); text-decoration: underline; }
+    .breadcrumb-item.active { color: #333; font-weight: 600; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: #ccc; }
+
+    /* Meta card */
     .meta-card {
-        background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 8px;
-        padding: 12px 18px; margin-bottom: 24px;
-        display: flex; gap: 24px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #333;
+        background: #f0f4ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: #333;
     }
     .meta-card strong { color: #1e3a5f; }
 
-    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #fff; display: inline-block; }
+    /* Status badges */
+    .status-badge { padding: 5px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; display: inline-block; }
     .status-pending { background: #6b7280; }
     .status-running { background: #2563eb; }
-    .status-waiting { background: #f59e0b; }
     .status-completed { background: #16a34a; }
 
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .detail-item { margin-bottom: 0; }
-    .detail-item.full-width { grid-column: 1 / -1; }
-    .detail-label { display: block; font-weight: 600; color: #444; margin-bottom: 6px; font-size: 13px; }
-    .detail-input {
-        width: 100%; padding: 9px 14px; border: 1px solid #d1d5db; border-radius: 6px;
-        background: #fff; color: #333; font-size: 13px; box-sizing: border-box;
-    }
-    .detail-input:read-only, .detail-input[disabled] { background: #f9fafb; color: #555; }
-    .detail-input:focus { border-color: #484BE0; outline: none; box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
-    textarea.detail-input { resize: vertical; min-height: 80px; }
-    select.detail-input { height: 38px; }
+    /* Form Layout */
+    .form-container { display: flex; flex-direction: column; gap: 20px; }
+    
+    .form-row { display: flex; gap: 16px; }
+    .form-row .col-2-3 { flex: 2; }
+    .form-row .col-1-3 { flex: 1; }
+    .form-row .col-1-2 { flex: 1; }
 
-    .section-divider {
-        margin: 28px 0 20px; padding-top: 20px; border-top: 1px solid #eee;
-        font-size: 15px; font-weight: 700; color: #1f2937;
-        display: flex; align-items: center; gap: 8px;
+    .form-group { margin-bottom: 0; }
+    
+    .form-label { 
+        display: block;
+        font-size: 13px; 
+        font-weight: 600;
+        color: #444; 
+        margin-bottom: 6px; 
     }
-    .section-divider i { color: #484BE0; }
 
-    .file-link { color: #2563eb; text-decoration: none; font-weight: 500; }
-    .file-link:hover { text-decoration: underline; }
-    .file-upload-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .file-upload-row input[type="file"] { font-size: 13px; }
-
-    .btn-primary-sm {
-        padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
-        border: none; background: #484BE0; color: #fff; transition: 0.15s;
-        display: inline-flex; align-items: center; gap: 6px;
+    .form-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #fff;
+        color: #333;
+        font-size: 13px;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.2s;
     }
-    .btn-primary-sm:hover { background: #3538b2; }
-    .btn-primary-sm:disabled { background: #9ca3af; cursor: not-allowed; }
+    .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
+    .form-input:read-only, .form-input:disabled { background: #f9fafb; color: #555; }
+    .form-input::placeholder { color: #9ca3af; }
 
-    .nhanxet-box {
-        padding: 14px 18px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px;
-        font-size: 13px; color: #333; white-space: pre-wrap; min-height: 60px;
+    textarea.form-input { resize: vertical; min-height: 80px; line-height: 1.5; }
+    select.form-input { cursor: pointer; height: 42px; }
+
+    /* Date grid */
+    .date-grid-wrapper { display: flex; gap: 16px; }
+    .date-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .ghi-chu-box { flex: 1; }
+
+    /* Section divider */
+    .section-divider { margin: 8px 0 16px; padding-top: 16px; border-top: 1px solid #eee; }
+
+    /* Bottom section */
+    .bottom-section { display: flex; gap: 16px; }
+    .bottom-section .col-1-2 { flex: 1; }
+
+    .content-box {
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 16px;
+        min-height: 140px;
+        background: #fff;
     }
+
+    .box-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .box-title i { color: var(--primary); }
+
+    .nhanxet-content { font-size: 13px; color: #333; white-space: pre-wrap; line-height: 1.6; }
     .nhanxet-empty { color: #9ca3af; font-style: italic; }
 
-    .suggest-list-detail { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #d1d5db; border-top: none; border-radius: 0 0 6px 6px; max-height: 160px; overflow-y: auto; z-index: 10; display: none; }
-    .suggest-list-detail.active { display: block; }
-    .suggest-item-d { padding: 8px 12px; font-size: 13px; cursor: pointer; }
-    .suggest-item-d:hover { background: #f0f4ff; }
+    /* Buttons */
+    .btn-row { margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; }
 
-    .btn-row { margin-top: 24px; display: flex; gap: 12px; }
+    .btn-primary-sm {
+        padding: 10px 28px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid #333;
+        background: #fff;
+        color: #333;
+        transition: 0.15s;
+    }
+    .btn-primary-sm:hover { background: #f3f4f6; }
+
+    /* ========== DRAG & DROP UPLOAD STYLES ========== */
+    .dropzone {
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #fafafa;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .dropzone:hover { border-color: var(--primary); background: #f0f4ff; }
+    .dropzone.drag-over { border-color: var(--primary); background: #e8edff; border-style: solid; }
+    .dropzone.disabled { cursor: not-allowed; opacity: 0.6; }
+    .dropzone.disabled:hover { border-color: #d1d5db; background: #fafafa; }
+
+    .dropzone-icon { font-size: 32px; color: #9ca3af; margin-bottom: 4px; }
+    .dropzone-text { font-size: 13px; color: #6b7280; }
+    .dropzone-text strong { color: var(--primary); }
+    .dropzone-hint { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+
+    .file-input-hidden { display: none; }
+
+    /* File list */
+    .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    
+    .file-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 13px;
+    }
+    .file-item.uploading { background: #fffbeb; border-color: #fcd34d; }
+    .file-item.success { background: #f0fdf4; border-color: #86efac; }
+    .file-item.error { background: #fef2f2; border-color: #fca5a5; }
+
+    .file-icon { font-size: 20px; flex-shrink: 0; }
+    .file-icon.pdf { color: #dc2626; }
+    .file-icon.image { color: #2563eb; }
+
+    .file-info { flex: 1; min-width: 0; }
+    .file-name { 
+        font-weight: 500; 
+        color: #333; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
+    }
+    .file-meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+    .file-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .file-btn {
+        padding: 4px 8px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: 0.15s;
+    }
+    .file-btn-view { background: #e0e7ff; color: #4338ca; }
+    .file-btn-view:hover { background: #c7d2fe; }
+    .file-btn-delete { background: #fee2e2; color: #dc2626; }
+    .file-btn-delete:hover { background: #fecaca; }
+
+    .upload-progress {
+        width: 100%;
+        height: 4px;
+        background: #e5e7eb;
+        border-radius: 2px;
+        margin-top: 6px;
+        overflow: hidden;
+    }
+    .upload-progress-bar {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    /* Image preview */
+    .file-preview-img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+        flex-shrink: 0;
+    }
 </style>
 
 <div class="content-body kh-page">
     <div class="content-card">
-        <div class="form-header">
-            <a asp-action="Index" class="btn-back-circle" title="Quay lại danh sách">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-            <h3 class="form-title">Chi tiết kế hoạch công việc</h3>
+        <div class="page-header-row">
+            <h2 class="page-title">Chi tiết kế hoạch công việc</h2>
         </div>
+
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Bảng kế hoạch</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.TenCongViec</li>
+            </ol>
+        </nav>
 
         <div class="meta-card">
             <div><strong>Đợt:</strong> @(Model.TenDot ?? "---")</div>
@@ -99,109 +260,227 @@
             @if (!editable)
             {
                 <div style="margin-left:auto; font-size:12px; color:#6b7280;">
-                    <i class="fa-solid fa-lock"></i> Công việc đã được duyệt — chỉ xem
+                    <i class="fa-solid fa-lock"></i> Công việc đã hoàn thành — chỉ xem
                 </div>
             }
         </div>
 
-        <!-- THÔNG TIN CÔNG VIỆC -->
-        <div class="detail-grid" id="detailForm">
-            <div class="detail-item full-width">
-                <span class="detail-label">Tên công việc</span>
-                <input type="text" class="detail-input" id="dTenCongViec" value="@Model.TenCongViec" @readonlyAttr>
+        <div class="form-container">
+            <!-- Row 1: Tên công việc + Người phụ trách -->
+            <div class="form-row">
+                <div class="col-2-3">
+                    <div class="form-group">
+                        <label class="form-label">Tên công việc</label>
+                        <input type="text" class="form-input" id="dTenCongViec" value="@Model.TenCongViec" @readonlyAttr placeholder="Nhập tên công việc">
+                    </div>
+                </div>
+                <div class="col-1-3">
+                    <div class="form-group">
+                        <label class="form-label">Người phụ trách</label>
+                        @if (editable)
+                        {
+                            <select class="form-input" id="dNguoiPhuTrach">
+                                <option value="">-- Chọn sinh viên --</option>
+                                @foreach (var sv in Model.DanhSachSinhVienDeTai)
+                                {
+                                    var isSelected = Model.NguoiPhuTrach == sv.HoTen || 
+                                                     Model.NguoiPhuTrach == $"{sv.Mssv} - {sv.HoTen}";
+                                    if (isSelected)
+                                    {
+                                        <option value="@sv.HoTen" selected>@sv.HoTen</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@sv.HoTen">@sv.HoTen</option>
+                                    }
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <input type="text" class="form-input" value="@Model.NguoiPhuTrach" readonly>
+                        }
+                    </div>
+                </div>
             </div>
-            <div class="detail-item full-width">
-                <span class="detail-label">Mô tả công việc</span>
-                <textarea class="detail-input" id="dMoTa" @readonlyAttr>@Model.MoTaCongViec</textarea>
-            </div>
-            <div class="detail-item" style="position:relative;">
-                <span class="detail-label">Người phụ trách</span>
-                <input type="text" class="detail-input" id="dNguoiPhuTrach" value="@Model.NguoiPhuTrach" @readonlyAttr autocomplete="off">
-                @if (editable)
-                {
-                    <div class="suggest-list-detail" id="suggestListDetail"></div>
-                }
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Trạng thái</span>
-                @if (editable)
-                {
-                    <select class="detail-input" id="dTrangThai">
-                        <option value="Chưa thực hiện" selected="@(Model.TrangThai == "Chưa thực hiện")">Chưa thực hiện</option>
-                        <option value="Đang thực hiện" selected="@(Model.TrangThai == "Đang thực hiện")">Đang thực hiện</option>
-                        <option value="Chờ GV duyệt" selected="@(Model.TrangThai == "Chờ GV duyệt")">Chờ GV duyệt</option>
-                    </select>
-                }
-                else
-                {
-                    <input type="text" class="detail-input" value="@Model.StatusText" readonly>
-                }
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Ngày bắt đầu (dự kiến)</span>
-                <input type="date" class="detail-input" id="dNgayBD" value="@Model.NgayBatDau" @readonlyAttr>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Ngày kết thúc (dự kiến)</span>
-                <input type="date" class="detail-input" id="dNgayKT" value="@Model.NgayKetThuc" @readonlyAttr>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Ngày bắt đầu thực tế</span>
-                <input type="date" class="detail-input" id="dNgayBDTT" value="@Model.NgayBatDauThucTe" @readonlyAttr>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">Ngày kết thúc thực tế</span>
-                <input type="date" class="detail-input" id="dNgayKTTT" value="@Model.NgayKetThucThucTe" @readonlyAttr>
-            </div>
-        </div>
 
-        <!-- GHI CHÚ SINH VIÊN -->
-        <div class="section-divider"><i class="fa-solid fa-sticky-note"></i> Ghi chú của sinh viên</div>
-        <textarea class="detail-input" id="dGhiChu" style="min-height:80px;" @readonlyAttr>@Model.GhiChu</textarea>
-
-        @if (editable)
-        {
-            <div class="btn-row">
-                <button type="button" class="btn-primary-sm" id="btnSave">
-                    <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
-                </button>
+            <!-- Row 2: Mô tả + Trạng thái -->
+            <div class="form-row">
+                <div class="col-2-3">
+                    <div class="form-group">
+                        <label class="form-label">Mô tả công việc</label>
+                        <textarea class="form-input" id="dMoTa" @readonlyAttr placeholder="Nhập mô tả công việc">@Model.MoTaCongViec</textarea>
+                    </div>
+                </div>
+                <div class="col-1-3">
+                    <div class="form-group">
+                        <label class="form-label">Trạng thái</label>
+                        @if (editable)
+                        {
+                            <select class="form-input" id="dTrangThai">
+                                @{
+                                    var opt1Selected = Model.TrangThai == "Chưa thực hiện";
+                                    var opt2Selected = Model.TrangThai == "Đang thực hiện";
+                                    // "Chờ GV duyệt" từ database hiển thị là "Đã hoàn thành" cho sinh viên
+                                    var opt3Selected = Model.TrangThai == "Đã hoàn thành" || Model.TrangThai == "Chờ GV duyệt";
+                                }
+                                @if (opt1Selected)
+                                {
+                                    <option value="Chưa thực hiện" selected>Chưa thực hiện</option>
+                                }
+                                else
+                                {
+                                    <option value="Chưa thực hiện">Chưa thực hiện</option>
+                                }
+                                @if (opt2Selected)
+                                {
+                                    <option value="Đang thực hiện" selected>Đang thực hiện</option>
+                                }
+                                else
+                                {
+                                    <option value="Đang thực hiện">Đang thực hiện</option>
+                                }
+                                @if (opt3Selected)
+                                {
+                                    <option value="Đã hoàn thành" selected>Đã hoàn thành</option>
+                                }
+                                else
+                                {
+                                    <option value="Đã hoàn thành">Đã hoàn thành</option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <input type="text" class="form-input" value="@Model.StatusText" readonly>
+                        }
+                    </div>
+                </div>
             </div>
-        }
 
-        <!-- NỘP FILE MINH CHỨNG -->
-        <div class="section-divider"><i class="fa-solid fa-paperclip"></i> File minh chứng</div>
-        @if (Model.IdFileMinhChung != null && !string.IsNullOrEmpty(Model.LinkFileMinhChung))
-        {
-            <div style="margin-bottom:12px; font-size:13px;">
-                <a href="@Model.LinkFileMinhChung" class="file-link" target="_blank">
-                    <i class="fa-solid fa-file-arrow-down"></i> @(Model.TenFileMinhChung ?? "Tải file")
-                </a>
+            <!-- Row 3: Date grid + Ghi chú -->
+            <div class="date-grid-wrapper">
+                <div class="date-grid">
+                    <div class="form-group">
+                        <label class="form-label">Ngày bắt đầu</label>
+                        <input type="date" class="form-input" id="dNgayBD" value="@Model.NgayBatDau" @readonlyAttr>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày kết thúc</label>
+                        <input type="date" class="form-input" id="dNgayKT" value="@Model.NgayKetThuc" @readonlyAttr>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày bắt đầu thực tế</label>
+                        <input type="date" class="form-input" id="dNgayBDTT" value="@Model.NgayBatDauThucTe" @readonlyAttr>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ngày kết thúc thực tế</label>
+                        <input type="date" class="form-input" id="dNgayKTTT" value="@Model.NgayKetThucThucTe" @readonlyAttr>
+                    </div>
+                </div>
+                <div class="ghi-chu-box">
+                    <div class="form-group" style="height: 100%; display: flex; flex-direction: column;">
+                        <label class="form-label">Ghi chú</label>
+                        <textarea class="form-input" id="dGhiChu" style="flex: 1;" @readonlyAttr placeholder="Nhập ghi chú">@Model.GhiChu</textarea>
+                    </div>
+                </div>
             </div>
-        }
-        @if (editable)
-        {
-            <div class="file-upload-row">
-                <input type="file" id="fileUpload">
-                <button type="button" class="btn-primary-sm" id="btnUpload">
-                    <i class="fa-solid fa-upload"></i> Nộp file
-                </button>
-            </div>
-        }
-        else if (Model.IdFileMinhChung == null)
-        {
-            <div style="font-size:13px; color:#9ca3af;">Không có file minh chứng.</div>
-        }
 
-        <!-- NHẬN XÉT GIẢNG VIÊN -->
-        <div class="section-divider"><i class="fa-solid fa-comment-dots"></i> Nhận xét của giảng viên hướng dẫn</div>
-        <div class="nhanxet-box">
-            @if (!string.IsNullOrEmpty(Model.NhanXetGiangVien))
+            <!-- Row 4: File minh chứng + Nhận xét giảng viên -->
+            <div class="section-divider"></div>
+            
+            <div class="bottom-section">
+                <div class="col-1-2">
+                    <div class="content-box">
+                        <div class="box-title">
+                            <i class="fa-solid fa-paperclip"></i> File minh chứng
+                            <span style="font-size: 11px; color: #9ca3af; font-weight: 400; margin-left: auto;">
+                                (PDF, JPG, PNG - Tối đa 10MB)
+                            </span>
+                        </div>
+                        
+                        <!-- Dropzone for drag & drop -->
+                        @if (editable)
+                        {
+                            <div class="dropzone" id="dropzone">
+                                <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                                <div class="dropzone-text">
+                                    Kéo thả file vào đây hoặc <strong>nhấn để chọn file</strong>
+                                </div>
+                                <div class="dropzone-hint">Chấp nhận file PDF và hình ảnh (JPG, PNG, GIF, BMP, WEBP)</div>
+                                <input type="file" id="fileInput" class="file-input-hidden" multiple accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp">
+                            </div>
+                        }
+
+                        <!-- File list -->
+                        <div class="file-list" id="fileList">
+                            @foreach (var file in Model.DanhSachFileMinhChung)
+                            {
+                                var isPdf = file.LoaiFile == "PDF";
+                                var iconClass = isPdf ? "fa-file-pdf pdf" : "fa-file-image image";
+                                <div class="file-item success" data-file-id="@file.Id">
+                                    @if (!isPdf && !string.IsNullOrEmpty(file.LinkFile))
+                                    {
+                                        <img src="@file.LinkFile" class="file-preview-img" alt="preview">
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-solid @iconClass file-icon"></i>
+                                    }
+                                    <div class="file-info">
+                                        <div class="file-name">@file.TenFile</div>
+                                        <div class="file-meta">@(file.NgayNop?.ToString("dd/MM/yyyy HH:mm") ?? "---")</div>
+                                    </div>
+                                    <div class="file-actions">
+                                        <a href="@file.LinkFile" target="_blank" class="file-btn file-btn-view">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        @if (editable)
+                                        {
+                                            <button type="button" class="file-btn file-btn-delete" onclick="deleteFile(@file.Id)">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        @if (!Model.DanhSachFileMinhChung.Any() && !editable)
+                        {
+                            <div style="font-size: 13px; color: #9ca3af; text-align: center; padding: 20px;">
+                                Chưa có file minh chứng
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="col-1-2">
+                    <div class="content-box">
+                        <div class="box-title">
+                            <i class="fa-solid fa-comment-dots"></i> Nhận xét của giảng viên
+                        </div>
+                        <div class="nhanxet-content">
+                            @if (!string.IsNullOrEmpty(Model.NhanXetGiangVien))
+                            {
+                                @Model.NhanXetGiangVien
+                            }
+                            else
+                            {
+                                <span class="nhanxet-empty">Chưa có nhận xét từ giảng viên.</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Button row -->
+            @if (editable)
             {
-                @Model.NhanXetGiangVien
-            }
-            else
-            {
-                <span class="nhanxet-empty">Chưa có nhận xét từ giảng viên.</span>
+                <div class="btn-row">
+                    <button type="button" class="btn-primary-sm" id="btnSave">
+                        Lưu
+                    </button>
+                </div>
             }
         </div>
     </div>
@@ -209,82 +488,279 @@
 
 @Html.AntiForgeryToken()
 <script>
-    function getToken() { var el = document.querySelector('input[name="__RequestVerificationToken"]'); return el ? el.value : ''; }
+    const getToken = () => document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+    const keHoachId = @Model.Id;
 
     @if (editable)
     {
-        @:// --- Set selected for dropdown ---
-        @:var selTT = document.getElementById('dTrangThai');
-        @:if (selTT) { selTT.value = '@Model.TrangThai'; }
+        <text>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
 
-        @:// --- Auto-suggest người phụ trách ---
-        @:var inputNPT = document.getElementById('dNguoiPhuTrach');
-        @:var suggestD = document.getElementById('suggestListDetail');
-        @:var sTimeout = null;
-        @:if (inputNPT && suggestD) {
-        @:    inputNPT.addEventListener('input', function () {
-        @:        clearTimeout(sTimeout);
-        @:        var val = this.value;
-        @:        if (val.length < 1) { suggestD.classList.remove('active'); return; }
-        @:        sTimeout = setTimeout(function () {
-        @:            fetch('@Url.Action("TimSinhVien", "QuanLyKeHoach", new { area = "SinhVien" })' + '?keyword=' + encodeURIComponent(val))
-        @:                .then(function (r) { return r.json(); })
-        @:                .then(function (list) {
-        @:                    suggestD.innerHTML = '';
-        @:                    if (!list.length) { suggestD.classList.remove('active'); return; }
-        @:                    list.forEach(function (sv) {
-        @:                        var div = document.createElement('div');
-        @:                        div.className = 'suggest-item-d';
-        @:                        div.textContent = sv.mssv + ' - ' + sv.hoTen;
-        @:                        div.addEventListener('click', function () { inputNPT.value = sv.mssv + ' - ' + sv.hoTen; suggestD.classList.remove('active'); });
-        @:                        suggestD.appendChild(div);
-        @:                    });
-        @:                    suggestD.classList.add('active');
-        @:                });
-        @:        }, 300);
-        @:    });
-        @:    document.addEventListener('click', function (e) { if (!inputNPT.contains(e.target) && !suggestD.contains(e.target)) suggestD.classList.remove('active'); });
-        @:}
+        // ========== DRAG & DROP HANDLERS ==========
+        dropzone.addEventListener('click', () => fileInput.click());
+        
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('drag-over');
+        });
 
-        @:// --- Save ---
-        @:document.getElementById('btnSave').addEventListener('click', function () {
-        @:    var body = 'id=@Model.Id'
-        @:        + '&tenCongViec=' + encodeURIComponent(document.getElementById('dTenCongViec').value)
-        @:        + '&moTaCongViec=' + encodeURIComponent(document.getElementById('dMoTa').value)
-        @:        + '&nguoiPhuTrach=' + encodeURIComponent(document.getElementById('dNguoiPhuTrach').value)
-        @:        + '&ngayBatDau=' + encodeURIComponent(document.getElementById('dNgayBD').value)
-        @:        + '&ngayKetThuc=' + encodeURIComponent(document.getElementById('dNgayKT').value)
-        @:        + '&ngayBatDauThucTe=' + encodeURIComponent(document.getElementById('dNgayBDTT').value)
-        @:        + '&ngayKetThucThucTe=' + encodeURIComponent(document.getElementById('dNgayKTTT').value)
-        @:        + '&trangThai=' + encodeURIComponent(document.getElementById('dTrangThai').value)
-        @:        + '&ghiChu=' + encodeURIComponent(document.getElementById('dGhiChu').value)
-        @:        + '&__RequestVerificationToken=' + encodeURIComponent(getToken());
-        @:    fetch('@Url.Action("Update", "QuanLyKeHoach", new { area = "SinhVien" })', {
-        @:        method: 'POST',
-        @:        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': getToken() },
-        @:        body: body
-        @:    }).then(function (r) { return r.json(); }).then(function (data) {
-        @:        if (data.success) Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false }).then(function () { location.reload(); });
-        @:        else Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
-        @:    }).catch(function () { Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' }); });
-        @:});
+        dropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+        });
 
-        @:// --- Upload file ---
-        @:document.getElementById('btnUpload').addEventListener('click', function () {
-        @:    var fileInput = document.getElementById('fileUpload');
-        @:    if (!fileInput.files.length) { Swal.fire({ icon: 'warning', title: 'Thiếu file', text: 'Vui lòng chọn file.' }); return; }
-        @:    var fd = new FormData();
-        @:    fd.append('id', '@Model.Id');
-        @:    fd.append('file', fileInput.files[0]);
-        @:    fd.append('__RequestVerificationToken', getToken());
-        @:    fetch('@Url.Action("UploadFile", "QuanLyKeHoach", new { area = "SinhVien" })', {
-        @:        method: 'POST',
-        @:        headers: { 'RequestVerificationToken': getToken() },
-        @:        body: fd
-        @:    }).then(function (r) { return r.json(); }).then(function (data) {
-        @:        if (data.success) Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false }).then(function () { location.reload(); });
-        @:        else Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
-        @:    }).catch(function () { Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' }); });
-        @:});
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFiles(e.target.files);
+            }
+        });
+
+        // ========== FILE HANDLING ==========
+        async function handleFiles(files) {
+            const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+            const maxSize = 10 * 1024 * 1024; // 10MB
+
+            const validFiles = [];
+            for (const file of files) {
+                const ext = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedExtensions.includes(ext)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File không hợp lệ',
+                        text: `File "${file.name}" không được hỗ trợ. Chỉ chấp nhận PDF và hình ảnh.`
+                    });
+                    continue;
+                }
+
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File quá lớn',
+                        text: `File "${file.name}" vượt quá 10MB.`
+                    });
+                    continue;
+                }
+
+                validFiles.push(file);
+            }
+
+            if (validFiles.length === 0) return;
+
+            // Upload files
+            await uploadFiles(validFiles);
+        }
+
+        async function uploadFiles(files) {
+            const fd = new FormData();
+            fd.append('id', keHoachId);
+            for (const file of files) {
+                fd.append('files', file);
+            }
+            fd.append('__RequestVerificationToken', getToken());
+
+            // Show uploading state
+            const tempItems = [];
+            for (const file of files) {
+                const tempId = 'temp-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                const isPdf = file.name.toLowerCase().endsWith('.pdf');
+                const iconClass = isPdf ? 'fa-file-pdf pdf' : 'fa-file-image image';
+
+                const itemHtml = `
+                    <div class="file-item uploading" id="${tempId}">
+                        <i class="fa-solid ${iconClass} file-icon"></i>
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-meta">Đang tải lên...</div>
+                            <div class="upload-progress">
+                                <div class="upload-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                fileList.insertAdjacentHTML('beforeend', itemHtml);
+                tempItems.push(tempId);
+            }
+
+            try {
+                const res = await fetch('@Url.Action("UploadFiles", "QuanLyKeHoach", new { area = "SinhVien" })', {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': getToken() },
+                    body: fd
+                });
+                const data = await res.json();
+
+                // Remove temp items
+                tempItems.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.remove();
+                });
+
+                if (data.success) {
+                    // Add uploaded files to list
+                    data.files.forEach(file => {
+                        addFileToList(file);
+                    });
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+                }
+            } catch (err) {
+                // Remove temp items on error
+                tempItems.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.remove();
+                });
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra khi tải file.' });
+            }
+
+            // Reset file input
+            fileInput.value = '';
+        }
+
+        function addFileToList(file) {
+            const isPdf = file.loaiFile === 'PDF';
+            const iconClass = isPdf ? 'fa-file-pdf pdf' : 'fa-file-image image';
+            
+            let previewHtml = '';
+            if (!isPdf) {
+                previewHtml = `<img src="${file.linkFile}" class="file-preview-img" alt="preview">`;
+            } else {
+                previewHtml = `<i class="fa-solid ${iconClass} file-icon"></i>`;
+            }
+
+            const itemHtml = `
+                <div class="file-item success" data-file-id="${file.id}">
+                    ${previewHtml}
+                    <div class="file-info">
+                        <div class="file-name">${file.tenFile}</div>
+                        <div class="file-meta">Vừa nộp</div>
+                    </div>
+                    <div class="file-actions">
+                        <a href="${file.linkFile}" target="_blank" class="file-btn file-btn-view">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                        <button type="button" class="file-btn file-btn-delete" onclick="deleteFile(${file.id})">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            fileList.insertAdjacentHTML('beforeend', itemHtml);
+        }
+
+        // ========== SAVE HANDLER ==========
+        document.getElementById('btnSave')?.addEventListener('click', async () => {
+            const trangThai = document.getElementById('dTrangThai').value;
+            const hasFiles = document.querySelectorAll('.file-item.success').length > 0;
+
+            // Check constraint: Đã hoàn thành requires files
+            if (trangThai === 'Đã hoàn thành' && !hasFiles) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Thiếu minh chứng',
+                    text: 'Vui lòng nộp file minh chứng trước khi đánh dấu hoàn thành.'
+                });
+                return;
+            }
+
+            const body = new URLSearchParams({
+                id: keHoachId,
+                tenCongViec: document.getElementById('dTenCongViec').value,
+                moTaCongViec: document.getElementById('dMoTa').value,
+                nguoiPhuTrach: document.getElementById('dNguoiPhuTrach').value,
+                ngayBatDau: document.getElementById('dNgayBD').value,
+                ngayKetThuc: document.getElementById('dNgayKT').value,
+                ngayBatDauThucTe: document.getElementById('dNgayBDTT').value,
+                ngayKetThucThucTe: document.getElementById('dNgayKTTT').value,
+                trangThai: trangThai,
+                ghiChu: document.getElementById('dGhiChu').value,
+                __RequestVerificationToken: getToken()
+            });
+
+            try {
+                const res = await fetch('@Url.Action("Update", "QuanLyKeHoach", new { area = "SinhVien" })', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': getToken() },
+                    body: body.toString()
+                });
+                const data = await res.json();
+                if (data.success) {
+                    await Swal.fire({ icon: 'success', title: 'Thành công', text: data.message, timer: 1500, showConfirmButton: false });
+                    location.reload();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+                }
+            } catch {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' });
+            }
+        });
+    });
+
+    // ========== DELETE FILE FUNCTION ==========
+    async function deleteFile(fileId) {
+        const result = await Swal.fire({
+            icon: 'question',
+            title: 'Xác nhận xóa',
+            text: 'Bạn có chắc muốn xóa file này?',
+            showCancelButton: true,
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+            confirmButtonColor: '#dc2626'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const fd = new FormData();
+            fd.append('fileId', fileId);
+            fd.append('__RequestVerificationToken', getToken());
+
+            const res = await fetch('@Url.Action("DeleteFile", "QuanLyKeHoach", new { area = "SinhVien" })', {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getToken() },
+                body: fd
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                const fileItem = document.querySelector(`[data-file-id="${fileId}"]`);
+                if (fileItem) fileItem.remove();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Đã xóa',
+                    text: data.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Lỗi', text: data.message });
+            }
+        } catch {
+            Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Có lỗi xảy ra.' });
+        }
+    }
+        </text>
     }
 </script>

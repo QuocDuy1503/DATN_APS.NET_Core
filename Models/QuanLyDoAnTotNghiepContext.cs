@@ -51,6 +51,8 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
 
     public virtual DbSet<KeHoachCongViec> KeHoachCongViecs { get; set; }
 
+    public virtual DbSet<FileMinhChungKeHoach> FileMinhChungKeHoachs { get; set; }
+
     public virtual DbSet<KetQuaBaoVeSinhVien> KetQuaBaoVeSinhViens { get; set; }
 
     public virtual DbSet<KetQuaHocTap> KetQuaHocTaps { get; set; }

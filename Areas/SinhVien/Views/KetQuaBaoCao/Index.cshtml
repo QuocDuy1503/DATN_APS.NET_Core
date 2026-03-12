@@ -4,6 +4,8 @@
 }
 
 <style>
+    :root { --primary: #484BE0; }
+
     .content-card {
         background-color: #fff;
         border-radius: 8px;
@@ -19,23 +21,38 @@
         text-transform: uppercase;
     }
 
-    .alert-info-box {
-        background: #d1ecf1;
-        padding: 12px 16px;
-        border-radius: 4px;
+    /* Dot info - thống nhất với NopBaoCao */
+    .dot-info {
+        background: #f0f4ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        padding: 14px 18px;
         margin-bottom: 20px;
-        color: #0c5460;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
         font-size: 13px;
+        color: #333;
     }
 
-    .alert-warning-box {
-        background: #fff3cd;
+    .dot-info strong { color: #1e3a5f; }
+    .dot-info i { color: var(--primary); }
+
+    /* Alert boxes */
+    .alert-box {
         padding: 12px 16px;
-        border-radius: 4px;
-        margin-bottom: 20px;
-        color: #856404;
+        border-radius: 8px;
         font-size: 13px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
+
+    .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
 
     .section {
         margin-bottom: 24px;
@@ -47,7 +64,7 @@
         color: #2c3e50;
         margin-bottom: 12px;
         padding-bottom: 8px;
-        border-bottom: 2px solid #484BE0;
+        border-bottom: 2px solid var(--primary);
         display: inline-block;
     }
 
@@ -84,6 +101,42 @@
         color: #333;
         min-height: 36px;
         box-sizing: border-box;
+    }
+
+    /* Summary card */
+    .summary-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 20px;
+        color: #fff;
+        margin-bottom: 24px;
+    }
+
+    .summary-card h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 12px 0;
+        opacity: 0.9;
+    }
+
+    .summary-row {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .summary-item {
+        text-align: center;
+    }
+
+    .summary-value {
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .summary-label {
+        font-size: 12px;
+        opacity: 0.85;
     }
 
     .score-table {
@@ -140,17 +193,10 @@
         display: inline-block;
     }
 
-    .badge-pass {
-        background: #28a745;
-    }
-
-    .badge-fail {
-        background: #dc3545;
-    }
-
-    .badge-none {
-        background: #6b7280;
-    }
+    .badge-pass { background: #28a745; }
+    .badge-fail { background: #dc3545; }
+    .badge-none { background: #6b7280; }
+    .badge-pending { background: #f59e0b; }
 
     .member-list {
         list-style: none;
@@ -171,10 +217,15 @@
     }
 
     .member-role {
-        color: #484BE0;
+        color: var(--primary);
         font-weight: 600;
         min-width: 90px;
     }
+
+    .role-chair { color: #dc2626; }
+    .role-secretary { color: #2563eb; }
+    .role-reviewer { color: #7c3aed; }
+    .role-member { color: #059669; }
 
     .hd-info-grid {
         display: grid;
@@ -217,8 +268,8 @@
 
     .tab-btn.active {
         background: #fff;
-        color: #484BE0;
-        border-color: #484BE0;
+        color: var(--primary);
+        border-color: var(--primary);
         border-bottom: 2px solid #fff;
         margin-bottom: -1px;
         z-index: 1;
@@ -235,20 +286,50 @@
     .tab-content.active {
         display: block;
     }
+
+    @@media (max-width: 768px) {
+        .grid { grid-template-columns: 1fr; }
+        .hd-info-grid { grid-template-columns: 1fr; }
+        .dot-info { flex-direction: column; gap: 10px; align-items: flex-start; }
+    }
 </style>
 
 <div class="content-body">
     <div class="content-card">
         <h2 class="page-title">Kết quả báo cáo hội đồng</h2>
 
-        @if (string.IsNullOrEmpty(Model.MaSinhVien))
+        @if (!Model.CoDot)
         {
-            <div class="alert-warning-box">
-                <i class="fa-solid fa-triangle-exclamation"></i> Không tìm thấy thông tin sinh viên. Vui lòng đăng nhập lại.
+            <div class="alert-box alert-warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>@(Model.ThongBaoDot ?? "Không tìm thấy đợt đồ án đang mở.")</span>
             </div>
         }
         else
         {
+            <!-- Thông tin đợt -->
+            <div class="dot-info">
+                <div>
+                    <i class="fa-solid fa-calendar-days"></i>
+                    <strong>Đợt:</strong> @(Model.TenDot ?? "---")
+                </div>
+                @if (!string.IsNullOrEmpty(Model.HocKi))
+                {
+                    <div>
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <strong>Học kỳ:</strong> @Model.HocKi
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ThoiGianDot))
+                {
+                    <div>
+                        <i class="fa-regular fa-clock"></i>
+                        <span>@Model.ThoiGianDot</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Thông tin sinh viên & đề tài -->
             <div class="section">
                 <div class="grid">
                     <div class="field">
@@ -271,35 +352,91 @@
                         <label>Tên đề tài</label>
                         <div class="value">@(Model.TenDeTai ?? "---")</div>
                     </div>
-                    <div class="field field-full">
-                        <label>Đợt đồ án</label>
-                        <div class="value">@(Model.TenDot ?? "---")</div>
-                    </div>
                 </div>
             </div>
 
-            @if (Model.TenDeTai == null)
+            @if (!Model.CoDeTai)
             {
-                <div class="alert-info-box">
-                    <i class="fa-solid fa-circle-info"></i> Bạn chưa được duyệt đề tài trong đợt hiện tại.
+                <div class="alert-box alert-info">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>@(Model.ThongBaoDot ?? "Bạn chưa được duyệt đề tài trong đợt hiện tại.")</span>
                 </div>
             }
             else
             {
+                <!-- Tổng hợp điểm (nếu có) -->
+                @if (Model.DiemTrungBinhChung.HasValue || Model.CoDiemGVHD || Model.KetQuaBaoVe?.DiemTongKet != null)
+                {
+                    <div class="summary-card">
+                        <h4><i class="fa-solid fa-chart-line"></i> Tổng hợp kết quả</h4>
+                        <div class="summary-row">
+                            @if (Model.DiemTrungBinhChung.HasValue)
+                            {
+                                <div class="summary-item">
+                                    <div class="summary-value">@Model.DiemTrungBinhChung?.ToString("F2")</div>
+                                    <div class="summary-label">Điểm trung bình</div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-value">@(Model.XepLoaiTotNghiep ?? "---")</div>
+                                    <div class="summary-label">Xếp loại</div>
+                                </div>
+                            }
+                            @if (Model.CoDiemGVHD)
+                            {
+                                <div class="summary-item">
+                                    <div class="summary-value">@Model.DiemGVHD?.ToString("F1")</div>
+                                    <div class="summary-label">GVHD (30%)</div>
+                                </div>
+                            }
+                            @if (Model.KetQuaBaoVe?.DiemTongKet != null)
+                            {
+                                <div class="summary-item">
+                                    <div class="summary-value">@Model.KetQuaBaoVe.DiemTongKet?.ToString("F1")</div>
+                                    <div class="summary-label">Hội đồng (70%)</div>
+                                </div>
+                            }
+                        </div>
+                        <div style="margin-top: 10px; font-size: 11px; opacity: 0.8;">
+                            <i class="fa-solid fa-info-circle"></i> 
+                            Công thức: Điểm GVHD × 30% + Điểm Hội đồng bảo vệ × 70%
+                        </div>
+                    </div>
+                }
+
                 <div class="tab-group">
-                    <button type="button" class="tab-btn active" onclick="switchTab('giuaky', this)">
-                        <i class="fa-solid fa-file-lines"></i> Báo cáo Giữa kỳ
+                    <button type="button" class="tab-btn active" onclick="switchTab('gvhd', this)">
+                        <i class="fa-solid fa-user-tie"></i> Điểm GVHD (30%)
                     </button>
-                    <button type="button" class="tab-btn" onclick="switchTab('cuoiky', this)">
-                        <i class="fa-solid fa-file-circle-check"></i> Báo cáo Cuối kỳ
+                    <button type="button" class="tab-btn" onclick="switchTab('hoidong', this)">
+                        <i class="fa-solid fa-users"></i> Hội đồng bảo vệ (70%)
                     </button>
                 </div>
 
-                <div id="tab-giuaky" class="tab-content active">
-                    @{ await Html.RenderPartialAsync("_KetQuaHoiDongSection", Model.KetQuaGiuaKy); }
+                <div id="tab-gvhd" class="tab-content active">
+                    @if (Model.KetQuaGiuaKy != null)
+                    {
+                        await Html.RenderPartialAsync("_KetQuaHoiDongSection", Model.KetQuaGiuaKy);
+                    }
+                    else
+                    {
+                        <div class="alert-box alert-info">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>Chưa có kết quả đánh giá từ GVHD.</span>
+                        </div>
+                    }
                 </div>
-                <div id="tab-cuoiky" class="tab-content">
-                    @{ await Html.RenderPartialAsync("_KetQuaHoiDongSection", Model.KetQuaCuoiKy); }
+                <div id="tab-hoidong" class="tab-content">
+                    @if (Model.KetQuaBaoVe != null)
+                    {
+                        await Html.RenderPartialAsync("_KetQuaHoiDongSection", Model.KetQuaBaoVe);
+                    }
+                    else
+                    {
+                        <div class="alert-box alert-info">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>Chưa có kết quả từ Hội đồng bảo vệ.</span>
+                        </div>
+                    }
                 </div>
             }
         }

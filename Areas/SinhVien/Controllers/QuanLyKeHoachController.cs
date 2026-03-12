@@ -81,8 +81,14 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             vm.TenDeTai = deTai.TenDeTai;
             vm.TenGVHD = deTai.IdGvhdNavigation?.IdNguoiDungNavigation?.HoTen;
 
+            // Lấy danh sách ID sinh viên cùng đề tài để hiển thị kế hoạch chung
+            var dsSinhVienCungDeTai = await GetDanhSachIdSinhVienCungDeTai();
+
+            // Lấy danh sách sinh viên để chọn người phụ trách
+            vm.DanhSachSinhVienDeTai = await GetDanhSachSinhVienCungDeTai();
+
             var keHoachs = await _context.KeHoachCongViecs
-                .Where(k => k.IdSinhVien == sinhVien.IdNguoiDung && k.IdDot == dot.Id)
+                .Where(k => dsSinhVienCungDeTai.Contains(k.IdSinhVien) && k.IdDot == dot.Id)
                 .OrderBy(k => k.Stt).ThenBy(k => k.Id)
                 .ToListAsync();
 
@@ -160,15 +166,22 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             var sinhVien = await GetSinhVienDangNhap();
             if (sinhVien == null) return RedirectToAction("Index");
 
+            // Lấy danh sách ID sinh viên cùng đề tài
+            var dsSinhVienCungDeTai = await GetDanhSachIdSinhVienCungDeTai();
+
             var keHoach = await _context.KeHoachCongViecs
                 .Include(k => k.IdDotNavigation)
-                .Include(k => k.IdFileMinhChungNavigation)
-                .FirstOrDefaultAsync(k => k.Id == id && k.IdSinhVien == sinhVien.IdNguoiDung);
+                .Include(k => k.FileMinhChungs)
+                .FirstOrDefaultAsync(k => k.Id == id && dsSinhVienCungDeTai.Contains(k.IdSinhVien));
 
             if (keHoach == null) return NotFound();
 
             var dsSinhVien = await GetDanhSachSinhVienCungDeTai();
-            var nhanXet = keHoach.IdFileMinhChungNavigation?.NhanXet;
+
+            // Lấy nhận xét GV từ file minh chứng cũ (nếu có)
+            var nhanXet = keHoach.IdFileMinhChung != null 
+                ? (await _context.BaoCaoNops.FindAsync(keHoach.IdFileMinhChung))?.NhanXet 
+                : null;
 
             var vm = new KeHoachDetailViewModel
             {
@@ -186,12 +199,18 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 StatusCss = MapStatusCss(keHoach.TrangThai),
                 GhiChu = keHoach.GhiChu,
                 TenDot = keHoach.IdDotNavigation?.TenDot,
-                IdFileMinhChung = keHoach.IdFileMinhChung,
-                TenFileMinhChung = keHoach.IdFileMinhChungNavigation?.TenBaoCao,
-                LinkFileMinhChung = keHoach.IdFileMinhChungNavigation?.FileBaocao,
                 NhanXetGiangVien = nhanXet,
                 DanhSachSinhVienDeTai = dsSinhVien,
-                IsEditable = keHoach.TrangThai != "Đã duyệt"
+                IsEditable = keHoach.TrangThai != "Đã duyệt",
+                // Danh sách file minh chứng
+                DanhSachFileMinhChung = keHoach.FileMinhChungs.Select(f => new FileMinhChungItem
+                {
+                    Id = f.Id,
+                    TenFile = f.TenFile,
+                    LinkFile = f.DuongDan,
+                    LoaiFile = f.LoaiFile,
+                    NgayNop = f.NgayNop
+                }).ToList()
             };
 
             return View(vm);
@@ -207,22 +226,33 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             var sinhVien = await GetSinhVienDangNhap();
             if (sinhVien == null) return Json(new { success = false, message = "Không tìm thấy sinh viên." });
 
+            // Lấy danh sách ID sinh viên cùng đề tài
+            var dsSinhVienCungDeTai = await GetDanhSachIdSinhVienCungDeTai();
+
             var keHoach = await _context.KeHoachCongViecs
-                .FirstOrDefaultAsync(k => k.Id == id && k.IdSinhVien == sinhVien.IdNguoiDung);
+                .Include(k => k.FileMinhChungs)
+                .FirstOrDefaultAsync(k => k.Id == id && dsSinhVienCungDeTai.Contains(k.IdSinhVien));
             if (keHoach == null) return Json(new { success = false, message = "Không tìm thấy công việc." });
 
             if (keHoach.TrangThai == "Đã duyệt")
                 return Json(new { success = false, message = "Công việc đã được duyệt, không thể chỉnh sửa." });
 
-            // SV không được tự set "Đã duyệt"
-            var allowedStatuses = new[] { "Chưa thực hiện", "Đang thực hiện", "Chờ GV duyệt" };
+            // Sinh viên có thể chọn các trạng thái sau
+            var allowedStatuses = new[] { "Chưa thực hiện", "Đang thực hiện", "Đã hoàn thành" };
             if (!allowedStatuses.Contains(trangThai))
                 return Json(new { success = false, message = "Trạng thái không hợp lệ." });
+
+            // RÀNG BUỘC 1: Chỉ có thể lưu trạng thái "Đã hoàn thành" khi có file minh chứng
+            if (trangThai == "Đã hoàn thành" && !keHoach.FileMinhChungs.Any())
+                return Json(new { success = false, message = "Vui lòng nộp file minh chứng trước khi đánh dấu hoàn thành." });
+
+            // Khi sinh viên chọn "Đã hoàn thành", chuyển thành "Chờ GV duyệt"
+            var trangThaiLuu = trangThai == "Đã hoàn thành" ? "Chờ GV duyệt" : trangThai;
 
             keHoach.TenCongViec = tenCongViec?.Trim();
             keHoach.MoTaCongViec = moTaCongViec?.Trim();
             keHoach.NguoiPhuTrach = nguoiPhuTrach?.Trim();
-            keHoach.TrangThai = trangThai;
+            keHoach.TrangThai = trangThaiLuu;
             keHoach.GhiChu = ghiChu?.Trim();
 
             if (DateOnly.TryParse(ngayBatDau, out var bd)) keHoach.NgayBatDau = bd;
@@ -234,62 +264,124 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             return Json(new { success = true, message = "Cập nhật thành công!" });
         }
 
-        // ============ UPLOAD FILE POST ============
+        // ============ UPLOAD MULTIPLE FILES POST ============
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadFile(int id, IFormFile? file)
+        public async Task<IActionResult> UploadFiles(int id, List<IFormFile>? files)
         {
-            if (file == null || file.Length == 0)
+            if (files == null || !files.Any())
                 return Json(new { success = false, message = "Vui lòng chọn file." });
 
             var sinhVien = await GetSinhVienDangNhap();
             if (sinhVien == null) return Json(new { success = false, message = "Không tìm thấy sinh viên." });
 
+            // Lấy danh sách ID sinh viên cùng đề tài
+            var dsSinhVienCungDeTai = await GetDanhSachIdSinhVienCungDeTai();
+
             var keHoach = await _context.KeHoachCongViecs
-                .FirstOrDefaultAsync(k => k.Id == id && k.IdSinhVien == sinhVien.IdNguoiDung);
+                .FirstOrDefaultAsync(k => k.Id == id && dsSinhVienCungDeTai.Contains(k.IdSinhVien));
             if (keHoach == null) return Json(new { success = false, message = "Không tìm thấy công việc." });
 
             if (keHoach.TrangThai == "Đã duyệt")
                 return Json(new { success = false, message = "Công việc đã duyệt, không thể nộp file." });
 
-            var dot = await GetDotDoAnActive();
-            var svDeTai = await _context.SinhVienDeTais
-                .FirstOrDefaultAsync(svdt => svdt.IdSinhVien == sinhVien.IdNguoiDung &&
-                    svdt.IdDeTaiNavigation!.IdDot == dot!.Id && svdt.TrangThai == "DA_DUYET");
+            // RÀNG BUỘC 2: Validate file types - chỉ cho phép PDF và hình ảnh
+            var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+            var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+
+            foreach (var file in files)
+            {
+                var ext = Path.GetExtension(file.FileName).ToLower();
+                if (!allowedExtensions.Contains(ext))
+                {
+                    return Json(new { success = false, message = $"File '{file.FileName}' không hợp lệ. Chỉ chấp nhận file PDF và hình ảnh (JPG, PNG, GIF, BMP, WEBP)." });
+                }
+            }
 
             var uploadsDir = Path.Combine(_env.WebRootPath, "uploads", "kehoach");
             if (!Directory.Exists(uploadsDir)) Directory.CreateDirectory(uploadsDir);
 
             var mssv = HttpContext.Session.GetString("UserCode");
-            var uniqueName = $"{mssv}_KH{id}_{DateTime.Now:yyyyMMddHHmmss}{Path.GetExtension(file.FileName)}";
-            var filePath = Path.Combine(uploadsDir, uniqueName);
+            var uploadedFiles = new List<object>();
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            foreach (var file in files)
             {
-                await file.CopyToAsync(stream);
+                var ext = Path.GetExtension(file.FileName).ToLower();
+                var loaiFile = ext == ".pdf" ? "PDF" : "IMAGE";
+                var uniqueName = $"{mssv}_KH{id}_{DateTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid():N}{ext}";
+                var filePath = Path.Combine(uploadsDir, uniqueName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                var relativePath = $"/uploads/kehoach/{uniqueName}";
+
+                // Lưu vào bảng FileMinhChung_KeHoach
+                var fileMinhChung = new FileMinhChungKeHoach
+                {
+                    IdKeHoach = keHoach.Id,
+                    IdSinhVien = sinhVien.IdNguoiDung,
+                    TenFile = file.FileName,
+                    DuongDan = relativePath,
+                    LoaiFile = loaiFile,
+                    NgayNop = DateTime.Now
+                };
+                _context.FileMinhChungKeHoachs.Add(fileMinhChung);
+                await _context.SaveChangesAsync();
+
+                uploadedFiles.Add(new
+                {
+                    id = fileMinhChung.Id,
+                    tenFile = file.FileName,
+                    linkFile = relativePath,
+                    loaiFile = loaiFile
+                });
             }
 
-            var relativePath = $"/uploads/kehoach/{uniqueName}";
+            return Json(new { success = true, message = $"Đã nộp {files.Count} file thành công!", files = uploadedFiles });
+        }
 
-            var baoCao = new BaoCaoNop
+        // ============ DELETE FILE POST ============
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFile(int fileId)
+        {
+            var sinhVien = await GetSinhVienDangNhap();
+            if (sinhVien == null) return Json(new { success = false, message = "Không tìm thấy sinh viên." });
+
+            var dsSinhVienCungDeTai = await GetDanhSachIdSinhVienCungDeTai();
+
+            var fileMinhChung = await _context.FileMinhChungKeHoachs
+                .Include(f => f.IdKeHoachNavigation)
+                .FirstOrDefaultAsync(f => f.Id == fileId);
+
+            if (fileMinhChung == null)
+                return Json(new { success = false, message = "Không tìm thấy file." });
+
+            // Kiểm tra quyền truy cập
+            if (fileMinhChung.IdKeHoachNavigation == null || 
+                !dsSinhVienCungDeTai.Contains(fileMinhChung.IdKeHoachNavigation.IdSinhVien))
+                return Json(new { success = false, message = "Bạn không có quyền xóa file này." });
+
+            if (fileMinhChung.IdKeHoachNavigation.TrangThai == "Đã duyệt")
+                return Json(new { success = false, message = "Công việc đã duyệt, không thể xóa file." });
+
+            // Xóa file vật lý
+            if (!string.IsNullOrEmpty(fileMinhChung.DuongDan))
             {
-                IdDot = dot?.Id,
-                IdDeTai = svDeTai?.IdDeTai,
-                IdSinhVien = sinhVien.IdNguoiDung,
-                TenBaoCao = file.FileName,
-                FileBaocao = relativePath,
-                NgayNop = DateTime.Now,
-                TrangThai = "Đã nộp",
-                LoaiBaoCao = "MINH_CHUNG",
-                NgaySuaDoiCuoi = DateTime.Now
-            };
-            _context.BaoCaoNops.Add(baoCao);
+                var physicalPath = Path.Combine(_env.WebRootPath, fileMinhChung.DuongDan.TrimStart('/'));
+                if (System.IO.File.Exists(physicalPath))
+                {
+                    System.IO.File.Delete(physicalPath);
+                }
+            }
+
+            _context.FileMinhChungKeHoachs.Remove(fileMinhChung);
             await _context.SaveChangesAsync();
 
-            keHoach.IdFileMinhChung = baoCao.Id;
-            await _context.SaveChangesAsync();
-
-            return Json(new { success = true, message = "Nộp file minh chứng thành công!" });
+            return Json(new { success = true, message = "Đã xóa file thành công!" });
         }
 
         // ============ API TÌM SINH VIÊN ============
@@ -332,20 +424,57 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
             var dot = await GetDotDoAnActive();
             if (dot == null) return new();
 
+            // Tìm đề tài mà sinh viên đã được duyệt (hỗ trợ cả 2 format trạng thái)
+            // Cần Include IdDeTaiNavigation để truy cập IdDot
             var svDeTai = await _context.SinhVienDeTais
+                .Include(svdt => svdt.IdDeTaiNavigation)
                 .FirstOrDefaultAsync(svdt => svdt.IdSinhVien == sinhVien.IdNguoiDung &&
-                    svdt.IdDeTaiNavigation!.IdDot == dot.Id && svdt.TrangThai == "DA_DUYET");
+                    svdt.IdDeTaiNavigation != null &&
+                    svdt.IdDeTaiNavigation.IdDot == dot.Id && 
+                    (svdt.TrangThai == "DA_DUYET" || svdt.TrangThai == "Đã duyệt"));
             if (svDeTai == null) return new();
 
+            // Lấy tất cả sinh viên cùng đề tài đã được duyệt
             return await _context.SinhVienDeTais
-                .Include(svdt => svdt.IdSinhVienNavigation).ThenInclude(sv => sv!.IdNguoiDungNavigation)
-                .Where(svdt => svdt.IdDeTai == svDeTai.IdDeTai && svdt.TrangThai == "DA_DUYET")
+                .Include(svdt => svdt.IdSinhVienNavigation)
+                    .ThenInclude(sv => sv!.IdNguoiDungNavigation)
+                .Where(svdt => svdt.IdDeTai == svDeTai.IdDeTai && 
+                    (svdt.TrangThai == "DA_DUYET" || svdt.TrangThai == "Đã duyệt"))
                 .Select(svdt => new SinhVienGợiYItem
                 {
                     IdSinhVien = svdt.IdSinhVien ?? 0,
                     Mssv = svdt.IdSinhVienNavigation!.Mssv,
                     HoTen = svdt.IdSinhVienNavigation.IdNguoiDungNavigation!.HoTen
                 })
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Lấy danh sách ID sinh viên cùng đề tài (dùng để query kế hoạch chung)
+        /// </summary>
+        private async Task<List<int>> GetDanhSachIdSinhVienCungDeTai()
+        {
+            var sinhVien = await GetSinhVienDangNhap();
+            if (sinhVien == null) return new();
+
+            var dot = await GetDotDoAnActive();
+            if (dot == null) return new();
+
+            // Tìm đề tài mà sinh viên đã được duyệt
+            var svDeTai = await _context.SinhVienDeTais
+                .Include(svdt => svdt.IdDeTaiNavigation)
+                .FirstOrDefaultAsync(svdt => svdt.IdSinhVien == sinhVien.IdNguoiDung &&
+                    svdt.IdDeTaiNavigation != null &&
+                    svdt.IdDeTaiNavigation.IdDot == dot.Id &&
+                    (svdt.TrangThai == "DA_DUYET" || svdt.TrangThai == "Đã duyệt"));
+            if (svDeTai == null) return new();
+
+            // Lấy tất cả ID sinh viên cùng đề tài đã được duyệt
+            return await _context.SinhVienDeTais
+                .Where(svdt => svdt.IdDeTai == svDeTai.IdDeTai &&
+                    svdt.IdSinhVien != null &&
+                    (svdt.TrangThai == "DA_DUYET" || svdt.TrangThai == "Đã duyệt"))
+                .Select(svdt => svdt.IdSinhVien!.Value)
                 .ToListAsync();
         }
 
@@ -361,7 +490,7 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
         {
             "Chưa thực hiện" => "status-pending",
             "Đang thực hiện" => "status-running",
-            "Chờ GV duyệt" => "status-waiting",
+            "Đã hoàn thành" or "Chờ GV duyệt" => "status-waiting", // Chờ GV duyệt hiển thị màu cam
             "Đã duyệt" => "status-completed",
             _ => "status-pending"
         };
@@ -370,8 +499,8 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
         {
             "Chưa thực hiện" => "Chưa thực hiện",
             "Đang thực hiện" => "Đang thực hiện",
-            "Chờ GV duyệt" => "Chờ GV duyệt",
-            "Đã duyệt" => "Đã duyệt",
+            "Đã hoàn thành" or "Chờ GV duyệt" => "Chờ GV duyệt", // Sinh viên thấy đang chờ duyệt
+            "Đã duyệt" => "Đã Duyệt",
             _ => status ?? "---"
         };
     }

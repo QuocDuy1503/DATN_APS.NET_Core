@@ -13,6 +13,9 @@ namespace DATN_TMS.Areas.SinhVien.Models
         public string? ThongBao { get; set; }
         public string? TrangThaiDeTai { get; set; } // Trạng thái đề tài (CHO_DUYET, DA_DUYET, TU_CHOI)
         public IPagedList<KeHoachItemViewModel>? DanhSachCongViec { get; set; }
+
+        // Danh sách sinh viên cùng đề tài để chọn người phụ trách
+        public List<SinhVienGợiYItem> DanhSachSinhVienDeTai { get; set; } = new();
     }
 
     public class KeHoachItemViewModel
@@ -27,6 +30,7 @@ namespace DATN_TMS.Areas.SinhVien.Models
         public string? StatusCss { get; set; }
         public string? StatusText { get; set; }
     }
+
 
     // === DETAIL ===
     public class KeHoachDetailViewModel
@@ -46,10 +50,8 @@ namespace DATN_TMS.Areas.SinhVien.Models
         public string? GhiChu { get; set; }
         public string? TenDot { get; set; }
 
-        // File minh chứng
-        public int? IdFileMinhChung { get; set; }
-        public string? TenFileMinhChung { get; set; }
-        public string? LinkFileMinhChung { get; set; }
+        // Danh sách file minh chứng (hỗ trợ nhiều file)
+        public List<FileMinhChungItem> DanhSachFileMinhChung { get; set; } = new();
 
         // Nhận xét GV
         public string? NhanXetGiangVien { get; set; }
@@ -58,6 +60,18 @@ namespace DATN_TMS.Areas.SinhVien.Models
         public List<SinhVienGợiYItem> DanhSachSinhVienDeTai { get; set; } = new();
 
         public bool IsEditable { get; set; }
+
+        // Kiểm tra có file minh chứng hay không
+        public bool HasFileMinhChung => DanhSachFileMinhChung.Any();
+    }
+
+    public class FileMinhChungItem
+    {
+        public int Id { get; set; }
+        public string? TenFile { get; set; }
+        public string? LinkFile { get; set; }
+        public string? LoaiFile { get; set; } // PDF, IMAGE
+        public DateTime? NgayNop { get; set; }
     }
 
     // === CREATE ===

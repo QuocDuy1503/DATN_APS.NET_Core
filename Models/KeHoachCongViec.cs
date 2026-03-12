@@ -49,9 +49,16 @@ public partial class KeHoachCongViec
     [Column("id_file_minh_chung")]
     public int? IdFileMinhChung { get; set; }
 
+    [ForeignKey("IdDot")]
     public virtual DotDoAn? IdDotNavigation { get; set; }
 
+    [ForeignKey("IdFileMinhChung")]
     public virtual BaoCaoNop? IdFileMinhChungNavigation { get; set; }
 
+    [ForeignKey("IdSinhVien")]
     public virtual SinhVien? IdSinhVienNavigation { get; set; }
+
+    // Danh sách nhiều file minh chứng
+    [InverseProperty("IdKeHoachNavigation")]
+    public virtual ICollection<FileMinhChungKeHoach> FileMinhChungs { get; set; } = new List<FileMinhChungKeHoach>();
 }

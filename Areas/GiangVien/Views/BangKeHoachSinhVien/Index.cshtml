@@ -1,10 +1,11 @@
-﻿@{
-    ViewData["Title"] = "Bảng kế hoạch sinh viên";
+@model BangKeHoachSVIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý kế hoạch sinh viên";
 }
 
 <style>
-    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
-    .dotdoan-page .content-card {
+    .content-body.kh-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .kh-page .content-card {
         background: #fff; border-radius: 8px; padding: 20px;
         box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;
         min-height: calc(100vh - 140px); font-family: inherit;
@@ -12,102 +13,197 @@
     .page-header-row { margin-bottom: 15px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
-    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
-    .filter-item { display: flex; flex-direction: column; gap: 4px; }
-    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
-    .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
-    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+    .alert-warning-box {
+        background: #fff3cd; padding: 14px 18px; border-radius: 6px;
+        margin-bottom: 20px; color: #856404; font-size: 13px;
+        display: flex; align-items: center; gap: 10px; border: 1px solid #ffecb5;
+    }
+    .alert-warning-box i { font-size: 16px; flex-shrink: 0; }
+
+    .topic-info-bar {
+        background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 8px;
+        padding: 12px 18px; margin-bottom: 20px;
+        display: flex; gap: 24px; align-items: center; flex-wrap: wrap; font-size: 13px; color: #333;
+    }
+    .topic-info-bar strong { color: #1e3a5f; }
 
     .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
-    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px !important; table-layout: fixed; }
-    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    tbody td { padding:12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .table-scroll { flex: 1; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; }
+    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
     tbody tr:hover { background: #f9f9f9; }
+    td.td-ten { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
-    .status-completed { background: #16a34a; }
-    .status-running { background: #2563eb; }
-    .status-waiting { background: #6b7280; }
+    /* Progress bar */
+    .progress-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #2980b9; padding: 4px 6px; border-radius: 4px; transition: 0.15s; }
-    .action-btn:hover { background: #eef2ff; color: #1d4ed8; }
+    .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s;
+    }
+
+    .progress-good .progress-fill { background: #16a34a; }
+    .progress-medium .progress-fill { background: #f59e0b; }
+    .progress-low .progress-fill { background: #dc2626; }
+
+    .progress-text {
+        font-weight: 600;
+        font-size: 12px;
+        min-width: 45px;
+        text-align: right;
+    }
+
+    .progress-good .progress-text { color: #16a34a; }
+    .progress-medium .progress-text { color: #f59e0b; }
+    .progress-low .progress-text { color: #dc2626; }
+
+    /* Badges */
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #fff; display: inline-block; white-space: nowrap; }
+    .badge-primary { background: #e0e7ff; color: #4338ca; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-success { background: #dcfce7; color: #166534; }
+
+    /* Member list */
+    .member-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .member-tag {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+    }
+
+    /* Action button */
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 15px; color: #484BE0; padding: 4px 6px; border-radius: 4px; transition: 0.15s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+    .action-btn:hover { background: #eef2ff; color: #3538b2; }
+
+    .text-center-empty { text-align: center; color: #6b7280; padding: 40px !important; }
 </style>
 
-<div class="content-body dotdoan-page">
+<div class="content-body kh-page">
     <div class="content-card">
         <div class="page-header-row">
-            <h2 class="page-title">Bảng kế hoạch sinh viên</h2>
+            <h2 class="page-title">Quản lý kế hoạch sinh viên</h2>
         </div>
 
-        <div class="toolbar-row">
-            <div class="filter-wrapper">
-                <div class="filter-item">
-                    <span class="filter-label">Năm học</span>
-                    <select class="form-control" style="width: 160px;">
-                        <option value="">-- Tất cả --</option>
-                        <option>2023-2024</option>
-                        <option>2024-2025</option>
-                        <option>2025-2026</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <span class="filter-label">Học kì</span>
-                    <select class="form-control" style="width: 140px;">
-                        <option value="">-- Tất cả --</option>
-                        <option>101</option>
-                        <option>102</option>
-                        <option>103</option>
-                    </select>
-                </div>
+        @if (!Model.CoDot)
+        {
+            <div class="alert-warning-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Không tìm thấy đợt đồ án đang mở.</span>
+            </div>
+        }
+        else
+        {
+            <!-- Thông tin đợt -->
+            <div class="topic-info-bar">
+                <div><strong>Đợt:</strong> @(Model.TenDot ?? "---")</div>
+                @if (!string.IsNullOrEmpty(Model.HocKi))
+                {
+                    <div><strong>Học kỳ:</strong> @Model.HocKi</div>
+                }
             </div>
 
-            <div style="display:flex; align-items:flex-end; gap:10px;">
-                <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                    <span class="filter-label">Tìm kiếm</span>
-                    <input type="text" class="toolbar-input" placeholder="Tên công việc, người thực hiện..." style="width: 250px;" />
+            @if (!Model.DanhSachDeTai.Any())
+            {
+                <div class="alert-warning-box" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Bạn chưa có đề tài nào với sinh viên đã duyệt trong đợt này.</span>
                 </div>
-            </div>
-        </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <div class="table-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:50px;">STT</th>
+                                    <th style="width:100px;">Mã đề tài</th>
+                                    <th style="width:220px;">Tên đề tài</th>
+                                    <th style="width:180px;">Thành viên</th>
+                                    <th style="width:80px; text-align:center;">Công việc</th>
+                                    <th style="width:80px; text-align:center;">Chờ duyệt</th>
+                                    <th style="width:150px;">Tiến độ</th>
+                                    <th style="width:70px; text-align:center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int stt = 0; }
+                                @foreach (var dt in Model.DanhSachDeTai)
+                                {
+                                    stt++;
+                                    <tr>
+                                        <td>@stt</td>
+                                        <td><strong>@dt.MaDeTai</strong></td>
+                                        <td class="td-ten" title="@dt.TenDeTai">@dt.TenDeTai</td>
+                                        <td>
+                                            <div class="member-list">
+                                                @foreach (var sv in dt.DanhSachSinhVien)
+                                                {
+                                                    <span class="member-tag">@sv</span>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <span class="status-badge badge-primary">@dt.SoLuongCongViec</span>
+                                        </td>
+                                        <td style="text-align:center;">
+                                            @if (dt.SoLuongChoXacNhan > 0)
+                                            {
+                                                <span class="status-badge badge-warning">@dt.SoLuongChoXacNhan</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="status-badge badge-success">0</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="progress-wrapper @dt.TienDoCss">
+                                                <div class="progress-bar">
+                                                    <div class="progress-fill" style="width: @dt.TienDo%"></div>
+                                                </div>
+                                                <span class="progress-text">@dt.TienDo%</span>
+                                            </div>
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <a asp-action="Detail" asp-route-id="@dt.IdDeTai" class="action-btn" title="Xem chi tiết">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
 
-        <div class="table-responsive">
-            <div class="table-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:50px;">STT</th>
-                            <th>Tên công việc</th>
-                            <th>Người thực hiện</th>
-                            <th style="text-align:center;">Ngày bắt đầu</th>
-                            <th style="text-align:center;">Ngày kết thúc</th>
-                            <th style="text-align:center;">Ngày BĐ thực tế</th>
-                            <th style="text-align:center;">Ngày KT thực tế</th>
-                            <th style="text-align:center; width:120px;">Trạng thái</th>
-                            <th style="text-align:center; width:80px;">Chi tiết</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Hoàn thiện tích hợp RFID</td>
-                            <td>Lý Văn N</td>
-                            <td style="text-align:center;">01/03/2026</td>
-                            <td style="text-align:center;">15/03/2026</td>
-                            <td style="text-align:center;">02/03/2026</td>
-                            <td style="text-align:center;">14/03/2026</td>
-                            <td style="text-align:center;">
-                                <span class="status-badge status-completed">Đã hoàn thành</span>
-                            </td>
-                            <td style="text-align:center;">
-                                <a class="action-btn" title="Xem chi tiết">
-                                    <i class="fa-solid fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                                @if (!Model.DanhSachDeTai.Any())
+                                {
+                                    <tr>
+                                        <td colspan="8" class="text-center-empty">Chưa có đề tài nào.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        }
     </div>
 </div>

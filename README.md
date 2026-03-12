@@ -1,4 +1,6 @@
-﻿-- 1) Gỡ tất cả khóa ngoại
+﻿
+
+-- 1) Gỡ tất cả khóa ngoại
 DECLARE @sql NVARCHAR(MAX) = N'';
 
 SELECT @sql = @sql + N'
@@ -447,6 +449,18 @@ CREATE TABLE KeHoachCongViec (
     id_file_minh_chung INT NULL,
     FOREIGN KEY (id_sinh_vien) REFERENCES SinhVien(id_nguoi_dung),
     FOREIGN KEY (id_dot) REFERENCES DotDoAn(id)
+);
+
+CREATE TABLE FileMinhChung_KeHoach (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    id_ke_hoach INT NOT NULL,
+    id_sinh_vien INT NULL,
+    ten_file NVARCHAR(255),
+    duong_dan NVARCHAR(500),
+    loai_file NVARCHAR(20),              -- PDF, IMAGE
+    ngay_nop DATETIME,
+    FOREIGN KEY (id_ke_hoach) REFERENCES KeHoachCongViec(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_sinh_vien) REFERENCES SinhVien(id_nguoi_dung)
 );
 
 CREATE TABLE BaoCaoNop (
