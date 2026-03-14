@@ -108,7 +108,8 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 NgayBaoCao = hd.NgayBaoCao,
                 ThoiGianDuKien = hd.ThoiGianDuKien,
                 DiaDiem = hd.DiaDiem ?? "",
-                TrangThai = hd.TrangThai ?? false
+                TrangThai = hd.TrangThai ?? false,
+                TrangThaiDuyet = hd.TrangThaiDuyet ?? "CHO_DUYET"
             });
 
             var pagedList = modelQuery.OrderByDescending(x => x.Id).ToPagedList(pageNumber, pageSize);
@@ -123,7 +124,11 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             public IActionResult CheckGiaiDoanBaoCao(string loaiHoiDong)
             {
                 var today = DateOnly.FromDateTime(DateTime.Today);
-                var dot = _context.DotDoAns.FirstOrDefault(d => d.TrangThai == true);
+                // Lấy đợt đồ án đang hoạt động MỚI NHẤT (theo ID lớn nhất)
+                var dot = _context.DotDoAns
+                    .Where(d => d.TrangThai == true)
+                    .OrderByDescending(d => d.Id)
+                    .FirstOrDefault();
 
                 if (dot == null)
                     return Json(new { allowed = false, message = "Không có đợt đồ án đang hoạt động." });
@@ -131,25 +136,49 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 if (loaiHoiDong == "GIUA_KY")
                 {
                     if (!dot.NgayBatDauBaoCaoGiuaKi.HasValue || !dot.NgayKetThucBaoCaoGiuaKi.HasValue)
-                        return Json(new { allowed = false, message = "Đợt đồ án chưa cấu hình thời gian báo cáo giữa kì." });
+                        return Json(new { allowed = false, message = $"Đợt '{dot.TenDot}' chưa cấu hình thời gian báo cáo giữa kì." });
 
                     if (today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
-                        return Json(new { allowed = false, message = "Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn. Thời gian: " + dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + "." });
+                        return Json(new { 
+                            allowed = false, 
+                            message = $"Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn. Đợt: {dot.TenDot}. Thời gian: " + 
+                                     dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + " - " + 
+                                     dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + "." 
+                        });
+
+                    return Json(new { 
+                        allowed = true,
+                        dotId = dot.Id,
+                        tenDot = dot.TenDot,
+                        ngayBatDau = dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("yyyy-MM-dd"),
+                        ngayKetThuc = dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("yyyy-MM-dd")
+                    });
                 }
                 else if (loaiHoiDong == "CUOI_KY")
                 {
                     if (!dot.NgayBatDauBaoCaoCuoiKi.HasValue || !dot.NgayKetThucBaoCaoCuoiKi.HasValue)
-                        return Json(new { allowed = false, message = "Đợt đồ án chưa cấu hình thời gian báo cáo cuối kì." });
+                        return Json(new { allowed = false, message = $"Đợt '{dot.TenDot}' chưa cấu hình thời gian báo cáo cuối kì." });
 
                     if (today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
-                        return Json(new { allowed = false, message = "Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn. Thời gian: " + dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + "." });
+                        return Json(new { 
+                            allowed = false, 
+                            message = $"Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn. Đợt: {dot.TenDot}. Thời gian: " + 
+                                     dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + " - " + 
+                                     dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + "." 
+                        });
+
+                    return Json(new { 
+                        allowed = true,
+                        dotId = dot.Id,
+                        tenDot = dot.TenDot,
+                        ngayBatDau = dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("yyyy-MM-dd"),
+                        ngayKetThuc = dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("yyyy-MM-dd")
+                    });
                 }
                 else
                 {
                     return Json(new { allowed = false, message = "Loại hội đồng không hợp lệ." });
                 }
-
-                return Json(new { allowed = true });
             }
 
             #endregion
@@ -158,22 +187,33 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string? TenHoiDong, string? LoaiHoiDong, int? IdBoMon, int? IdDot,
+        public async Task<IActionResult> Create(string? TenHoiDong, string? LoaiHoiDong, int? IdBoMon,
                                                  string? NgayBaoCao, string? GioBatDau, string? DiaDiem)
         {
             try
             {
-                // Kiểm tra giai đoạn báo cáo
+                // Tự động lấy đợt đồ án hiện tại MỚI NHẤT (theo ID lớn nhất)
                 var today = DateOnly.FromDateTime(DateTime.Today);
-                var dot = await _context.DotDoAns.FirstOrDefaultAsync(d => d.TrangThai == true);
-                if (dot != null && !string.IsNullOrEmpty(LoaiHoiDong))
+                var dot = await _context.DotDoAns
+                    .Where(d => d.TrangThai == true)
+                    .OrderByDescending(d => d.Id)
+                    .FirstOrDefaultAsync();
+
+                if (dot == null)
+                {
+                    TempData["ErrorMessage"] = "Không có đợt đồ án đang hoạt động.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Kiểm tra giai đoạn báo cáo dựa trên loại hội đồng
+                if (!string.IsNullOrEmpty(LoaiHoiDong))
                 {
                     if (LoaiHoiDong == "GIUA_KY")
                     {
                         if (!dot.NgayBatDauBaoCaoGiuaKi.HasValue || !dot.NgayKetThucBaoCaoGiuaKi.HasValue
                             || today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
                         {
-                            TempData["ErrorMessage"] = "Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn.";
+                            TempData["ErrorMessage"] = $"Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn. Đợt: {dot.TenDot}";
                             return RedirectToAction(nameof(Index));
                         }
                     }
@@ -182,7 +222,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                         if (!dot.NgayBatDauBaoCaoCuoiKi.HasValue || !dot.NgayKetThucBaoCaoCuoiKi.HasValue
                             || today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
                         {
-                            TempData["ErrorMessage"] = "Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn.";
+                            TempData["ErrorMessage"] = $"Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn. Đợt: {dot.TenDot}";
                             return RedirectToAction(nameof(Index));
                         }
                     }
@@ -202,7 +242,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     MaHoiDong = "HDBV" + DateTime.Now.Ticks.ToString().Substring(10),
                     TenHoiDong = TenHoiDong ?? "",
                     IdBoMon = IdBoMon,
-                    IdDot = IdDot,
+                    IdDot = dot.Id, // Tự động gán đợt hiện tại
                     LoaiHoiDong = LoaiHoiDong ?? "",
                     NgayBaoCao = ngayBaoCao,
                     ThoiGianDuKien = gioBatDau,
@@ -636,10 +676,38 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 if (!hd.ThanhVienHdBaoCaos.Any(tv => tv.VaiTro == "THU_KY"))
                     return Json(new { success = false, message = "Hội đồng phải có Thư ký!" });
 
+                // RÀNG BUỘC: Hội đồng CUỐI KÌ phải có đúng 5 thành viên (1 CT, 1 TK, 2 UV, 1 PB)
+                if (hd.LoaiHoiDong == "CUOI_KY")
+                {
+                    var soThanhVien = hd.ThanhVienHdBaoCaos.Count;
+                    if (soThanhVien != 5)
+                        return Json(new { success = false, message = $"Hội đồng cuối kì phải có đúng 5 thành viên! Hiện tại có {soThanhVien} thành viên." });
+
+                    var soChuTich = hd.ThanhVienHdBaoCaos.Count(tv => tv.VaiTro == "CHU_TICH");
+                    var soThuKy = hd.ThanhVienHdBaoCaos.Count(tv => tv.VaiTro == "THU_KY");
+                    var soUyVien = hd.ThanhVienHdBaoCaos.Count(tv => tv.VaiTro == "UY_VIEN");
+                    var soPhanBien = hd.ThanhVienHdBaoCaos.Count(tv => tv.VaiTro == "PHAN_BIEN");
+
+                    if (soChuTich != 1)
+                        return Json(new { success = false, message = "Hội đồng cuối kì phải có đúng 1 Chủ tịch!" });
+                    if (soThuKy != 1)
+                        return Json(new { success = false, message = "Hội đồng cuối kì phải có đúng 1 Thư ký!" });
+                    if (soUyVien != 2)
+                        return Json(new { success = false, message = $"Hội đồng cuối kì phải có đúng 2 Ủy viên! Hiện tại có {soUyVien} Ủy viên." });
+                    if (soPhanBien != 1)
+                        return Json(new { success = false, message = $"Hội đồng cuối kì phải có đúng 1 Phản biện! Hiện tại có {soPhanBien} Phản biện." });
+                }
+
                 if (!hd.PhienBaoVes.Any())
                     return Json(new { success = false, message = "Hội đồng chưa có đề tài nào!" });
 
+                // Cập nhật trạng thái duyệt
                 hd.TrangThai = true;
+                hd.TrangThaiDuyet = "DA_DUYET";
+                hd.IdNguoiDuyet = await GetCurrentUserId();
+                hd.NgayDuyet = DateTime.Now;
+                hd.GhiChuDuyet = req.GhiChu;
+
                 await _context.SaveChangesAsync();
                 return Json(new { success = true, message = "Đã duyệt hội đồng thành công!" });
             }
@@ -663,8 +731,43 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 if (hd != null)
                 {
                     hd.TrangThai = false;
+                    hd.TrangThaiDuyet = "CHO_DUYET";
+                    hd.IdNguoiDuyet = null;
+                    hd.NgayDuyet = null;
+                    hd.GhiChuDuyet = null;
+
                     await _context.SaveChangesAsync();
                     return Json(new { success = true, message = "Đã hủy duyệt hội đồng!" });
+                }
+                return Json(new { success = false, message = "Không tìm thấy hội đồng." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectCouncil([FromBody] ApproveCouncilRequest? req)
+        {
+            try
+            {
+                if (req == null) return Json(new { success = false, message = "Dữ liệu không hợp lệ!" });
+
+                if (!await IsBCNKhoa())
+                    return Json(new { success = false, message = "Bạn không có quyền từ chối hội đồng!" });
+
+                var hd = await _context.HoiDongBaoCaos.FindAsync(req.CouncilId);
+                if (hd != null)
+                {
+                    hd.TrangThai = false;
+                    hd.TrangThaiDuyet = "TU_CHOI";
+                    hd.IdNguoiDuyet = await GetCurrentUserId();
+                    hd.NgayDuyet = DateTime.Now;
+                    hd.GhiChuDuyet = req.GhiChu;
+
+                    await _context.SaveChangesAsync();
+                    return Json(new { success = true, message = "Đã từ chối hội đồng!" });
                 }
                 return Json(new { success = false, message = "Không tìm thấy hội đồng." });
             }
@@ -748,6 +851,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
     public class ApproveCouncilRequest
     {
         public int CouncilId { get; set; }
+        public string? GhiChu { get; set; }
     }
 
     #endregion

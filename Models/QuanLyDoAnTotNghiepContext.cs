@@ -90,6 +90,11 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
     public virtual DbSet<TieuChiChamDiem> TieuChiChamDiems { get; set; }
 
     public virtual DbSet<VaiTro> VaiTros { get; set; }
+
+    public virtual DbSet<LichSuCapNhatDiem> LichSuCapNhatDiems { get; set; }
+
+    public virtual DbSet<XacNhanDiemChuTich> XacNhanDiemChuTichs { get; set; }
+
     public object DangKyDoAns { get; internal set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -1081,8 +1086,12 @@ public partial class QuanLyDoAnTotNghiepContext : DbContext
                 .HasColumnName("ngay_dang_ky");
             entity.Property(e => e.NhanXet).HasColumnName("nhan_xet");
             entity.Property(e => e.TrangThai)
-                .HasMaxLength(20)
+                .HasMaxLength(50)
                 .HasColumnName("trang_thai");
+
+            // Mapping cho cột điểm và nhận xét GVHD
+            entity.Property(e => e.DiemGvhd).HasColumnName("diem_gvhd");
+            entity.Property(e => e.NhanXetGvhd).HasColumnName("nhan_xet_gvhd");
 
             entity.HasOne(d => d.IdDeTaiNavigation).WithMany(p => p.SinhVienDeTais)
                 .HasForeignKey(d => d.IdDeTai)

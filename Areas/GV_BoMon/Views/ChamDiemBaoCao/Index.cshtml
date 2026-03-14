@@ -1,0 +1,7 @@
+@model List<DATN_TMS.Areas.GiangVien.Models.HoiDongChamDiemViewModel>
+@{
+    ViewData["Title"] = "Chấm điểm báo cáo";
+    Layout = "~/Views/Shared/_LayoutGVBoMon.cshtml";
+}
+
+@await Html.PartialAsync("~/Views/Shared/ChamDiemBaoCao/_IndexContent.cshtml", Model)

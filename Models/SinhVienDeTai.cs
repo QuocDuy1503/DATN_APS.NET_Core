@@ -17,6 +17,11 @@ public partial class SinhVienDeTai
 
     public string? NhanXet { get; set; }
 
+    // Điểm và nhận xét GVHD
+    public double? DiemGvhd { get; set; }
+
+    public string? NhanXetGvhd { get; set; }
+
     public virtual DeTai? IdDeTaiNavigation { get; set; }
 
     public virtual SinhVien? IdSinhVienNavigation { get; set; }

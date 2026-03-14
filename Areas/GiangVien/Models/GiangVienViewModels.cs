@@ -69,6 +69,13 @@ namespace DATN_TMS.Areas.GiangVien.Models
     }
 
     // === ĐÁNH GIÁ KẾT QUẢ ĐỀ TÀI ===
+    public class DanhGiaKetQuaIndexViewModel
+    {
+        public string? TenDot { get; set; }
+        public bool CoDot { get; set; }
+        public List<DanhGiaKetQuaGVItem> DanhSachDeTai { get; set; } = new();
+    }
+
     public class DanhGiaKetQuaGVItem
     {
         public int IdDeTai { get; set; }
@@ -76,14 +83,28 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string? TenDeTai { get; set; }
         public string? ChuyenNganh { get; set; }
         public int SoLuongSV { get; set; }
+
+        // Trạng thái chấm điểm
+        public bool DaChamDiem { get; set; }
+        public string? TrangThaiText { get; set; } // "Đã nhập điểm" hoặc "Chưa nhập điểm"
+        public string? TrangThaiCss { get; set; }
+
+        // Tài liệu báo cáo cuối kỳ
+        public bool CoBaoCaoCuoiKyDuyet { get; set; }
+        public string? FileBaoCaoCuoiKy { get; set; }
+        public string? TenFileBaoCao { get; set; }
+
         public List<SinhVienDGItem> DanhSachSV { get; set; } = new();
     }
 
     public class SinhVienDGItem
     {
+        public int IdSinhVien { get; set; }
         public string? Mssv { get; set; }
         public string? HoTen { get; set; }
         public string? KhoaHoc { get; set; }
+        public double? DiemGVHD { get; set; } // Điểm GVHD chấm
+        public bool DaChamDiem { get; set; }
     }
 
     // === NHẬT KÝ HƯỚNG DẪN ===
@@ -276,7 +297,85 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string? StatusCss { get; set; }
         public string? StatusText { get; set; }
         public string? GhiChu { get; set; }
+        public string? NhanXetGiangVien { get; set; }
         public bool CanDuyet { get; set; }
         public List<FileMinhChungItem> DanhSachFileMinhChung { get; set; } = new();
+    }
+
+    // === QUẢN LÝ NỘP BÁO CÁO - INDEX ===
+    public class QuanLyNopBaoCaoIndexViewModel
+    {
+        public string? TenDot { get; set; }
+        public string? HocKi { get; set; }
+        public bool CoDot { get; set; }
+        public List<DeTaiBaoCaoItem> DanhSachDeTai { get; set; } = new();
+    }
+
+    public class DeTaiBaoCaoItem
+    {
+        public int IdDeTai { get; set; }
+        public string? MaDeTai { get; set; }
+        public string? TenDeTai { get; set; }
+        public string? TenChuyenNganh { get; set; }
+        public int SoSinhVien { get; set; }
+        public string? DanhSachSinhVien { get; set; } // "SV1, SV2"
+
+        // Thống kê báo cáo
+        public int SoBaoCaoDeCuong { get; set; }
+        public int SoBaoCaoGiuaKy { get; set; }
+        public int SoBaoCaoCuoiKy { get; set; }
+        public int TongBaoCaoChoDuyet { get; set; }
+        public string? TrangThaiTongQuat { get; set; } // "Chờ duyệt", "Đã duyệt hết", "Chưa nộp"
+        public string? TrangThaiCss { get; set; }
+    }
+
+    // === QUẢN LÝ NỘP BÁO CÁO - DETAIL ===
+    public class QuanLyNopBaoCaoDetailViewModel
+    {
+        public int IdDeTai { get; set; }
+        public string? MaDeTai { get; set; }
+        public string? TenDeTai { get; set; }
+        public string? TenChuyenNganh { get; set; }
+        public string? TenDot { get; set; }
+
+        // Danh sách sinh viên trong đề tài
+        public List<SinhVienBaoCaoItem> DanhSachSinhVien { get; set; } = new();
+
+        // Tất cả báo cáo (nhóm theo loại)
+        public List<BaoCaoNopGVDetailItem> BaoCaoDeCuong { get; set; } = new();
+        public List<BaoCaoNopGVDetailItem> BaoCaoGiuaKy { get; set; } = new();
+        public List<BaoCaoNopGVDetailItem> BaoCaoCuoiKy { get; set; } = new();
+
+        // Deadline
+        public string? DeadlineDeCuong { get; set; }
+        public string? DeadlineGiuaKy { get; set; }
+        public string? DeadlineCuoiKy { get; set; }
+    }
+
+    public class SinhVienBaoCaoItem
+    {
+        public int IdSinhVien { get; set; }
+        public string? Mssv { get; set; }
+        public string? HoTen { get; set; }
+        public string? Email { get; set; }
+    }
+
+    public class BaoCaoNopGVDetailItem
+    {
+        public int IdBaoCao { get; set; }
+        public int? IdSinhVien { get; set; }
+        public string? TenSinhVien { get; set; }
+        public string? Mssv { get; set; }
+        public string? TenBaoCao { get; set; }
+        public string? FilePath { get; set; }
+        public string? TenFile { get; set; }
+        public string? NgayNop { get; set; }
+        public string? GhiChuGui { get; set; }
+        public string? NhanXet { get; set; }
+        public string? TrangThai { get; set; }
+        public string? TrangThaiText { get; set; }
+        public string? TrangThaiCss { get; set; }
+        public int? PhienBan { get; set; } // Version number
+        public bool LaBanMoiNhat { get; set; }
     }
 }

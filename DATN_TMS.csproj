@@ -52,9 +52,4 @@
     <PackageReference Include="X.PagedList.Mvc.Core" Version="10.5.9" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Areas\BCNKhoa\Views\ImportDiem\" />
-    <Folder Include="Views\ImportDiem\" />
-  </ItemGroup>
-
 </Project>

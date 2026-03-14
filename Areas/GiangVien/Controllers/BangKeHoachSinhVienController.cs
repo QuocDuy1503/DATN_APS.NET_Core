@@ -341,6 +341,7 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 StatusCss = GetStatusCss(keHoach.TrangThai),
                 StatusText = GetStatusText(keHoach.TrangThai),
                 GhiChu = keHoach.GhiChu,
+                NhanXetGiangVien = keHoach.NhanXetGiangVien,
                 CanDuyet = keHoach.TrangThai == "Chờ GV duyệt" || 
                            keHoach.TrangThai == "CHO_DUYET" || 
                            keHoach.TrangThai == "Hoàn thành",
@@ -472,7 +473,7 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 keHoach.TrangThai = "Đang thực hiện"; // Trả về để sửa
             }
 
-            keHoach.GhiChu = request.NhanXet;
+            keHoach.NhanXetGiangVien = request.NhanXet;
 
             await _context.SaveChangesAsync();
 

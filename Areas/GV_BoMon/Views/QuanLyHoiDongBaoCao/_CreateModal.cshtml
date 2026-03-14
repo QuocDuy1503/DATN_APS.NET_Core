@@ -93,6 +93,20 @@
         font-size: 13px;
     }
     .btn-save:hover { background-color: #3a3dc7; }
+
+    .phase-info {
+        background: #f0f4ff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: #1e40af;
+        display: none;
+    }
+    .phase-info i { margin-right: 6px; }
+    .phase-info.show { display: block; }
+    .phase-info.error { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
 </style>
 
 <div class="modal-overlay" id="addModal">
@@ -101,8 +115,8 @@
             <div class="modal-title">Thêm hội đồng báo cáo mới</div>
             <button type="button" class="btn-close-custom close-modal">&times;</button>
         </div>
-        
-        <form asp-action="Create" method="post">
+
+        <form asp-action="Create" method="post" id="formCreateHD">
             @Html.AntiForgeryToken()
             <div class="modal-body">
                 <div class="form-group">
@@ -113,7 +127,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Loại hội đồng <span class="required">*</span></label>
-                        <select name="LoaiHoiDong" class="form-control" required>
+                        <select name="LoaiHoiDong" id="selectLoaiHoiDong" class="form-control" required>
                             <option value="">-- Chọn loại --</option>
                             <option value="GIUA_KY">Giữa kì</option>
                             <option value="CUOI_KY">Cuối kì</option>
@@ -134,24 +148,16 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Đợt đồ án</label>
-                    <select name="IdDot" class="form-control">
-                        <option value="">-- Chọn đợt --</option>
-                        @if (ViewBag.ListDot != null)
-                        {
-                            foreach (SelectListItem item in ViewBag.ListDot)
-                            {
-                                <option value="@item.Value">@item.Text</option>
-                            }
-                        }
-                    </select>
+                <!-- Thông tin giai đoạn -->
+                <div class="phase-info" id="phaseInfo">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span id="phaseInfoText"></span>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Ngày báo cáo</label>
-                        <input type="date" name="NgayBaoCao" class="form-control">
+                        <input type="date" name="NgayBaoCao" id="inputNgayBaoCao" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Giờ bắt đầu</label>
@@ -164,10 +170,10 @@
                     <input type="text" name="DiaDiem" class="form-control" placeholder="VD: Phòng A101">
                 </div>
             </div>
-            
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary close-modal">Hủy</button>
-                <button type="submit" class="btn btn-save">Lưu</button>
+                <button type="submit" class="btn btn-save" id="btnSubmitCreate">Lưu</button>
             </div>
         </form>
     </div>
@@ -178,13 +184,71 @@ document.addEventListener("DOMContentLoaded", function () {
     var modal = document.getElementById('addModal');
     var btnOpen = document.getElementById('btnOpenModal');
     var btnCloses = document.querySelectorAll('#addModal .close-modal');
+    var selectLoai = document.getElementById('selectLoaiHoiDong');
+    var phaseInfo = document.getElementById('phaseInfo');
+    var phaseInfoText = document.getElementById('phaseInfoText');
+    var inputNgayBaoCao = document.getElementById('inputNgayBaoCao');
+    var btnSubmit = document.getElementById('btnSubmitCreate');
+    var formCreate = document.getElementById('formCreateHD');
+
+    var canSubmit = false;
 
     btnOpen?.addEventListener('click', function (e) {
         e.preventDefault();
         modal.classList.add('show');
+        // Reset form
+        formCreate.reset();
+        phaseInfo.classList.remove('show', 'error');
+        canSubmit = false;
     });
 
     btnCloses.forEach(btn => btn.addEventListener('click', () => modal.classList.remove('show')));
     window.addEventListener('click', e => { if (e.target == modal) modal.classList.remove('show'); });
+
+    // Kiểm tra giai đoạn khi chọn loại hội đồng
+    selectLoai?.addEventListener('change', function() {
+        var loai = this.value;
+        if (!loai) {
+            phaseInfo.classList.remove('show', 'error');
+            canSubmit = false;
+            return;
+        }
+
+        // Gọi API kiểm tra giai đoạn
+        fetch('@Url.Action("CheckGiaiDoanBaoCao", "QuanLyHoiDongBaoCao", new { area = "GV_BoMon" })' + '?loaiHoiDong=' + loai)
+            .then(res => res.json())
+            .then(data => {
+                phaseInfo.classList.add('show');
+                if (data.allowed) {
+                    phaseInfo.classList.remove('error');
+                    phaseInfoText.innerHTML = '<i class="fa-solid fa-check-circle"></i> ' + (loai === 'GIUA_KY' ? 'Đang trong giai đoạn lập hội đồng báo cáo giữa kì.' : 'Đang trong giai đoạn lập hội đồng báo cáo cuối kì.');
+                    canSubmit = true;
+
+                    // Set min/max cho ngày báo cáo
+                    if (data.ngayBatDau && data.ngayKetThuc) {
+                        inputNgayBaoCao.min = data.ngayBatDau;
+                        inputNgayBaoCao.max = data.ngayKetThuc;
+                    }
+                } else {
+                    phaseInfo.classList.add('error');
+                    phaseInfoText.innerHTML = '<i class="fa-solid fa-exclamation-triangle"></i> ' + data.message;
+                    canSubmit = false;
+                }
+            })
+            .catch(() => {
+                phaseInfo.classList.add('show', 'error');
+                phaseInfoText.textContent = 'Không thể kiểm tra giai đoạn. Vui lòng thử lại.';
+                canSubmit = false;
+            });
+    });
+
+    // Validate trước khi submit
+    formCreate?.addEventListener('submit', function(e) {
+        if (!canSubmit) {
+            e.preventDefault();
+            alert('Không thể tạo hội đồng vì chưa đến giai đoạn lập hội đồng hoặc đã hết hạn.');
+            return false;
+        }
+    });
 });
 </script>

@@ -1,3 +1,4 @@
+﻿@* Sidebar cho Giảng viên Bộ môn *@
 <aside class="sidebar">
     <div class="sidebar-logo">
         <img src="~/images/82cb2669b39c7ae0fe1d18507ed7c609168a2ad3.png" alt="Logo VLU">
@@ -11,10 +12,14 @@
             </div>
             <ul class="submenu open">
                 <li>
-                    <a asp-area="GV_BoMon" asp-controller="QuanLyDangKy" asp-action="Index">Danh sách đăng ký</a>
+                    <a asp-area="GV_BoMon" asp-controller="QuanLyDangKy" asp-action="Index">
+                        Danh sách đăng ký
+                    </a>
                 </li>
                 <li>
-                    <a asp-area="GV_BoMon" asp-controller="QuanLyDeTai" asp-action="Index">Danh sách đề tài</a>
+                    <a asp-area="GV_BoMon" asp-controller="QuanLyDeTai" asp-action="Index">
+                        Danh sách đề tài
+                    </a>
                 </li>
             </ul>
         </li>
@@ -22,15 +27,24 @@
         <!-- Hội đồng -->
         <li class="menu-item">
             <div class="menu-link">
-                <span><i class="fa-solid fa-users"></i> Hội đồng</span>
+                <span><i class="fa-solid fa-gavel"></i> Hội đồng</span>
                 <i class="fa-solid fa-chevron-right chevron"></i>
             </div>
             <ul class="submenu">
                 <li>
-                    <a asp-area="GV_BoMon" asp-controller="QuanLyHoiDongDuyetDeTai" asp-action="Index">Duyệt đề tài</a>
+                    <a asp-area="GV_BoMon" asp-controller="QuanLyHoiDongDuyetDeTai" asp-action="Index">
+                        Duyệt đề tài
+                    </a>
                 </li>
                 <li>
-                    <a asp-area="GV_BoMon" asp-controller="QuanLyHoiDongBaoCao" asp-action="Index">Báo cáo hội đồng</a>
+                    <a asp-area="GV_BoMon" asp-controller="QuanLyHoiDongBaoCao" asp-action="Index">
+                        Báo cáo hội đồng
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="GV_BoMon" asp-controller="ChamDiemBaoCao" asp-action="Index">
+                        Chấm điểm báo cáo
+                    </a>
                 </li>
             </ul>
         </li>

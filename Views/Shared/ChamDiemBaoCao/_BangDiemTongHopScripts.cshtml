@@ -1,0 +1,80 @@
+@model DATN_TMS.Areas.GiangVien.Models.BangDiemTongHopViewModel
+
+<script>
+    $(document).ready(function() {
+        // Điều chỉnh điểm (Thư ký)
+        $('#formDieuChinhDiem').on('submit', function(e) {
+            e.preventDefault();
+            
+            var data = {
+                PhienBaoVeId: @Model.PhienBaoVeId,
+                IdSinhVien: 0,
+                DiemCu: @Model.DiemTBHoiDong,
+                DiemMoi: parseFloat($('#diemMoi').val()),
+                LyDo: $('#lyDoDieuChinh').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("ThuKyDieuChinhDiem")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Có lỗi xảy ra.');
+                }
+            });
+        });
+
+        // Xác nhận điểm (Chủ tịch)
+        $('#formXacNhanDiem').on('submit', function(e) {
+            e.preventDefault();
+
+            if (!confirm('Bạn có chắc chắn xác nhận điểm? Sau khi xác nhận, có thể chuyển sang đề tài tiếp theo.')) {
+                return;
+            }
+            
+            var data = {
+                PhienBaoVeId: @Model.PhienBaoVeId,
+                IdSinhVien: 0,
+                DiemTongKet: parseFloat($('#diemTongKet').val()),
+                GhiChu: $('#ghiChuXacNhan').val()
+            };
+
+            $.ajax({
+                url: '@Url.Action("ChuTichXacNhan")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        setTimeout(function() {
+                            window.location.href = '@Url.Action("Detail", new { id = Model.HoiDongId })';
+                        }, 1500);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Có lỗi xảy ra.');
+                }
+            });
+        });
+    });
+</script>

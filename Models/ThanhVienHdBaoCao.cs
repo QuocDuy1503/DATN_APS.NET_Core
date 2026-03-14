@@ -15,6 +15,8 @@ public partial class ThanhVienHdBaoCao
     public int? IdGiangVien { get; set; }
     [Column("vai_tro")]
     public string? VaiTro { get; set; }
+    [Column("da_cham_diem")]
+    public bool? DaChamDiem { get; set; } = false;
 
     public virtual GiangVien? IdGiangVienNavigation { get; set; }
 

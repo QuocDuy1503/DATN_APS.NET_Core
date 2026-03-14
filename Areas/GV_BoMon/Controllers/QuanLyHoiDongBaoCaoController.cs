@@ -123,7 +123,18 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                         return Json(new { allowed = false, message = "Đợt đồ án chưa cấu hình thời gian báo cáo giữa kì." });
 
                     if (today < dot.NgayBatDauBaoCaoGiuaKi.Value || today > dot.NgayKetThucBaoCaoGiuaKi.Value)
-                        return Json(new { allowed = false, message = "Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn. Thời gian: " + dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + "." });
+                        return Json(new { 
+                            allowed = false, 
+                            message = "Chưa đến giai đoạn lập hội đồng báo cáo giữa kì hoặc đã hết hạn. Thời gian: " + 
+                                     dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + " - " + 
+                                     dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("dd/MM/yyyy") + "." 
+                        });
+
+                    return Json(new { 
+                        allowed = true,
+                        ngayBatDau = dot.NgayBatDauBaoCaoGiuaKi.Value.ToString("yyyy-MM-dd"),
+                        ngayKetThuc = dot.NgayKetThucBaoCaoGiuaKi.Value.ToString("yyyy-MM-dd")
+                    });
                 }
                 else if (loaiHoiDong == "CUOI_KY")
                 {
@@ -131,14 +142,23 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                         return Json(new { allowed = false, message = "Đợt đồ án chưa cấu hình thời gian báo cáo cuối kì." });
 
                     if (today < dot.NgayBatDauBaoCaoCuoiKi.Value || today > dot.NgayKetThucBaoCaoCuoiKi.Value)
-                        return Json(new { allowed = false, message = "Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn. Thời gian: " + dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + " - " + dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + "." });
+                        return Json(new { 
+                            allowed = false, 
+                            message = "Chưa đến giai đoạn lập hội đồng báo cáo cuối kì hoặc đã hết hạn. Thời gian: " + 
+                                     dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + " - " + 
+                                     dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("dd/MM/yyyy") + "." 
+                        });
+
+                    return Json(new { 
+                        allowed = true,
+                        ngayBatDau = dot.NgayBatDauBaoCaoCuoiKi.Value.ToString("yyyy-MM-dd"),
+                        ngayKetThuc = dot.NgayKetThucBaoCaoCuoiKi.Value.ToString("yyyy-MM-dd")
+                    });
                 }
                 else
                 {
                     return Json(new { allowed = false, message = "Loại hội đồng không hợp lệ." });
                 }
-
-                return Json(new { allowed = true });
             }
 
             #endregion
@@ -147,15 +167,23 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string? TenHoiDong, string? LoaiHoiDong, int? IdBoMon, int? IdDot,
+        public async Task<IActionResult> Create(string? TenHoiDong, string? LoaiHoiDong, int? IdBoMon,
                                                  string? NgayBaoCao, string? GioBatDau, string? DiaDiem)
         {
             try
             {
-                // Kiểm tra giai đoạn báo cáo
+                // Tự động lấy đợt đồ án hiện tại
                 var today = DateOnly.FromDateTime(DateTime.Today);
                 var dot = await _context.DotDoAns.FirstOrDefaultAsync(d => d.TrangThai == true);
-                if (dot != null && !string.IsNullOrEmpty(LoaiHoiDong))
+
+                if (dot == null)
+                {
+                    TempData["ErrorMessage"] = "Không có đợt đồ án đang hoạt động.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Kiểm tra giai đoạn báo cáo dựa trên loại hội đồng
+                if (!string.IsNullOrEmpty(LoaiHoiDong))
                 {
                     if (LoaiHoiDong == "GIUA_KY")
                     {
@@ -191,7 +219,7 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                     MaHoiDong = "HDBV" + DateTime.Now.Ticks.ToString().Substring(10),
                     TenHoiDong = TenHoiDong ?? "",
                     IdBoMon = IdBoMon,
-                    IdDot = IdDot,
+                    IdDot = dot.Id, // Tự động gán đợt hiện tại
                     LoaiHoiDong = LoaiHoiDong ?? "",
                     NgayBaoCao = ngayBaoCao,
                     ThoiGianDuKien = gioBatDau,

@@ -1,0 +1,77 @@
+<script>
+    $(document).ready(function() {
+        // Tính tổng điểm
+        function tinhTongDiem() {
+            var tong = 0;
+            $('.diem-input').each(function() {
+                var diem = parseFloat($(this).val()) || 0;
+                tong += diem;
+            });
+            $('#tongDiem').text(tong.toFixed(1));
+        }
+
+        // Validate điểm không vượt quá tối đa
+        $('.diem-input').on('input', function() {
+            var max = parseFloat($(this).data('max'));
+            var val = parseFloat($(this).val());
+            if (val > max) {
+                $(this).val(max);
+            }
+            if (val < 0) {
+                $(this).val(0);
+            }
+            tinhTongDiem();
+        });
+
+        // Tính tổng khi load
+        tinhTongDiem();
+
+        // Submit form
+        $('#formChamDiem').on('submit', function(e) {
+            e.preventDefault();
+            
+            var formData = {
+                PhienBaoVeId: parseInt($('input[name="PhienBaoVeId"]').val()),
+                DiemChiTiets: []
+            };
+
+            // Thu thập dữ liệu từ form
+            var index = 0;
+            $('input[name^="DiemChiTiets"][name$=".IdTieuChi"]').each(function() {
+                var idTieuChi = parseInt($(this).val());
+                var diemSo = parseFloat($('input[name="DiemChiTiets[' + index + '].DiemSo"]').val()) || 0;
+                var nhanXet = $('textarea[name="DiemChiTiets[' + index + '].NhanXet"]').val() || '';
+                
+                formData.DiemChiTiets.push({
+                    IdTieuChi: idTieuChi,
+                    DiemSo: diemSo,
+                    NhanXet: nhanXet
+                });
+                index++;
+            });
+
+            $.ajax({
+                url: '@Url.Action("LuuDiem")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        setTimeout(function() {
+                            window.location.href = response.redirectUrl || '@Url.Action("Index")';
+                        }, 1500);
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function() {
+                    toastr.error('Có lỗi xảy ra khi lưu điểm.');
+                }
+            });
+        });
+    });
+</script>

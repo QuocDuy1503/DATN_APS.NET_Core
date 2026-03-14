@@ -1,466 +1,426 @@
-﻿@{
+﻿@model QuanLyNopBaoCaoDetailViewModel
+@{
+    ViewData["Title"] = "Chi tiết báo cáo - " + Model.MaDeTai;
     Layout = "~/Views/Shared/_Layout_GV.cshtml";
 }
-@{
-    ViewData["Title"] = "Giảng viên";
-}
-<div class="content-body">
 
-    <div class="detail-container">
+<style>
+    :root { --primary: #484BE0; }
 
-        <div class="info-section">
+    .content-body.bc-detail { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
 
-            <div class="form-header">
-                <a href="QLDDA_Dangkidetai.html" class="btn-back-circle" title="Quay lại danh sách">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </a>
-                <h3 class="form-title">Chi tiết báo cáo</h3>
-            </div>
+    .bc-detail .content-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        min-height: calc(100vh - 140px);
+    }
 
+    /* Header */
+    .page-header-row { margin-bottom: 10px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
+    /* Breadcrumb */
+    .breadcrumb-nav { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #f5f5f5; }
+    .breadcrumb { display: flex; align-items: center; list-style: none; padding: 0; margin: 0; font-size: 13px; background: transparent; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: var(--primary); text-decoration: underline; }
+    .breadcrumb-item.active { color: #333; font-weight: 600; cursor: default; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: #ccc; }
 
-            <div style="display: flex; gap: 20px;">
+    /* Info card */
+    .info-card { background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
+    .info-row { display: flex; flex-wrap: wrap; gap: 20px; }
+    .info-item { flex: 1; min-width: 200px; }
+    .info-label { font-size: 12px; color: #64748b; margin-bottom: 4px; font-weight: 500; }
+    .info-value { font-size: 14px; color: #1e293b; font-weight: 600; }
 
-                <div class="detail-group" style="flex: 1;">
-                    <label>Tên báo cáo:</label>
-                    <input type="text"
-                           class="detail-control detail-control--sm"
-                           value="Đề cương"
-                           readonly>
+    .sv-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .sv-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #e0e7ff; color: #3730a3; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .sv-chip i { font-size: 11px; }
+
+    /* Section */
+    .section-title { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; }
+    .section-title i { font-size: 18px; }
+
+    /* Tabs */
+    .bc-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .bc-tab { padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #e5e7eb; background: #fff; color: #6b7280; transition: 0.15s; }
+    .bc-tab:hover { border-color: var(--primary); color: var(--primary); }
+    .bc-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .bc-tab .tab-count { margin-left: 6px; padding: 2px 6px; border-radius: 8px; font-size: 10px; background: rgba(255,255,255,0.2); }
+    .bc-tab.active .tab-count { background: rgba(255,255,255,0.3); }
+
+    .bc-panel { display: none; }
+    .bc-panel.active { display: block; }
+
+    /* Table */
+    .bc-table { width: 100%; border-collapse: collapse; font-size: 13px; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+    .bc-table th { background: #f3f4f6; font-weight: 700; padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; color: #374151; }
+    .bc-table td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    .bc-table tr:last-child td { border-bottom: none; }
+    .bc-table tr:hover { background: #f9fafb; }
+
+    /* Status badges */
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
+    .status-approved { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+    .status-default { background: #f3f4f6; color: #6b7280; }
+
+    .version-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: #dbeafe; color: #1d4ed8; }
+    .version-badge.latest { background: #d1fae5; color: #065f46; }
+
+    /* File link */
+    .file-link { color: #2563eb; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+    .file-link:hover { text-decoration: underline; }
+    .file-link i { font-size: 14px; }
+
+    /* Action buttons */
+    .action-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 6px 10px; border-radius: 4px; transition: 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-approve { color: #16a34a; }
+    .btn-approve:hover { background: #f0fdf4; }
+    .btn-reject { color: #dc2626; }
+    .btn-reject:hover { background: #fef2f2; }
+    .btn-view { color: #2563eb; }
+    .btn-view:hover { background: #eff6ff; }
+
+    .nhanxet-preview { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #6b7280; font-size: 12px; font-style: italic; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
+    .empty-state i { font-size: 32px; margin-bottom: 10px; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 9999; }
+    .modal-overlay.show { display: flex; }
+    .modal-dialog { background: #fff; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+    .btn-close-modal { background: none; border: none; font-size: 22px; cursor: pointer; color: #6b7280; line-height: 1; }
+    .btn-close-modal:hover { color: #374151; }
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 16px 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
+
+    /* Form */
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 600; font-size: 13px; color: #374151; margin-bottom: 6px; }
+    .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; resize: vertical; min-height: 100px; box-sizing: border-box; }
+    .form-group textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
+
+    .detail-row { display: flex; gap: 12px; margin-bottom: 12px; }
+    .detail-item { flex: 1; }
+    .detail-item label { font-size: 12px; color: #64748b; margin-bottom: 4px; display: block; }
+    .detail-item .value { font-size: 13px; color: #1e293b; font-weight: 500; padding: 8px 12px; background: #f3f4f6; border-radius: 6px; }
+
+    /* Buttons */
+    .btn-primary { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: var(--primary); color: #fff; transition: 0.15s; }
+    .btn-primary:hover { background: #3538b2; }
+    .btn-secondary { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; transition: 0.15s; }
+    .btn-secondary:hover { background: #f3f4f6; }
+    .btn-danger { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: #dc2626; color: #fff; transition: 0.15s; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-success { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: #16a34a; color: #fff; transition: 0.15s; }
+    .btn-success:hover { background: #15803d; }
+</style>
+
+<div class="content-body bc-detail">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Chi tiết báo cáo</h2>
+        </div>
+
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Quản lý nộp báo cáo</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.MaDeTai</li>
+            </ol>
+        </nav>
+
+        <!-- Thông tin đề tài -->
+        <div class="info-card">
+            <div class="info-row">
+                <div class="info-item">
+                    <div class="info-label">Mã đề tài</div>
+                    <div class="info-value">@Model.MaDeTai</div>
+                </div>
+                <div class="info-item" style="flex: 2;">
+                    <div class="info-label">Tên đề tài</div>
+                    <div class="info-value">@Model.TenDeTai</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Chuyên ngành</div>
+                    <div class="info-value">@Model.TenChuyenNganh</div>
                 </div>
             </div>
-
-            <div class="detail-group" style="flex: 1;">
-                <label>Hạn nộp:</label>
-                <input type="text"
-                       class="detail-control detail-control--sm"
-                       value="23:59 - Thứ Sáu, 15/03/2026"
-                       readonly>
-            </div>
-
-            <div class="detail-group">
-                <label>Yêu cầu:</label>
-
-                <input type="text"
-                       class="detail-control detail-control--sm"
-                       value="Nộp file PDF báo cáo tiến độ (2–5 trang)"
-                       readonly>
-            </div>
-            <div class="divider-text"><span></span></div>
-            <!-- Nộp file -->
-            <div class="upload-card">
-                <div class="upload-row">
-                    <div class="upload-field">
-                        <label>Chọn tệp nộp</label>
-
-                        <input type="file" id="submitFile" class="upload-fileInput"
-                               accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar,.png,.jpg,.jpeg" />
-
-                        <div class="upload-fileUi">
-
-                            <div class="file-view">
-                                <i class="fa-solid fa-paperclip"></i>
-                                <a id="dtFile"
-                                   class="file-link"
-                                   href="#"
-                                   download>
-                                    Không có file
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+            <div style="margin-top: 12px;">
+                <div class="info-label">Sinh viên thực hiện (@Model.DanhSachSinhVien.Count)</div>
+                <div class="sv-list">
+                    @foreach (var sv in Model.DanhSachSinhVien)
+                    {
+                        <span class="sv-chip">
+                            <i class="fa-solid fa-user"></i>
+                            @sv.HoTen (@sv.Mssv)
+                        </span>
+                    }
                 </div>
             </div>
-            <div class="action-group">
-                <button type="button" class="btn-reject">
-                    <i class="fa-solid fa-xmark"></i> Từ chối
-                </button>
-                <button type="button" class="btn-approve">
-                    <i class="fa-solid fa-check"></i> Đồng ý
-                </button>
+        </div>
+
+        <!-- Tabs báo cáo -->
+        <div class="bc-tabs">
+            <button class="bc-tab active" data-tab="decuong">
+                <i class="fa-solid fa-file-lines"></i> Đề cương
+                <span class="tab-count">@Model.BaoCaoDeCuong.Count</span>
+            </button>
+            <button class="bc-tab" data-tab="giuaky">
+                <i class="fa-solid fa-file-alt"></i> Giữa kỳ
+                <span class="tab-count">@Model.BaoCaoGiuaKy.Count</span>
+            </button>
+            <button class="bc-tab" data-tab="cuoiky">
+                <i class="fa-solid fa-file-contract"></i> Cuối kỳ
+                <span class="tab-count">@Model.BaoCaoCuoiKy.Count</span>
+            </button>
+        </div>
+
+        <!-- Panel Đề cương -->
+        <div class="bc-panel active" id="panel-decuong">
+            <div class="section-title">
+                <i class="fa-solid fa-file-lines" style="color:#6366f1;"></i>
+                Báo cáo Đề cương
+                @if (!string.IsNullOrEmpty(Model.DeadlineDeCuong))
+                {
+                    <span style="font-size:12px; font-weight:500; color:#6b7280; margin-left:auto;">
+                        <i class="fa-regular fa-clock"></i> Deadline: @Model.DeadlineDeCuong
+                    </span>
+                }
             </div>
+            @if (Model.BaoCaoDeCuong.Any())
+            {
+                @await Html.PartialAsync("_BaoCaoTable", Model.BaoCaoDeCuong)
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <p>Chưa có báo cáo đề cương nào</p>
+                </div>
+            }
+        </div>
+
+        <!-- Panel Giữa kỳ -->
+        <div class="bc-panel" id="panel-giuaky">
+            <div class="section-title">
+                <i class="fa-solid fa-file-alt" style="color:#f59e0b;"></i>
+                Báo cáo Giữa kỳ
+                @if (!string.IsNullOrEmpty(Model.DeadlineGiuaKy))
+                {
+                    <span style="font-size:12px; font-weight:500; color:#6b7280; margin-left:auto;">
+                        <i class="fa-regular fa-clock"></i> Deadline: @Model.DeadlineGiuaKy
+                    </span>
+                }
+            </div>
+            @if (Model.BaoCaoGiuaKy.Any())
+            {
+                @await Html.PartialAsync("_BaoCaoTable", Model.BaoCaoGiuaKy)
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <p>Chưa có báo cáo giữa kỳ nào</p>
+                </div>
+            }
+        </div>
+
+        <!-- Panel Cuối kỳ -->
+        <div class="bc-panel" id="panel-cuoiky">
+            <div class="section-title">
+                <i class="fa-solid fa-file-contract" style="color:#10b981;"></i>
+                Báo cáo Cuối kỳ
+                @if (!string.IsNullOrEmpty(Model.DeadlineCuoiKy))
+                {
+                    <span style="font-size:12px; font-weight:500; color:#6b7280; margin-left:auto;">
+                        <i class="fa-regular fa-clock"></i> Deadline: @Model.DeadlineCuoiKy
+                    </span>
+                }
+            </div>
+            @if (Model.BaoCaoCuoiKy.Any())
+            {
+                @await Html.PartialAsync("_BaoCaoTable", Model.BaoCaoCuoiKy)
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <p>Chưa có báo cáo cuối kỳ nào</p>
+                </div>
+            }
         </div>
     </div>
 </div>
-<Style>
-    .field {
-        margin-bottom: 14px;
+
+<!-- Modal Duyệt/Từ chối -->
+<div class="modal-overlay" id="duyetModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">Duyệt báo cáo</div>
+            <button type="button" class="btn-close-modal" id="btnCloseModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>Sinh viên</label>
+                    <div class="value" id="mdSinhVien">---</div>
+                </div>
+                <div class="detail-item">
+                    <label>Ngày nộp</label>
+                    <div class="value" id="mdNgayNop">---</div>
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-item">
+                    <label>File báo cáo</label>
+                    <div class="value" id="mdFile">---</div>
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-item" style="flex: 1;">
+                    <label>Ghi chú của sinh viên</label>
+                    <div class="value" id="mdGhiChu" style="min-height: 60px; white-space: pre-wrap;">---</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nhận xét của giảng viên</label>
+                <textarea id="txtNhanXet" placeholder="Nhập nhận xét (không bắt buộc)..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btnCancelModal">Hủy</button>
+            <button type="button" class="btn-danger" id="btnReject" style="display:none;">
+                <i class="fa-solid fa-xmark"></i> Từ chối
+            </button>
+            <button type="button" class="btn-success" id="btnApprove" style="display:none;">
+                <i class="fa-solid fa-check"></i> Duyệt
+            </button>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<script>
+    // Tab switching
+    document.querySelectorAll('.bc-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.bc-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.bc-panel').forEach(p => p.classList.remove('active'));
+
+            this.classList.add('active');
+            var panelId = 'panel-' + this.getAttribute('data-tab');
+            document.getElementById(panelId).classList.add('active');
+        });
+    });
+
+    // Modal variables
+    var currentBaoCaoId = null;
+    var currentAction = null;
+
+    // Open modal for approve/reject
+    function openDuyetModal(id, action) {
+        currentBaoCaoId = id;
+        currentAction = action;
+
+        // Get data via AJAX
+        fetch('@Url.Action("GetBaoCaoDetail")' + '?id=' + id)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    var bc = data.data;
+                    document.getElementById('mdSinhVien').textContent = bc.tenSinhVien + ' (' + bc.mssv + ')';
+                    document.getElementById('mdNgayNop').textContent = bc.ngayNop || '---';
+
+                    if (bc.filePath) {
+                        document.getElementById('mdFile').innerHTML = '<a href="' + bc.filePath + '" target="_blank" class="file-link"><i class="fa-solid fa-file-pdf"></i> ' + (bc.tenFile || 'Xem file') + '</a>';
+                    } else {
+                        document.getElementById('mdFile').textContent = 'Không có file';
+                    }
+
+                    document.getElementById('mdGhiChu').textContent = bc.ghiChuGui || '(Không có ghi chú)';
+                    document.getElementById('txtNhanXet').value = bc.nhanXet || '';
+
+                    if (action === 'approve') {
+                        document.getElementById('modalTitle').textContent = 'Duyệt báo cáo';
+                        document.getElementById('btnApprove').style.display = 'inline-flex';
+                        document.getElementById('btnReject').style.display = 'none';
+                        document.getElementById('txtNhanXet').disabled = false;
+                    } else if (action === 'reject') {
+                        document.getElementById('modalTitle').textContent = 'Từ chối báo cáo';
+                        document.getElementById('btnApprove').style.display = 'none';
+                        document.getElementById('btnReject').style.display = 'inline-flex';
+                        document.getElementById('txtNhanXet').disabled = false;
+                    } else {
+                        // view mode
+                        document.getElementById('modalTitle').textContent = 'Chi tiết báo cáo';
+                        document.getElementById('btnApprove').style.display = 'none';
+                        document.getElementById('btnReject').style.display = 'none';
+                        document.getElementById('txtNhanXet').disabled = true;
+                    }
+
+                    document.getElementById('duyetModal').classList.add('show');
+                } else {
+                    alert(data.message || 'Không thể tải thông tin báo cáo.');
+                }
+            });
     }
 
-        .field label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #111827;
-        }
+    // Close modal
+    document.getElementById('btnCloseModal').addEventListener('click', function() {
+        document.getElementById('duyetModal').classList.remove('show');
+    });
+    document.getElementById('btnCancelModal').addEventListener('click', function() {
+        document.getElementById('duyetModal').classList.remove('show');
+    });
+    document.getElementById('duyetModal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
 
-            .field label span {
-                color: #dc2626;
+    // Submit approve/reject
+    function submitDuyet(action) {
+        var nhanXet = document.getElementById('txtNhanXet').value.trim();
+        var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        fetch('@Url.Action("DuyetBaoCao")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+            body: JSON.stringify({
+                id: currentBaoCaoId,
+                action: action,
+                nhanXet: nhanXet
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Có lỗi xảy ra.');
             }
+        });
+    }
 
-        .field textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 6px;
-            border: 1px solid #d1d5db;
-            background-color: #f3f4f6; /* giống ảnh */
-            resize: none;
-            font-size: 14px;
+    document.getElementById('btnApprove').addEventListener('click', function() {
+        submitDuyet('approve');
+    });
+    document.getElementById('btnReject').addEventListener('click', function() {
+        submitDuyet('reject');
+    });
+
+    // Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.getElementById('duyetModal').classList.remove('show');
         }
-
-            .field textarea:focus {
-                outline: none;
-                border-color: #2563eb;
-                background-color: #ffffff;
-                box-shadow: 0 0 0 3px rgba(37,99,235,.18);
-            }
-
-    .divider-text {
-        display: flex;
-        align-items: center;
-        margin: 28px 0;
-        color: #6b7280;
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-        .divider-text::before,
-        .divider-text::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: #e5e7eb;
-        }
-
-        .divider-text span {
-            padding: 0 12px;
-        }
-    /* ====== NỘP FILE (UPLOAD) ====== */
-    .upload-card {
-        margin-top: 14px;
-        padding: 16px;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: #ffffff;
-    }
-
-    .upload-row {
-        margin-bottom: 14px;
-    }
-
-    .upload-field label {
-        display: block;
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: #111827;
-        font-size: 14px;
-    }
-
-    /* Ẩn input file gốc */
-    .upload-fileInput {
-        display: none;
-    }
-
-    /* dòng UI chọn file */
-    .upload-fileUi {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    /* ô hiển thị tên file giống detail-control */
-    .upload-fileName {
-        flex: 1;
-        min-width: 260px;
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid #d1d5db;
-        background: #f3f4f6;
-        font-size: 14px;
-        color: #111827;
-    }
-
-    /* nút */
-    .upload-btn {
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid #d1d5db;
-        background: #ffffff;
-        cursor: pointer;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: .15s;
-    }
-
-        .upload-btn:hover {
-            background: #f9fafb;
-        }
-
-    .upload-btn--danger {
-        border-color: #fecaca;
-        color: #b91c1c;
-    }
-
-        .upload-btn--danger:hover {
-            background: #fff1f2;
-        }
-
-    /* hint */
-    .upload-hint {
-        display: block;
-        margin-top: 8px;
-        color: #6b7280;
-        font-size: 13px;
-    }
-
-    /* textarea ghi chú giống detail-control */
-    .upload-textarea {
-        width: 100%;
-        padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid #d1d5db;
-        background: #f3f4f6;
-        font-size: 14px;
-        resize: vertical;
-        min-height: 90px;
-    }
-
-        .upload-textarea:focus {
-            outline: none;
-            border-color: #2563eb;
-            background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(37,99,235,.18);
-        }
-
-    /* nút nộp */
-    /* ====== ACTION BUTTONS ====== */
-    .action-group {
-        display: flex;
-        justify-content: flex-end; /* đẩy sang phải */
-        gap: 12px;
-        margin-top: 16px;
-    }
-
-    /* Nút Đồng ý */
-    .btn-approve {
-        padding: 10px 16px;
-        border-radius: 10px;
-        border: none;
-        background: #16a34a; /* xanh lá */
-        color: #ffffff;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: 0.15s ease;
-    }
-
-        .btn-approve:hover {
-            background: #15803d;
-        }
-
-    /* Nút Từ chối */
-    .btn-reject {
-        padding: 10px 16px;
-        border-radius: 10px;
-        border: none;
-        background: #dc2626; /* đỏ */
-        color: #ffffff;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: 0.15s ease;
-    }
-
-        .btn-reject:hover {
-            background: #b91c1c;
-        }
-
-        .btn-approve:active,
-        .btn-reject:active {
-            transform: translateY(1px);
-        }
-    /* --- BỐ CỤC CHIA 2 CỘT --- */
-    .detail-container {
-        display: flex;
-        gap: 30px;
-        align-items: flex-start;
-    }
-
-
-    .info-section {
-        flex: 7;
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    /* Cột tác vụ (Bên phải) */
-    .action-section {
-        flex: 3;
-        background: white;
-        padding: 25px;
-        border-radius: 8px;
-        border: 1px solid #eee;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        position: sticky;
-        top: 20px;
-    }
-
-    .form-header {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .btn-back-circle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        background-color: #f3f4f6;
-        color: #555;
-        border-radius: 50%;
-        text-decoration: none;
-        transition: 0.2s;
-        font-size: 14px;
-    }
-
-        .btn-back-circle:hover {
-            background-color: #e5e7eb;
-            color: var(--primary-red);
-            transform: translateX(-2px);
-        }
-
-    .form-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #1f2937;
-        margin: 0;
-    }
-
-
-    .detail-group {
-        margin-bottom: 20px;
-    }
-
-        .detail-group label {
-            display: block;
-            font-weight: 600;
-            color: #444;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-    .detail-control {
-        width: 100%;
-        padding: 10px 15px;
-        border: 1px solid #bebebe;
-        border-radius: 4px;
-        background-color: #f1f1f1;
-        color: #333;
-        font-size: 14px;
-        resize: none;
-    }
-
-        .detail-control:focus {
-            outline: none;
-            border-color: #ddd;
-        }
-
-    textarea.detail-control {
-        height: 100px;
-        line-height: 1.5;
-    }
-
-
-    .action-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--primary-red);
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .current-status {
-        margin-bottom: 20px;
-        padding: 10px;
-        background: #e6e6e6;
-        border-radius: 4px;
-        text-align: center;
-    }
-
-    .status-label {
-        font-size: 13px;
-        color: #f8f9fa;
-        margin-bottom: 5px;
-        display: block;
-    }
-
-    .status-value {
-        font-weight: 700;
-        font-size: 16px;
-    }
-
-    .feedback-area {
-        margin-bottom: 20px;
-    }
-
-    .feedback-input {
-        width: 100%;
-        height: 120px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 13px;
-        resize: vertical;
-    }
-
-        .feedback-input:focus {
-            border-color: var(--primary-red);
-            outline: none;
-        }
-
-    .feedback-required-msg {
-        color: #dc3545;
-        font-size: 12px;
-        margin-top: 5px;
-        display: none;
-    }
-
-    /* Buttons */
-    .btn-row {
-        display: flex;
-        gap: 10px;
-    }
-
-    .btn-action {
-        flex: 1;
-        padding: 10px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 14px;
-        transition: 0.2s;
-    }
-
-    .detail-control:focus {
-        border-color: #0d6efd !important;
-        outline: none;
-        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
-    }
-
-</Style>
+    });
+</script>

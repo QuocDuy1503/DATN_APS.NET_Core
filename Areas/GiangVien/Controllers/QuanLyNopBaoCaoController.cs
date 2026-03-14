@@ -34,40 +34,231 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
         public async Task<IActionResult> Index()
         {
             var maGV = HttpContext.Session.GetString("UserCode");
+            var giangVien = await _context.GiangViens
+                .Include(gv => gv.IdNguoiDungNavigation)
+                .FirstOrDefaultAsync(gv => gv.MaGv == maGV);
+
+            if (giangVien == null)
+            {
+                return View(new QuanLyNopBaoCaoIndexViewModel { CoDot = false });
+            }
+
+            // Lấy đợt đồ án hiện tại
+            var dot = await _context.DotDoAns
+                .Include(d => d.IdHocKiNavigation)
+                .Where(d => d.TrangThai == true)
+                .OrderByDescending(d => d.Id)
+                .FirstOrDefaultAsync();
+
+            if (dot == null)
+            {
+                return View(new QuanLyNopBaoCaoIndexViewModel
+                {
+                    CoDot = false,
+                    TenDot = "Chưa có đợt đồ án"
+                });
+            }
+
+            // Lấy danh sách đề tài mà GV này hướng dẫn trong đợt hiện tại
+            var deTais = await _context.DeTais
+                .Include(dt => dt.IdChuyenNganhNavigation)
+                .Where(dt => dt.IdGvhd == giangVien.IdNguoiDung && dt.IdDot == dot.Id && dt.TrangThai == "DA_DUYET")
+                .ToListAsync();
+
+            var result = new QuanLyNopBaoCaoIndexViewModel
+            {
+                CoDot = true,
+                TenDot = dot.TenDot,
+                HocKi = dot.IdHocKiNavigation != null ? dot.IdHocKiNavigation.MaHocKi : "",
+                DanhSachDeTai = new List<DeTaiBaoCaoItem>()
+            };
+
+            foreach (var dt in deTais)
+            {
+                // Lấy danh sách sinh viên đã được duyệt trong đề tài
+                var sinhViens = await _context.SinhVienDeTais
+                    .Include(svdt => svdt.IdSinhVienNavigation)
+                        .ThenInclude(sv => sv!.IdNguoiDungNavigation)
+                    .Where(svdt => svdt.IdDeTai == dt.Id && svdt.TrangThai == "DA_DUYET")
+                    .Select(svdt => new
+                    {
+                        IdSinhVien = svdt.IdSinhVien,
+                        HoTen = svdt.IdSinhVienNavigation != null && svdt.IdSinhVienNavigation.IdNguoiDungNavigation != null
+                            ? svdt.IdSinhVienNavigation.IdNguoiDungNavigation.HoTen : ""
+                    })
+                    .ToListAsync();
+
+                var idSinhViens = sinhViens.Select(sv => sv.IdSinhVien).ToList();
+
+                // Đếm báo cáo theo loại
+                var baoCaos = await _context.BaoCaoNops
+                    .Where(bc => bc.IdDeTai == dt.Id && bc.IdSinhVien.HasValue && idSinhViens.Contains(bc.IdSinhVien.Value))
+                    .ToListAsync();
+
+                var soDeCuong = baoCaos.Count(bc => bc.LoaiBaoCao == "DE_CUONG");
+                var soGiuaKy = baoCaos.Count(bc => bc.LoaiBaoCao == "GIUA_KY");
+                var soCuoiKy = baoCaos.Count(bc => bc.LoaiBaoCao == "CUOI_KY");
+                var soChoDuyet = baoCaos.Count(bc => bc.TrangThai == "CHO_DUYET");
+
+                string trangThaiTongQuat;
+                string trangThaiCss;
+
+                if (soChoDuyet > 0)
+                {
+                    trangThaiTongQuat = $"Có {soChoDuyet} báo cáo chờ duyệt";
+                    trangThaiCss = "status-pending";
+                }
+                else if (baoCaos.Count == 0)
+                {
+                    trangThaiTongQuat = "Chưa có báo cáo";
+                    trangThaiCss = "status-default";
+                }
+                else
+                {
+                    trangThaiTongQuat = "Đã xử lý";
+                    trangThaiCss = "status-approved";
+                }
+
+                result.DanhSachDeTai.Add(new DeTaiBaoCaoItem
+                {
+                    IdDeTai = dt.Id,
+                    MaDeTai = dt.MaDeTai,
+                    TenDeTai = dt.TenDeTai,
+                    TenChuyenNganh = dt.IdChuyenNganhNavigation?.TenChuyenNganh,
+                    SoSinhVien = sinhViens.Count,
+                    DanhSachSinhVien = string.Join(", ", sinhViens.Select(sv => sv.HoTen)),
+                    SoBaoCaoDeCuong = soDeCuong,
+                    SoBaoCaoGiuaKy = soGiuaKy,
+                    SoBaoCaoCuoiKy = soCuoiKy,
+                    TongBaoCaoChoDuyet = soChoDuyet,
+                    TrangThaiTongQuat = trangThaiTongQuat,
+                    TrangThaiCss = trangThaiCss
+                });
+            }
+
+            return View(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Detail(int id)
+        {
+            var maGV = HttpContext.Session.GetString("UserCode");
             var giangVien = await _context.GiangViens.FirstOrDefaultAsync(gv => gv.MaGv == maGV);
 
             if (giangVien == null)
-                return View(new List<NopBaoCaoGVItem>());
+                return RedirectToAction("Index");
 
-            var idDeTais = await _context.DeTais
-                .Where(dt => dt.IdGvhd == giangVien.IdNguoiDung)
-                .Select(dt => dt.Id)
-                .ToListAsync();
+            var deTai = await _context.DeTais
+                .Include(dt => dt.IdChuyenNganhNavigation)
+                .Include(dt => dt.IdDotNavigation)
+                .FirstOrDefaultAsync(dt => dt.Id == id && dt.IdGvhd == giangVien.IdNguoiDung);
 
-            var data = await _context.BaoCaoNops
-                .Include(bc => bc.IdSinhVienNavigation)
+            if (deTai == null)
+                return RedirectToAction("Index");
+
+            var dot = deTai.IdDotNavigation;
+
+            // Lấy danh sách sinh viên trong đề tài
+            var sinhViens = await _context.SinhVienDeTais
+                .Include(svdt => svdt.IdSinhVienNavigation)
                     .ThenInclude(sv => sv!.IdNguoiDungNavigation)
-                .Include(bc => bc.IdDeTaiNavigation)
-                .Where(bc => bc.IdDeTai.HasValue && idDeTais.Contains(bc.IdDeTai.Value) && bc.LoaiBaoCao != "MINH_CHUNG")
-                .OrderByDescending(bc => bc.NgayNop)
-                .Select(bc => new NopBaoCaoGVItem
+                .Where(svdt => svdt.IdDeTai == id && svdt.TrangThai == "DA_DUYET")
+                .Select(svdt => new SinhVienBaoCaoItem
                 {
-                    Id = bc.Id,
-                    Stt = bc.Stt,
-                    TenBaoCao = bc.TenBaoCao,
-                    TenSinhVien = bc.IdSinhVienNavigation != null && bc.IdSinhVienNavigation.IdNguoiDungNavigation != null
-                        ? bc.IdSinhVienNavigation.IdNguoiDungNavigation.HoTen : "",
-                    Mssv = bc.IdSinhVienNavigation != null ? bc.IdSinhVienNavigation.Mssv : "",
-                    TenDeTai = bc.IdDeTaiNavigation != null ? bc.IdDeTaiNavigation.TenDeTai : "",
-                    NgayNop = bc.NgayNop.HasValue ? bc.NgayNop.Value.ToString("dd/MM/yyyy HH:mm") : "",
-                    TrangThai = bc.TrangThai,
-                    LoaiBaoCao = bc.LoaiBaoCao,
-                    FilePath = bc.FileBaocao,
-                    GhiChuGui = bc.GhiChuGui
+                    IdSinhVien = svdt.IdSinhVien ?? 0,
+                    Mssv = svdt.IdSinhVienNavigation != null ? svdt.IdSinhVienNavigation.Mssv : "",
+                    HoTen = svdt.IdSinhVienNavigation != null && svdt.IdSinhVienNavigation.IdNguoiDungNavigation != null
+                        ? svdt.IdSinhVienNavigation.IdNguoiDungNavigation.HoTen : "",
+                    Email = svdt.IdSinhVienNavigation != null && svdt.IdSinhVienNavigation.IdNguoiDungNavigation != null
+                        ? svdt.IdSinhVienNavigation.IdNguoiDungNavigation.Email : ""
                 })
                 .ToListAsync();
 
-            return View(data);
+            var idSinhViens = sinhViens.Select(sv => sv.IdSinhVien).ToList();
+
+            // Lấy tất cả báo cáo của đề tài này
+            var allBaoCaos = await _context.BaoCaoNops
+                .Include(bc => bc.IdSinhVienNavigation)
+                    .ThenInclude(sv => sv!.IdNguoiDungNavigation)
+                .Where(bc => bc.IdDeTai == id && bc.IdSinhVien.HasValue && idSinhViens.Contains(bc.IdSinhVien.Value))
+                .OrderByDescending(bc => bc.NgayNop)
+                .ToListAsync();
+
+            // Phân loại báo cáo
+            var baoCaoDeCuong = MapBaoCaoToDetail(allBaoCaos.Where(bc => bc.LoaiBaoCao == "DE_CUONG").ToList());
+            var baoCaoGiuaKy = MapBaoCaoToDetail(allBaoCaos.Where(bc => bc.LoaiBaoCao == "GIUA_KY").ToList());
+            var baoCaoCuoiKy = MapBaoCaoToDetail(allBaoCaos.Where(bc => bc.LoaiBaoCao == "CUOI_KY").ToList());
+
+            var model = new QuanLyNopBaoCaoDetailViewModel
+            {
+                IdDeTai = deTai.Id,
+                MaDeTai = deTai.MaDeTai,
+                TenDeTai = deTai.TenDeTai,
+                TenChuyenNganh = deTai.IdChuyenNganhNavigation?.TenChuyenNganh,
+                TenDot = dot?.TenDot,
+                DanhSachSinhVien = sinhViens,
+                BaoCaoDeCuong = baoCaoDeCuong,
+                BaoCaoGiuaKy = baoCaoGiuaKy,
+                BaoCaoCuoiKy = baoCaoCuoiKy,
+                DeadlineDeCuong = dot?.NgayKetThucNopDeCuong?.ToString("dd/MM/yyyy"),
+                DeadlineGiuaKy = dot?.NgayKetThucBaoCaoGiuaKi?.ToString("dd/MM/yyyy"),
+                DeadlineCuoiKy = dot?.NgayKetThucBaoCaoCuoiKi?.ToString("dd/MM/yyyy")
+            };
+
+            return View(model);
+        }
+
+        private List<BaoCaoNopGVDetailItem> MapBaoCaoToDetail(List<BaoCaoNop> baoCaos)
+        {
+            var result = new List<BaoCaoNopGVDetailItem>();
+
+            // Group by sinh viên để xác định version
+            var grouped = baoCaos.GroupBy(bc => bc.IdSinhVien);
+
+            foreach (var group in grouped)
+            {
+                var orderedList = group.OrderByDescending(bc => bc.NgayNop).ToList();
+                for (int i = 0; i < orderedList.Count; i++)
+                {
+                    var bc = orderedList[i];
+                    var trangThaiText = bc.TrangThai switch
+                    {
+                        "DA_DUYET" => "Đã duyệt",
+                        "TU_CHOI" => "Từ chối",
+                        "CHO_DUYET" => "Chờ duyệt",
+                        _ => "Chưa xử lý"
+                    };
+
+                    var trangThaiCss = bc.TrangThai switch
+                    {
+                        "DA_DUYET" => "status-approved",
+                        "TU_CHOI" => "status-rejected",
+                        "CHO_DUYET" => "status-pending",
+                        _ => "status-default"
+                    };
+
+                    result.Add(new BaoCaoNopGVDetailItem
+                    {
+                        IdBaoCao = bc.Id,
+                        IdSinhVien = bc.IdSinhVien,
+                        TenSinhVien = bc.IdSinhVienNavigation?.IdNguoiDungNavigation?.HoTen,
+                        Mssv = bc.IdSinhVienNavigation?.Mssv,
+                        TenBaoCao = bc.TenBaoCao,
+                        FilePath = bc.FileBaocao,
+                        TenFile = !string.IsNullOrEmpty(bc.FileBaocao) ? Path.GetFileName(bc.FileBaocao) : null,
+                        NgayNop = bc.NgayNop?.ToString("dd/MM/yyyy HH:mm"),
+                        GhiChuGui = bc.GhiChuGui,
+                        NhanXet = bc.NhanXet,
+                        TrangThai = bc.TrangThai,
+                        TrangThaiText = trangThaiText,
+                        TrangThaiCss = trangThaiCss,
+                        PhienBan = orderedList.Count - i,
+                        LaBanMoiNhat = i == 0
+                    });
+                }
+            }
+
+            return result.OrderByDescending(r => r.NgayNop).ToList();
         }
 
         [HttpPost]
@@ -103,7 +294,47 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return Json(new { success = true, message = request.Action == "approve" ? "Duyệt thành công!" : "Đã từ chối báo cáo." });
+            return Json(new { success = true, message = request.Action == "approve" ? "Duyệt báo cáo thành công!" : "Đã từ chối báo cáo." });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetBaoCaoDetail(int id)
+        {
+            var baoCao = await _context.BaoCaoNops
+                .Include(bc => bc.IdSinhVienNavigation)
+                    .ThenInclude(sv => sv!.IdNguoiDungNavigation)
+                .FirstOrDefaultAsync(bc => bc.Id == id);
+
+            if (baoCao == null)
+                return Json(new { success = false, message = "Không tìm thấy báo cáo." });
+
+            var trangThaiText = baoCao.TrangThai switch
+            {
+                "DA_DUYET" => "Đã duyệt",
+                "TU_CHOI" => "Từ chối",
+                "CHO_DUYET" => "Chờ duyệt",
+                _ => "Chưa xử lý"
+            };
+
+            return Json(new
+            {
+                success = true,
+                data = new
+                {
+                    id = baoCao.Id,
+                    tenBaoCao = baoCao.TenBaoCao,
+                    loaiBaoCao = baoCao.LoaiBaoCao,
+                    tenSinhVien = baoCao.IdSinhVienNavigation?.IdNguoiDungNavigation?.HoTen,
+                    mssv = baoCao.IdSinhVienNavigation?.Mssv,
+                    ngayNop = baoCao.NgayNop?.ToString("dd/MM/yyyy HH:mm"),
+                    filePath = baoCao.FileBaocao,
+                    tenFile = !string.IsNullOrEmpty(baoCao.FileBaocao) ? Path.GetFileName(baoCao.FileBaocao) : null,
+                    ghiChuGui = baoCao.GhiChuGui,
+                    nhanXet = baoCao.NhanXet,
+                    trangThai = baoCao.TrangThai,
+                    trangThaiText = trangThaiText
+                }
+            });
         }
     }
 

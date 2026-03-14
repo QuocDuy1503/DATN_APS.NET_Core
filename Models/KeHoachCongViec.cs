@@ -43,6 +43,9 @@ public partial class KeHoachCongViec
     [Column("ghi_chu")]
     public string? GhiChu { get; set; }
 
+    [Column("nhan_xet_gv")]
+    public string? NhanXetGiangVien { get; set; }
+
     [Column("nguoi_phu_trach")]
     public string? NguoiPhuTrach { get; set; }
 

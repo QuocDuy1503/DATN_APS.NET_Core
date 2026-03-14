@@ -178,40 +178,35 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
 
             var dsSinhVien = await GetDanhSachSinhVienCungDeTai();
 
-            // Lấy nhận xét GV từ file minh chứng cũ (nếu có)
-            var nhanXet = keHoach.IdFileMinhChung != null 
-                ? (await _context.BaoCaoNops.FindAsync(keHoach.IdFileMinhChung))?.NhanXet 
-                : null;
-
-            var vm = new KeHoachDetailViewModel
-            {
-                Id = keHoach.Id,
-                Stt = keHoach.Stt,
-                TenCongViec = keHoach.TenCongViec,
-                MoTaCongViec = keHoach.MoTaCongViec,
-                NguoiPhuTrach = keHoach.NguoiPhuTrach,
-                NgayBatDau = keHoach.NgayBatDau?.ToString("yyyy-MM-dd"),
-                NgayKetThuc = keHoach.NgayKetThuc?.ToString("yyyy-MM-dd"),
-                NgayBatDauThucTe = keHoach.NgayBatDauThucTe?.ToString("yyyy-MM-dd"),
-                NgayKetThucThucTe = keHoach.NgayKetThucThucTe?.ToString("yyyy-MM-dd"),
-                TrangThai = keHoach.TrangThai,
-                StatusText = MapStatusText(keHoach.TrangThai),
-                StatusCss = MapStatusCss(keHoach.TrangThai),
-                GhiChu = keHoach.GhiChu,
-                TenDot = keHoach.IdDotNavigation?.TenDot,
-                NhanXetGiangVien = nhanXet,
-                DanhSachSinhVienDeTai = dsSinhVien,
-                IsEditable = keHoach.TrangThai != "Đã duyệt",
-                // Danh sách file minh chứng
-                DanhSachFileMinhChung = keHoach.FileMinhChungs.Select(f => new FileMinhChungItem
-                {
-                    Id = f.Id,
-                    TenFile = f.TenFile,
-                    LinkFile = f.DuongDan,
-                    LoaiFile = f.LoaiFile,
-                    NgayNop = f.NgayNop
-                }).ToList()
-            };
+                        var vm = new KeHoachDetailViewModel
+                        {
+                            Id = keHoach.Id,
+                            Stt = keHoach.Stt,
+                            TenCongViec = keHoach.TenCongViec,
+                            MoTaCongViec = keHoach.MoTaCongViec,
+                            NguoiPhuTrach = keHoach.NguoiPhuTrach,
+                            NgayBatDau = keHoach.NgayBatDau?.ToString("yyyy-MM-dd"),
+                            NgayKetThuc = keHoach.NgayKetThuc?.ToString("yyyy-MM-dd"),
+                            NgayBatDauThucTe = keHoach.NgayBatDauThucTe?.ToString("yyyy-MM-dd"),
+                            NgayKetThucThucTe = keHoach.NgayKetThucThucTe?.ToString("yyyy-MM-dd"),
+                            TrangThai = keHoach.TrangThai,
+                            StatusText = MapStatusText(keHoach.TrangThai),
+                            StatusCss = MapStatusCss(keHoach.TrangThai),
+                            GhiChu = keHoach.GhiChu,
+                            TenDot = keHoach.IdDotNavigation?.TenDot,
+                            NhanXetGiangVien = keHoach.NhanXetGiangVien,
+                            DanhSachSinhVienDeTai = dsSinhVien,
+                            IsEditable = keHoach.TrangThai != "Đã duyệt",
+                            // Danh sách file minh chứng
+                            DanhSachFileMinhChung = keHoach.FileMinhChungs.Select(f => new FileMinhChungItem
+                            {
+                                Id = f.Id,
+                                TenFile = f.TenFile,
+                                LinkFile = f.DuongDan,
+                                LoaiFile = f.LoaiFile,
+                                NgayNop = f.NgayNop
+                            }).ToList()
+                        };
 
             return View(vm);
         }

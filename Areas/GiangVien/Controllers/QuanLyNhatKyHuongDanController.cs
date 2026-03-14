@@ -3,6 +3,7 @@ using DATN_TMS.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
+using X.PagedList.Extensions;
 
 namespace DATN_TMS.Areas.GiangVien.Controllers
 {
@@ -31,19 +32,39 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page)
         {
+            int pageSize = 10;
+            int pageNumber = page ?? 1;
+
             var maGV = HttpContext.Session.GetString("UserCode");
             var giangVien = await _context.GiangViens
                 .Include(gv => gv.IdNguoiDungNavigation)
                 .FirstOrDefaultAsync(gv => gv.MaGv == maGV);
 
             if (giangVien == null)
-                return View(new List<NhatKyHuongDanGVItem>());
+            {
+                ViewBag.ThongBao = "Không tìm thấy thông tin giảng viên.";
+                return View(new List<NhatKyHuongDanGVItem>().ToPagedList(1, pageSize));
+            }
 
             ViewBag.TenGV = giangVien.IdNguoiDungNavigation?.HoTen;
 
+            // Lấy đợt đồ án hiện tại
+            var dot = await _context.DotDoAns
+                .Where(d => d.TrangThai == true)
+                .OrderByDescending(d => d.Id)
+                .FirstOrDefaultAsync();
+
+            if (dot == null)
+            {
+                ViewBag.ThongBao = "Hiện tại chưa có đợt đồ án nào đang hoạt động.";
+                return View(new List<NhatKyHuongDanGVItem>().ToPagedList(1, pageSize));
+            }
+
+            // Lấy danh sách nhật ký theo đợt
             var data = await _context.NhatKyHuongDans
+                .Where(n => n.IdDot == dot.Id)
                 .OrderByDescending(n => n.NgayHop)
                 .Select(n => new NhatKyHuongDanGVItem
                 {
@@ -61,60 +82,7 @@ namespace DATN_TMS.Areas.GiangVien.Controllers
                 })
                 .ToListAsync();
 
-            return View(data);
+            return View(data.ToPagedList(pageNumber, pageSize));
         }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([FromBody] NhatKyGVCreateDto dto)
-        {
-            if (string.IsNullOrWhiteSpace(dto.NgayHop) || string.IsNullOrWhiteSpace(dto.ThoiGianHop)
-                || string.IsNullOrWhiteSpace(dto.HinhThucHop) || string.IsNullOrWhiteSpace(dto.MucTieuBuoiHop)
-                || string.IsNullOrWhiteSpace(dto.NoiDungHop))
-            {
-                return Json(new { success = false, message = "Vui lòng điền đầy đủ các trường bắt buộc." });
-            }
-
-            var maGV = HttpContext.Session.GetString("UserCode");
-            var giangVien = await _context.GiangViens
-                .Include(gv => gv.IdNguoiDungNavigation)
-                .FirstOrDefaultAsync(gv => gv.MaGv == maGV);
-
-            var dot = await _context.DotDoAns
-                .Where(d => d.TrangThai == true)
-                .OrderByDescending(d => d.Id)
-                .FirstOrDefaultAsync();
-
-            var nhatKy = new NhatKyHuongDan
-            {
-                IdDot = dot?.Id,
-                NgayHop = DateOnly.TryParse(dto.NgayHop, out var nh) ? nh : null,
-                ThoiGianHop = TimeOnly.TryParse(dto.ThoiGianHop, out var th) ? th : null,
-                HinhThucHop = dto.HinhThucHop,
-                DiaDiemHop = dto.DiaDiemHop,
-                ThanhVienThamDu = dto.ThanhVienThamDu,
-                TenGvhd = dto.TenGvhd ?? giangVien?.IdNguoiDungNavigation?.HoTen,
-                MucTieuBuoiHop = dto.MucTieuBuoiHop,
-                NoiDungHop = dto.NoiDungHop,
-                ActionList = dto.ActionList
-            };
-
-            _context.NhatKyHuongDans.Add(nhatKy);
-            await _context.SaveChangesAsync();
-            return Json(new { success = true });
-        }
-    }
-
-    public class NhatKyGVCreateDto
-    {
-        public string? NgayHop { get; set; }
-        public string? ThoiGianHop { get; set; }
-        public string? HinhThucHop { get; set; }
-        public string? DiaDiemHop { get; set; }
-        public string? ThanhVienThamDu { get; set; }
-        public string? TenGvhd { get; set; }
-        public string? MucTieuBuoiHop { get; set; }
-        public string? NoiDungHop { get; set; }
-        public string? ActionList { get; set; }
     }
 }

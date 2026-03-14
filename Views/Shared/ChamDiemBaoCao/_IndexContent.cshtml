@@ -1,0 +1,155 @@
+﻿@model List<DATN_TMS.Areas.GiangVien.Models.HoiDongChamDiemViewModel>
+
+<style>
+    .content-body.chamdiem-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .chamdiem-page .content-card {
+        background: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 140px);
+        font-family: inherit;
+    }
+    .page-header-row { margin-bottom: 15px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+    .page-description { font-size: 13px; color: #6c757d; margin-top: 4px; }
+
+    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; white-space: nowrap; }
+    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    tbody tr:hover { background: #f9f9f9; }
+
+    .status-badge { padding: 5px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+    .status-cuoiky { background: #0d6efd; }
+    .status-giuaky { background: #17a2b8; }
+    .status-done { background: #16a34a; }
+    .status-pending { background: #f59e0b; }
+    .status-notyet { background: #dc3545; }
+    .status-role { background: #6c757d; }
+    .status-count { background: #343a40; }
+
+    .btn-action { padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; border: none; cursor: pointer; }
+    .btn-view { background: #0d6efd; color: #fff; }
+    .btn-view:hover { background: #0b5ed7; color: #fff; }
+    .btn-disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #6c757d; }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; color: #d1d5db; }
+    .empty-state h5 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #374151; }
+    .empty-state p { font-size: 13px; color: #6b7280; }
+
+    .alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; }
+    .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert .btn-close { background: none; border: none; font-size: 18px; cursor: pointer; color: inherit; opacity: 0.7; }
+    .alert .btn-close:hover { opacity: 1; }
+</style>
+
+<div class="content-body chamdiem-page">
+    <div class="content-card">
+        <div class="page-header-row">
+            <h2 class="page-title">Chấm điểm báo cáo</h2>
+            <p class="page-description">Danh sách các hội đồng bạn tham gia chấm điểm</p>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                <span>@TempData["SuccessMessage"]</span>
+                <button type="button" class="btn-close" onclick="this.parentElement.remove();">&times;</button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                <span>@TempData["ErrorMessage"]</span>
+                <button type="button" class="btn-close" onclick="this.parentElement.remove();">&times;</button>
+            </div>
+        }
+
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <h5>Không có hội đồng nào</h5>
+                <p>Bạn chưa được phân vào hội đồng chấm điểm nào hoặc hội đồng chưa được duyệt.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">STT</th>
+                                <th style="min-width: 200px;">Tên hội đồng</th>
+                                <th style="width: 100px;">Loại</th>
+                                <th style="width: 120px;">Ngày báo cáo</th>
+                                <th style="width: 150px;">Địa điểm</th>
+                                <th style="width: 120px;">Vai trò</th>
+                                <th style="width: 100px;">Số đề tài</th>
+                                <th style="width: 120px;">Trạng thái</th>
+                                <th style="width: 100px;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ var stt = 1; }
+                            @foreach (var hd in Model)
+                            {
+                                <tr>
+                                    <td>@stt</td>
+                                    <td>
+                                        <strong>@hd.TenHoiDong</strong><br />
+                                        <small style="color: #6b7280;">@hd.TenBoMon</small>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge @(hd.LoaiHoiDong == "CUOI_KY" ? "status-cuoiky" : "status-giuaky")">
+                                            @hd.LoaiHoiDongDisplay
+                                        </span>
+                                    </td>
+                                    <td>@(hd.NgayBaoCao.HasValue ? hd.NgayBaoCao.Value.ToString("dd/MM/yyyy") : "-")</td>
+                                    <td>@(string.IsNullOrEmpty(hd.DiaDiem) ? "-" : hd.DiaDiem)</td>
+                                    <td><span class="status-badge status-role">@hd.VaiTroDisplay</span></td>
+                                    <td><span class="status-badge status-count">@hd.SoLuongDeTai đề tài</span></td>
+                                    <td>
+                                        @if (hd.DaChamDiem)
+                                        {
+                                            <span class="status-badge status-done"><i class="fa-solid fa-check"></i> Đã chấm</span>
+                                        }
+                                        else if (!hd.CoDenNgayBaoCao)
+                                        {
+                                            <span class="status-badge status-pending"><i class="fa-solid fa-clock"></i> Chưa đến</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-notyet"><i class="fa-solid fa-exclamation"></i> Chưa chấm</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (hd.CoDenNgayBaoCao)
+                                        {
+                                            <a href="@Url.Action("Detail", new { id = hd.Id })" class="btn-action btn-view">
+                                                <i class="fa-solid fa-eye"></i> Chi tiết
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn-action btn-disabled" disabled><i class="fa-solid fa-lock"></i> Chờ</button>
+                                        }
+                                    </td>
+                                </tr>
+                                stt++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>

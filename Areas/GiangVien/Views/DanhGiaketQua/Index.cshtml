@@ -1,149 +1,305 @@
-﻿@{
+﻿@model DanhGiaKetQuaIndexViewModel
+@{
     ViewData["Title"] = "Đánh giá kết quả đề tài";
 }
 
 <style>
-    .content-body.dotdoan-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
-    .dotdoan-page .content-card {
+    :root { --primary: #484BE0; }
+
+    .content-body.dg-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .dg-page .content-card {
         background: #fff; border-radius: 8px; padding: 20px;
         box-shadow: 0 0 10px rgba(0,0,0,0.05); display: flex; flex-direction: column;
         min-height: calc(100vh - 140px); font-family: inherit;
     }
+
     .page-header-row { margin-bottom: 15px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
-    .toolbar-row { display:flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-    .filter-wrapper { display:flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .dot-info { background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: #333; display: flex; align-items: center; gap: 10px; }
+    .dot-info i { color: #2563eb; font-size: 16px; }
+    .dot-info strong { color: #1e3a5f; }
+
+    .toolbar-row { display: flex; justify-content: flex-end; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
     .filter-item { display: flex; flex-direction: column; gap: 4px; }
     .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
     .toolbar-input, .form-control { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
-    .toolbar-input:focus, .form-control:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+    .toolbar-input:focus, .form-control:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
 
     .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
-    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 300px); overflow-y: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
-    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; }
-    tbody td { padding:12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
+    thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; line-height: 1.4; white-space: nowrap; }
+    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
     tbody tr:hover { background: #f9f9f9; }
 
+    .td-ellipsis { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
     .toggle-btn { width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: .15s ease; font-size: 13px; color: #111827; }
-    .toggle-btn:hover { background: #f3f4f6; }
+    .toggle-btn:hover { background: #f3f4f6; border-color: var(--primary); color: var(--primary); }
+
     .detail-row { background: #f9fafb; }
+    .detail-row > td { padding: 16px !important; }
+
     .student-table { width: 100%; margin: 0; border: 1px solid #e5e7eb; border-radius: 8px; border-collapse: separate; border-spacing: 0; overflow: hidden; background: #fff; }
-    .student-table thead th { background: #f8fafc; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; font-size: 12.5px !important; }
-    .student-table tbody td { font-size: 12.5px !important; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #111827; }
+    .student-table thead th { background: #f8fafc; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; font-size: 12px !important; font-weight: 600; color: #374151; }
+    .student-table tbody td { font-size: 12px !important; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #111827; }
     .student-table tbody tr:last-child td { border-bottom: none; }
-    .student-table td[rowspan] { vertical-align: middle; text-align: center; font-weight: 600; color: #374151; }
+    .student-table td[rowspan] { vertical-align: middle; text-align: center; }
+
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
+    .status-approved { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+
+    .file-link { color: #2563eb; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 12px; }
+    .file-link:hover { text-decoration: underline; }
 
     .edit-icon { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: .15s ease; }
     .edit-icon i { font-size: 14px; color: #111827; }
-    .edit-icon:hover { background: #f3f4f6; }
-    .edit-icon.is-red i { color: #e74c3c; }
-    .plan-cell { vertical-align: middle; text-align: center; padding: 0; }
-    .plan-center { display: flex; align-items: center; justify-content: center; height: 100%; min-height: 100%; text-align: center; }
+    .edit-icon:hover { background: #f3f4f6; border-color: var(--primary); }
+    .edit-icon:hover i { color: var(--primary); }
+
+    .plan-cell { vertical-align: middle; text-align: center; }
+    .score-cell { font-weight: 600; color: #1e40af; font-size: 13px; }
+    .no-score { color: #9ca3af; font-style: italic; font-weight: 400; }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: #6b7280; }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; color: #d1d5db; }
+    .empty-state h4 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #374151; }
+    .empty-state p { font-size: 13px; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 9999; }
+    .modal-overlay.show { display: flex; }
+    .modal-dialog { background: #fff; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+    .modal-title { font-size: 16px; font-weight: 700; color: #1e293b; }
+    .btn-close-modal { background: none; border: none; font-size: 22px; cursor: pointer; color: #6b7280; line-height: 1; }
+    .btn-close-modal:hover { color: #374151; }
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 16px 20px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 600; font-size: 13px; color: #374151; margin-bottom: 6px; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; box-sizing: border-box; }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .score-input-row { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+    .score-input-row:last-child { border-bottom: none; }
+    .score-input-row .sv-info { flex: 1; }
+    .score-input-row .sv-name { font-weight: 600; color: #1e293b; }
+    .score-input-row .sv-mssv { font-size: 11px; color: #6b7280; }
+    .score-input-row input[type="number"] { width: 100px; text-align: center; }
+
+    .btn-primary { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: var(--primary); color: #fff; transition: 0.15s; }
+    .btn-primary:hover { background: #3538b2; }
+    .btn-secondary { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #374151; transition: 0.15s; }
+    .btn-secondary:hover { background: #f3f4f6; }
+
+    .alert-warning { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; padding: 12px 16px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .alert-warning i { font-size: 16px; }
 </style>
 
-<div class="content-body dotdoan-page">
+<div class="content-body dg-page">
     <div class="content-card">
         <div class="page-header-row">
             <h2 class="page-title">Đánh giá kết quả đề tài</h2>
         </div>
 
-        <div class="toolbar-row">
-            <div class="filter-wrapper">
+        @if (Model.CoDot)
+        {
+            <div class="dot-info">
+                <i class="fa-solid fa-calendar-check"></i>
+                Đợt đồ án: <strong>@Model.TenDot</strong>
+            </div>
+
+            <div class="toolbar-row">
                 <div class="filter-item">
-                    <span class="filter-label">Năm học</span>
-                    <select class="form-control" style="width: 160px;">
-                        <option value="">-- Tất cả --</option>
-                        <option>2023-2024</option>
-                        <option>2024-2025</option>
-                        <option>2025-2026</option>
-                    </select>
-                </div>
-                <div class="filter-item">
-                    <span class="filter-label">Học kì</span>
-                    <select class="form-control" style="width: 140px;">
-                        <option value="">-- Tất cả --</option>
-                        <option>101</option>
-                        <option>102</option>
-                        <option>103</option>
-                    </select>
+                    <span class="filter-label">Tìm kiếm</span>
+                    <input type="text" id="txtSearch" class="toolbar-input" placeholder="Mã đề tài, Tên đề tài..." style="width: 280px;" />
                 </div>
             </div>
 
-            <div style="display:flex; align-items:flex-end; gap:10px;">
-                <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
-                    <span class="filter-label">Tìm kiếm</span>
-                    <input type="text" class="toolbar-input" placeholder="Mã đề tài, Tên đề tài..." style="width: 250px;" />
+            <div class="table-responsive">
+                <div class="table-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;"></th>
+                                <th style="width: 100px;">Mã đề tài</th>
+                                <th>Tên đề tài</th>
+                                <th style="width: 140px;">Chuyên ngành</th>
+                                <th style="width: 120px;">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            @if (Model.DanhSachDeTai.Any())
+                            {
+                                foreach (var dt in Model.DanhSachDeTai)
+                                {
+                                    <tr class="parent-row" data-id="@dt.IdDeTai" data-co-baocao="@dt.CoBaoCaoCuoiKyDuyet.ToString().ToLower()">
+                                        <td>
+                                            <button class="toggle-btn" onclick="toggleRow(this)">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
+                                        </td>
+                                        <td><strong>@dt.MaDeTai</strong></td>
+                                        <td class="td-ellipsis" title="@dt.TenDeTai">@dt.TenDeTai</td>
+                                        <td>@dt.ChuyenNganh</td>
+                                        <td>
+                                            <span class="status-badge @dt.TrangThaiCss">@dt.TrangThaiText</span>
+                                        </td>
+                                    </tr>
+                                    <tr class="detail-row" style="display:none;" data-parent="@dt.IdDeTai">
+                                        <td colspan="5">
+                                            <table class="student-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Mã số sinh viên</th>
+                                                        <th>Họ và tên</th>
+                                                        <th>Khóa</th>
+                                                        <th style="text-align:center; width:100px;">Điểm</th>
+                                                        <th style="width:200px;">Tài liệu báo cáo</th>
+                                                        <th style="text-align:center; width:120px;">Đánh giá</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                                                        var svList = dt.DanhSachSV;
+                                                        var svCount = svList.Count;
+                                                        var allHaveScore = svList.All(sv => sv.DaChamDiem);
+                                                    }
+                                                    @for (int i = 0; i < svCount; i++)
+                                                    {
+                                                        var sv = svList[i];
+                                                        <tr>
+                                                            <td>@sv.Mssv</td>
+                                                            <td>@sv.HoTen</td>
+                                                            <td>@sv.KhoaHoc</td>
+                                                            @if (i == 0)
+                                                            {
+                                                                @if (allHaveScore)
+                                                                {
+                                                                    <td style="text-align:center;" class="score-cell">
+                                                                        @(sv.DiemGVHD?.ToString("F1") ?? "---")
+                                                                    </td>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <td rowspan="@svCount" class="plan-cell">
+                                                                        <span class="no-score">Chưa nhập điểm</span>
+                                                                    </td>
+                                                                }
+
+                                                                <td rowspan="@svCount" class="plan-cell">
+                                                                    @if (dt.CoBaoCaoCuoiKyDuyet && !string.IsNullOrEmpty(dt.FileBaoCaoCuoiKy))
+                                                                    {
+                                                                        <a href="@dt.FileBaoCaoCuoiKy" target="_blank" class="file-link">
+                                                                            <i class="fa-solid fa-file-pdf"></i>
+                                                                            @(dt.TenFileBaoCao ?? "Xem file")
+                                                                        </a>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="no-score">Chưa có báo cáo</span>
+                                                                    }
+                                                                </td>
+
+                                                                <td rowspan="@svCount" class="plan-cell">
+                                                                    <button class="edit-icon" title="Chấm điểm / nhận xét"
+                                                                            onclick="openChamDiemModal(@dt.IdDeTai, @dt.CoBaoCaoCuoiKyDuyet.ToString().ToLower())">
+                                                                        <i class="fa-solid fa-pen-to-square"></i>
+                                                                    </button>
+                                                                </td>
+                                                            }
+                                                            else if (allHaveScore)
+                                                            {
+                                                                <td style="text-align:center;" class="score-cell">
+                                                                    @(sv.DiemGVHD?.ToString("F1") ?? "---")
+                                                                </td>
+                                                            }
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="5">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-folder-open"></i>
+                                            <h4>Chưa có đề tài</h4>
+                                            <p>Bạn chưa hướng dẫn đề tài nào được hội đồng duyệt trong đợt này.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fa-solid fa-calendar-xmark"></i>
+                <h4>Chưa có đợt đồ án</h4>
+                <p>Hiện tại chưa có đợt đồ án nào đang hoạt động.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Chấm điểm -->
+<div class="modal-overlay" id="chamDiemModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <div class="modal-title">Chấm điểm và nhận xét</div>
+            <button type="button" class="btn-close-modal" id="btnCloseModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert-warning" id="alertNoBaoCao" style="display:none;">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                <span>Chưa thể chấm điểm vì chưa có tài liệu báo cáo cuối kỳ được duyệt.</span>
+            </div>
+
+            <div id="chamDiemForm">
+                <div class="form-group">
+                    <label>Đề tài</label>
+                    <input type="text" id="mdTenDeTai" readonly style="background:#f3f4f6;">
+                </div>
+
+                <div class="form-group">
+                    <label>Điểm sinh viên</label>
+                    <div id="danhSachDiem">
+                        <!-- Danh sách sinh viên và input điểm -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nhận xét</label>
+                    <textarea id="txtNhanXet" placeholder="Nhập nhận xét cho sinh viên..."></textarea>
                 </div>
             </div>
         </div>
-
-        <div class="table-responsive">
-            <div class="table-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;"></th>
-                            <th>Mã đề tài</th>
-                            <th>Tên đề tài</th>
-                            <th>Ngành</th>
-                            <th style="text-align:center;">Số lượng SV</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="parent-row">
-                            <td><button class="toggle-btn" onclick="toggleRow(this)"><i class="fa-solid fa-plus"></i></button></td>
-                            <td>DT01</td>
-                            <td>Kiến trúc Học sâu lai cho phân đoạn khối u não trên ảnh MRI đa phương thức với Bộ dữ liệu BraTS</td>
-                            <td>CNTT/CNPM</td>
-                            <td style="text-align:center;">2</td>
-                        </tr>
-                        <tr class="detail-row" style="display:none;">
-                            <td colspan="5">
-                                <table class="student-table">
-                                    <thead>
-                                        <tr>
-                                            <th>MSSV</th>
-                                            <th>Họ và tên sinh viên</th>
-                                            <th>Khóa</th>
-                                            <th>Trạng thái</th>
-                                            <th>Đánh giá và nhận xét</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>2174802010297</td>
-                                            <td>Trương Quốc Duy</td>
-                                            <td>K27</td>
-                                            <td rowspan="2" class="plan-cell">
-                                                <div class="plan-center">Chưa nhập điểm</div>
-                                            </td>
-                                            <td rowspan="2" class="plan-cell">
-                                                <div class="plan-center">
-                                                    <button class="edit-icon is-red" title="Chấm điểm / nhận xét">
-                                                        <i class="fa-solid fa-pen-to-square"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>2174802010311</td>
-                                            <td>Nguyễn Văn A</td>
-                                            <td>K27</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="btnCancelModal">Hủy</button>
+            <button type="button" class="btn-primary" id="btnSaveDiem">
+                <i class="fa-solid fa-check"></i> Lưu điểm
+            </button>
         </div>
     </div>
 </div>
 
+@Html.AntiForgeryToken()
+
 <script>
+    // Toggle row
     window.toggleRow = function(btn) {
         const tr = btn.closest('tr');
         const nextTr = tr.nextElementSibling;
@@ -160,4 +316,127 @@
             }
         }
     }
+
+    // Search
+    var searchTimeout = null;
+    var searchInput = document.getElementById('txtSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                var keyword = searchInput.value.toLowerCase();
+                document.querySelectorAll('.parent-row').forEach(function(row) {
+                    var match = row.textContent.toLowerCase().indexOf(keyword) > -1;
+                    row.style.display = match ? '' : 'none';
+                    var detailRow = row.nextElementSibling;
+                    if (detailRow && detailRow.classList.contains('detail-row')) {
+                        detailRow.style.display = 'none';
+                        row.querySelector('.toggle-btn i').classList.remove('fa-minus');
+                        row.querySelector('.toggle-btn i').classList.add('fa-plus');
+                    }
+                });
+            }, 400);
+        });
+    }
+
+    // Modal
+    var currentDeTaiId = null;
+
+    function openChamDiemModal(idDeTai, coBaoCao) {
+        currentDeTaiId = idDeTai;
+
+        if (!coBaoCao) {
+            document.getElementById('alertNoBaoCao').style.display = 'flex';
+            document.getElementById('chamDiemForm').style.display = 'none';
+            document.getElementById('btnSaveDiem').style.display = 'none';
+        } else {
+            document.getElementById('alertNoBaoCao').style.display = 'none';
+            document.getElementById('chamDiemForm').style.display = 'block';
+            document.getElementById('btnSaveDiem').style.display = 'inline-flex';
+        }
+
+        // Load dữ liệu
+        fetch('@Url.Action("GetDeTaiDetail")' + '?id=' + idDeTai)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('mdTenDeTai').value = data.data.maDeTai + ' - ' + data.data.tenDeTai;
+                    document.getElementById('txtNhanXet').value = data.data.nhanXet || '';
+
+                    var diemHtml = '';
+                    data.data.sinhViens.forEach(function(sv) {
+                        diemHtml += '<div class="score-input-row">';
+                        diemHtml += '  <div class="sv-info">';
+                        diemHtml += '    <div class="sv-name">' + sv.hoTen + '</div>';
+                        diemHtml += '    <div class="sv-mssv">' + sv.mssv + '</div>';
+                        diemHtml += '  </div>';
+                        diemHtml += '  <input type="number" class="diem-input" data-id="' + sv.idSinhVien + '" min="0" max="10" step="0.1" placeholder="0-10" value="' + (sv.diem ?? '') + '">';
+                        diemHtml += '</div>';
+                    });
+                    document.getElementById('danhSachDiem').innerHTML = diemHtml;
+
+                    document.getElementById('chamDiemModal').classList.add('show');
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra.');
+                }
+            });
+    }
+
+    // Close modal
+    document.getElementById('btnCloseModal').addEventListener('click', function() {
+        document.getElementById('chamDiemModal').classList.remove('show');
+    });
+    document.getElementById('btnCancelModal').addEventListener('click', function() {
+        document.getElementById('chamDiemModal').classList.remove('show');
+    });
+    document.getElementById('chamDiemModal').addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
+
+    // Save điểm
+    document.getElementById('btnSaveDiem').addEventListener('click', function() {
+        var danhSachDiem = [];
+        document.querySelectorAll('.diem-input').forEach(function(input) {
+            var diem = parseFloat(input.value);
+            if (!isNaN(diem) && diem >= 0 && diem <= 10) {
+                danhSachDiem.push({
+                    idSinhVien: parseInt(input.getAttribute('data-id')),
+                    diem: diem
+                });
+            }
+        });
+
+        if (danhSachDiem.length === 0) {
+            alert('Vui lòng nhập điểm hợp lệ (0-10) cho ít nhất một sinh viên.');
+            return;
+        }
+
+        var nhanXet = document.getElementById('txtNhanXet').value.trim();
+        var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        fetch('@Url.Action("ChamDiem")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+            body: JSON.stringify({
+                idDeTai: currentDeTaiId,
+                nhanXet: nhanXet,
+                danhSachDiem: danhSachDiem
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Có lỗi xảy ra.');
+            }
+        });
+    });
+
+    // Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.getElementById('chamDiemModal').classList.remove('show');
+        }
+    });
 </script>

@@ -91,10 +91,25 @@ namespace DATN_TMS.Models
         [Column("trang_thai")]
         public bool? TrangThai { get; set; }
 
+        // Cột mới cho chức năng duyệt hội đồng
+        [Column("trang_thai_duyet")]
+        public string? TrangThaiDuyet { get; set; } = "CHO_DUYET"; // CHO_DUYET | DA_DUYET | TU_CHOI
+
+        [Column("id_nguoi_duyet")]
+        public int? IdNguoiDuyet { get; set; }
+
+        [Column("ngay_duyet")]
+        public DateTime? NgayDuyet { get; set; }
+
+        [Column("ghi_chu_duyet")]
+        public string? GhiChuDuyet { get; set; }
+
         public virtual BoMon? IdBoMonNavigation { get; set; }
         public virtual DotDoAn? IdDotNavigation { get; set; }
         [ForeignKey("IdNguoiTao")]
         public virtual NguoiDung? IdNguoiTaoNavigation { get; set; }
+        [ForeignKey("IdNguoiDuyet")]
+        public virtual NguoiDung? IdNguoiDuyetNavigation { get; set; }
         public virtual ICollection<PhienBaoVe> PhienBaoVes { get; set; } = new List<PhienBaoVe>();
         public virtual ICollection<ThanhVienHdBaoCao> ThanhVienHdBaoCaos { get; set; } = new List<ThanhVienHdBaoCao>();
     }

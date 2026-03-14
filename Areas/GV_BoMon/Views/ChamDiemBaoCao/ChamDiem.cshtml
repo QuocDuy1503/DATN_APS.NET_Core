@@ -1,0 +1,11 @@
+﻿@model DATN_TMS.Areas.GiangVien.Models.ChamDiemPhienBaoVeViewModel
+@{
+    ViewData["Title"] = "Chấm điểm - " + Model.TenSinhVien;
+    Layout = "~/Views/Shared/_LayoutGVBoMon.cshtml";
+}
+
+@await Html.PartialAsync("~/Views/Shared/ChamDiemBaoCao/_ChamDiemContent.cshtml", Model)
+
+@section Scripts {
+    @await Html.PartialAsync("~/Views/Shared/ChamDiemBaoCao/_ChamDiemScripts.cshtml")
+}

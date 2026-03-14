@@ -1,9 +1,10 @@
-﻿<aside class="sidebar">
+﻿@* Sidebar cho Sinh viên *@
+<aside class="sidebar">
     <div class="sidebar-logo">
         <img src="~/images/82cb2669b39c7ae0fe1d18507ed7c609168a2ad3.png" alt="Logo VLU">
     </div>
     <ul class="menu">
-
+        <!-- Đợt đồ án -->
         <li class="menu-item">
             <div class="menu-link active-parent">
                 <span><i class="fa-solid fa-layer-group"></i> Đợt đồ án</span>
@@ -11,60 +12,51 @@
             </div>
             <ul class="submenu open">
                 <li>
-                    <a asp-area="SinhVien"
-                       asp-controller="DangKyNguyenVong"
-                       asp-action="Index"
-                       class="menu-link">Đăng ký nguyện vọng</a>
+                    <a asp-area="SinhVien" asp-controller="DangKyNguyenVong" asp-action="Index">
+                        Đăng ký nguyện vọng
+                    </a>
                 </li>
                 <li>
-                    <a asp-area="SinhVien"
-                       asp-controller="DangKyDeTai"
-                       asp-action="Index"
-                       class="menu-link">Đăng ký đề tài</a>
+                    <a asp-area="SinhVien" asp-controller="DangKyDeTai" asp-action="Index">
+                        Đăng ký đề tài
+                    </a>
                 </li>
                 <li>
-                    <a asp-area="SinhVien"
-                       asp-controller="DeXuatDeTai"
-                       asp-action="Index"
-                       class="menu-link">Đề xuất đề tài</a>
+                    <a asp-area="SinhVien" asp-controller="DeXuatDeTai" asp-action="Index">
+                        Đề xuất đề tài
+                    </a>
                 </li>
             </ul>
         </li>
 
+        <!-- Đề tài -->
         <li class="menu-item">
             <div class="menu-link">
-                <span><i class="fa-solid fa-users"></i> Đề tài</span>
+                <span><i class="fa-solid fa-book"></i> Đề tài</span>
                 <i class="fa-solid fa-chevron-right chevron"></i>
             </div>
             <ul class="submenu">
                 <li>
-                    <a asp-area="SinhVien"
-                       asp-controller="QuanLyKeHoach"
-                       asp-action="Index">
+                    <a asp-area="SinhVien" asp-controller="QuanLyKeHoach" asp-action="Index">
                         Bảng kế hoạch
                     </a>
                 </li>
                 <li>
-                    <a asp-area="SinhVien"
-                       asp-controller="NhatKyHuongDan"
-                       asp-action="Index">
+                    <a asp-area="SinhVien" asp-controller="NhatKyHuongDan" asp-action="Index">
                         Nhật ký hướng dẫn
                     </a>
                 </li>
                 <li>
-                    <a asp-area="SinhVien"
-                       asp-controller="NopBaoCao"
-                       asp-action="Index">
+                    <a asp-area="SinhVien" asp-controller="NopBaoCao" asp-action="Index">
                         Báo cáo
                     </a>
                 </li>
             </ul>
         </li>
+
+        <!-- Kết quả -->
         <li class="menu-item">
-            <a asp-area="SinhVien"
-               asp-controller="KetQuaBaoCao"
-               asp-action="Index"
-               class="menu-link">
+            <a asp-area="SinhVien" asp-controller="KetQuaBaoCao" asp-action="Index" class="menu-link">
                 <span><i class="fa-solid fa-clipboard-check"></i> Xem kết quả đánh giá</span>
             </a>
         </li>
