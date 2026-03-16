@@ -1,13 +1,50 @@
 <script>
     $(document).ready(function() {
-        // Tính tổng điểm
-        function tinhTongDiem() {
-            var tong = 0;
-            $('.diem-input').each(function() {
-                var diem = parseFloat($(this).val()) || 0;
-                tong += diem;
+        var laHoiDongGiuaKy = @(Model.LaHoiDongGiuaKy.ToString().ToLower());
+        var coSinhVien = @(Model.DanhSachSinhVien.Count > 0 ? "true" : "false");
+
+        // Tab switching cho nhiều sinh viên (chỉ với hội đồng cuối kì)
+        $('.sv-tab').on('click', function() {
+            var tabId = $(this).data('tab');
+
+            // Cập nhật active tab
+            $('.sv-tab').removeClass('active');
+            $(this).addClass('active');
+
+            // Hiển thị content tương ứng
+            $('.sv-content').hide();
+            $('#' + tabId).show();
+        });
+
+        // Với hội đồng giữa kì: Sync nhận xét chung cho tất cả sinh viên
+        if (laHoiDongGiuaKy) {
+            $('.nhanxet-chung').on('input', function() {
+                var tcIndex = $(this).data('tc-index');
+                var nhanXet = $(this).val();
+
+                // Cập nhật nhận xét cho tất cả sinh viên (hidden fields)
+                var svIndex = 0;
+                while ($('input[name="DanhSachDiemSinhVien[' + svIndex + '].PhienBaoVeId"]').length > 0) {
+                    // Tạo hidden field cho nhận xét nếu chưa có
+                    var fieldName = 'DanhSachDiemSinhVien[' + svIndex + '].DiemChiTiets[' + tcIndex + '].NhanXet';
+                    if ($('input[name="' + fieldName + '"]').length === 0) {
+                        $('<input type="hidden" name="' + fieldName + '" />').insertAfter($(this));
+                    }
+                    $('input[name="' + fieldName + '"]').val(nhanXet);
+                    svIndex++;
+                }
             });
-            $('#tongDiem').text(tong.toFixed(1));
+        }
+
+        // Tính tổng điểm cho từng sinh viên (chỉ với hội đồng cuối kì)
+        function tinhTongDiemSV(svIndex) {
+            var tong = 0;
+            $('.diem-sv-' + svIndex).each(function() {
+                var diem = parseFloat($(this).val()) || 0;
+                var trongSo = parseFloat($(this).data('trongso')) || 0;
+                tong += diem * trongSo / 100;
+            });
+            $('.tongDiem-sv-' + svIndex).text(tong.toFixed(1));
         }
 
         // Validate điểm không vượt quá tối đa
@@ -20,35 +57,114 @@
             if (val < 0) {
                 $(this).val(0);
             }
-            tinhTongDiem();
+
+            // Tìm svIndex từ class
+            var classes = $(this).attr('class').split(' ');
+            for (var i = 0; i < classes.length; i++) {
+                if (classes[i].startsWith('diem-sv-')) {
+                    var svIndex = classes[i].replace('diem-sv-', '');
+                    tinhTongDiemSV(svIndex);
+                    break;
+                }
+            }
         });
 
-        // Tính tổng khi load
-        tinhTongDiem();
+        // Tính tổng khi load cho tất cả sinh viên (chỉ với hội đồng cuối kì)
+        @if (!Model.LaHoiDongGiuaKy)
+        {
+            for (int i = 0; i < Model.DanhSachSinhVien.Count; i++)
+            {
+                <text>tinhTongDiemSV(@i);</text>
+            }
+        }
 
         // Submit form
         $('#formChamDiem').on('submit', function(e) {
             e.preventDefault();
-            
+
+            // Kiểm tra có sinh viên không
+            if (!coSinhVien) {
+                toastr.error('Không tìm thấy sinh viên trong đề tài này.');
+                return;
+            }
+
             var formData = {
                 PhienBaoVeId: parseInt($('input[name="PhienBaoVeId"]').val()),
-                DiemChiTiets: []
+                IdDeTai: parseInt($('input[name="IdDeTai"]').val()) || 0,
+                DanhSachDiemSinhVien: []
             };
 
-            // Thu thập dữ liệu từ form
-            var index = 0;
-            $('input[name^="DiemChiTiets"][name$=".IdTieuChi"]').each(function() {
-                var idTieuChi = parseInt($(this).val());
-                var diemSo = parseFloat($('input[name="DiemChiTiets[' + index + '].DiemSo"]').val()) || 0;
-                var nhanXet = $('textarea[name="DiemChiTiets[' + index + '].NhanXet"]').val() || '';
-                
-                formData.DiemChiTiets.push({
-                    IdTieuChi: idTieuChi,
-                    DiemSo: diemSo,
-                    NhanXet: nhanXet
+            // Với hội đồng giữa kì: lấy nhận xét chung và áp dụng cho tất cả SV
+            if (laHoiDongGiuaKy) {
+                // Validate nhận xét không được để trống
+                var hasEmpty = false;
+                $('.nhanxet-chung').each(function() {
+                    if (!$(this).val() || $(this).val().trim() === '') {
+                        hasEmpty = true;
+                        $(this).css('border-color', '#dc3545');
+                    } else {
+                        $(this).css('border-color', '#d1d5db');
+                    }
                 });
-                index++;
-            });
+                if (hasEmpty) {
+                    toastr.error('Vui lòng nhập nhận xét cho tất cả tiêu chí.');
+                    return;
+                }
+
+                var nhanXetChung = [];
+                $('.nhanxet-chung').each(function(index) {
+                    var tcIndex = $(this).data('tc-index');
+                    var idTieuChi = parseInt($('input[name="DanhSachDiemSinhVien[0].DiemChiTiets[' + tcIndex + '].IdTieuChi"]').val());
+                    nhanXetChung.push({
+                        IdTieuChi: idTieuChi,
+                        DiemSo: 0,
+                        NhanXet: $(this).val()
+                    });
+                });
+
+                // Áp dụng cho tất cả sinh viên (clone cho mỗi SV)
+                var svIndex = 0;
+                while ($('input[name="DanhSachDiemSinhVien[' + svIndex + '].PhienBaoVeId"]').length > 0) {
+                    var phienId = parseInt($('input[name="DanhSachDiemSinhVien[' + svIndex + '].PhienBaoVeId"]').val());
+                    var idSinhVien = parseInt($('input[name="DanhSachDiemSinhVien[' + svIndex + '].IdSinhVien"]').val());
+
+                    formData.DanhSachDiemSinhVien.push({
+                        PhienBaoVeId: phienId,
+                        IdSinhVien: idSinhVien,
+                        DiemChiTiets: JSON.parse(JSON.stringify(nhanXetChung))
+                    });
+                    svIndex++;
+                }
+            } else {
+                // Hội đồng cuối kì: lấy điểm riêng cho từng sinh viên
+                var svIndex = 0;
+                while ($('input[name="DanhSachDiemSinhVien[' + svIndex + '].PhienBaoVeId"]').length > 0) {
+                    var phienId = parseInt($('input[name="DanhSachDiemSinhVien[' + svIndex + '].PhienBaoVeId"]').val());
+                    var idSinhVien = parseInt($('input[name="DanhSachDiemSinhVien[' + svIndex + '].IdSinhVien"]').val());
+
+                    var diemChiTiets = [];
+                    var tcIndex = 0;
+                    while ($('input[name="DanhSachDiemSinhVien[' + svIndex + '].DiemChiTiets[' + tcIndex + '].IdTieuChi"]').length > 0) {
+                        var idTieuChi = parseInt($('input[name="DanhSachDiemSinhVien[' + svIndex + '].DiemChiTiets[' + tcIndex + '].IdTieuChi"]').val());
+                        var diemSo = parseFloat($('input[name="DanhSachDiemSinhVien[' + svIndex + '].DiemChiTiets[' + tcIndex + '].DiemSo"]').val()) || 0;
+                        var nhanXet = $('textarea[name="DanhSachDiemSinhVien[' + svIndex + '].DiemChiTiets[' + tcIndex + '].NhanXet"]').val() || '';
+
+                        diemChiTiets.push({
+                            IdTieuChi: idTieuChi,
+                            DiemSo: diemSo,
+                            NhanXet: nhanXet
+                        });
+                        tcIndex++;
+                    }
+
+                    formData.DanhSachDiemSinhVien.push({
+                        PhienBaoVeId: phienId,
+                        IdSinhVien: idSinhVien,
+                        DiemChiTiets: diemChiTiets
+                    });
+                    svIndex++;
+                }
+            }
 
             $.ajax({
                 url: '@Url.Action("LuuDiem")',
@@ -62,14 +178,14 @@
                     if (response.success) {
                         toastr.success(response.message);
                         setTimeout(function() {
-                            window.location.href = response.redirectUrl || '@Url.Action("Index")';
+                            window.location.href = response.redirectUrl || '@Url.Action("Detail", new { id = Model.HoiDongId })';
                         }, 1500);
                     } else {
                         toastr.error(response.message);
                     }
                 },
                 error: function() {
-                    toastr.error('Có lỗi xảy ra khi lưu điểm.');
+                    toastr.error('Có lỗi xảy ra khi lưu.');
                 }
             });
         });

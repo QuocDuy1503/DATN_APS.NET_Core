@@ -1,57 +1,71 @@
 @model DATN_TMS.Areas.GiangVien.Models.BangDiemTongHopViewModel
 
+@{
+    var vaiTroDisplay = new Dictionary<string, string>
+    {
+        { "PHAN_BIEN", "GVPB" },
+        { "CHU_TICH", "Chủ tịch" },
+        { "THU_KY", "Thư ký" },
+        { "UY_VIEN", "Ủy viên" }
+    };
+    string GetVaiTroShort(string vaiTro) => vaiTroDisplay.ContainsKey(vaiTro) ? vaiTroDisplay[vaiTro] : vaiTro;
+
+    var danhSachVaiTro = Model.DanhSachVaiTroHoiDong;
+    var svCount = Model.DanhSachSinhVien.Count;
+}
+
 <style>
     .content-body.chamdiem-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
-    .chamdiem-page .content-card {
-        background: #fff; border-radius: 8px; padding: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px);
-    }
+    .chamdiem-page .content-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); }
     .page-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; }
     .page-description { font-size: 13px; color: #6c757d; margin-top: 4px; }
-
     .btn-back { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 6px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; }
     .btn-back:hover { background: #e5e7eb; color: #1f2937; }
 
     .info-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px; }
     .info-card-header { background: #f8f9fa; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 14px; color: #374151; display: flex; align-items: center; gap: 8px; }
     .info-card-body { padding: 16px; }
-
     .info-row { display: flex; gap: 24px; flex-wrap: wrap; }
     .info-item { flex: 1; min-width: 200px; }
     .info-label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
     .info-value { font-size: 14px; color: #1f2937; font-weight: 500; }
 
-    .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
-    thead th { background: #f3f4f6; font-weight: 700 !important; padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; color: #444; }
-    tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; color: #333; }
-    tbody tr:hover { background: #f9f9f9; }
-    tbody tr.row-info { background: #dbeafe; }
-    tfoot td { background: #f8f9fa; padding: 12px; font-weight: 600; }
-    tfoot tr.row-success td { background: #dcfce7; }
-
     .status-badge { padding: 5px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; display: inline-flex; align-items: center; gap: 4px; }
-    .status-info { background: #17a2b8; }
     .status-done { background: #16a34a; }
     .status-pending { background: #f59e0b; }
     .status-danger { background: #dc3545; }
-    .status-secondary { background: #6c757d; }
-    .status-primary { background: #0d6efd; }
+
+    /* Bảng điểm kiểu bảng ngang */
+    .score-table-wrap { border: 1px solid #e5e7eb; border-radius: 8px; overflow-x: auto; background: #fff; }
+    .score-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
+    .score-table thead th { background: #f3f4f6; font-weight: 700; padding: 10px 12px; text-align: center; border: 1px solid #e5e7eb; color: #374151; white-space: nowrap; }
+    .score-table thead th.th-group { background: #eef2ff; color: #3730a3; }
+    .score-table tbody td { padding: 10px 12px; border: 1px solid #e5e7eb; vertical-align: middle; text-align: center; color: #333; }
+    .score-table tbody td.td-left { text-align: left; }
+    .score-table tbody td.td-name { font-weight: 600; white-space: nowrap; }
+    .score-table tbody td.td-topic { text-align: left; font-weight: 600; max-width: 250px; }
+    .score-table .score-val { font-weight: 700; font-size: 14px; }
+    .score-table .score-gvhd { color: #0369a1; }
+    .score-table .score-hd { color: #374151; }
+    .score-table .score-avg { color: #7c3aed; font-size: 16px; font-weight: 800; }
+    .score-table .score-na { color: #9ca3af; font-style: italic; font-weight: 400; font-size: 12px; }
+    .score-table tfoot td { background: #f0fdf4; font-weight: 700; border: 1px solid #e5e7eb; }
+
+    .legend-row { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: #6b7280; margin-top: 12px; }
+    .legend-item { display: flex; align-items: center; gap: 4px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
     .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-top: 12px; display: flex; align-items: center; gap: 8px; }
     .alert-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; }
 
     .form-group { margin-bottom: 16px; }
     .form-label { font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; display: block; }
-    .form-control { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; }
-    .form-control:focus { border-color: #0d6efd; outline: none; box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.1); }
-
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; box-sizing: border-box; }
+    .form-control:focus { border-color: #0d6efd; outline: none; box-shadow: 0 0 0 2px rgba(13,110,253,0.1); }
     .btn-action { padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border: none; cursor: pointer; }
-    .btn-warning { background: #f59e0b; color: #fff; }
-    .btn-warning:hover { background: #d97706; }
-    .btn-success { background: #16a34a; color: #fff; }
-    .btn-success:hover { background: #15803d; }
+    .btn-warning { background: #f59e0b; color: #fff; } .btn-warning:hover { background: #d97706; }
+    .btn-success { background: #16a34a; color: #fff; } .btn-success:hover { background: #15803d; }
 
     .history-table { font-size: 12px; }
     .history-table th, .history-table td { padding: 8px 10px; }
@@ -66,7 +80,7 @@
         <div class="page-header-row">
             <div>
                 <h2 class="page-title">Bảng điểm tổng hợp</h2>
-                <p class="page-description">@Model.TenHoiDong</p>
+                <p class="page-description">@Model.TenHoiDong — @Model.LoaiHoiDongDisplay</p>
             </div>
             @if (Model.DaXacNhan)
             {
@@ -78,119 +92,149 @@
             }
         </div>
 
-        <!-- Thông tin sinh viên -->
+        <!-- Thông tin đề tài -->
         <div class="info-card">
-            <div class="info-card-header"><i class="fa-solid fa-user"></i> Thông tin sinh viên</div>
+            <div class="info-card-header"><i class="fa-solid fa-file-alt"></i> Thông tin đề tài</div>
             <div class="info-card-body">
                 <div class="info-row">
                     <div class="info-item">
-                        <div class="info-label">Họ tên</div>
-                        <div class="info-value">@Model.TenSinhVien</div>
+                        <div class="info-label">Mã đề tài</div>
+                        <div class="info-value">@Model.MaDeTai</div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">MSSV</div>
-                        <div class="info-value">@Model.Mssv</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Đề tài</div>
+                    <div class="info-item" style="flex: 3;">
+                        <div class="info-label">Tên đề tài</div>
                         <div class="info-value">@Model.TenDeTai</div>
                     </div>
                     <div class="info-item">
-                        <div class="info-label">Mã đề tài</div>
-                        <div class="info-value">@Model.MaDeTai</div>
+                        <div class="info-label">GVHD</div>
+                        <div class="info-value">@Model.TenGVHD</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Bảng điểm -->
+        <!-- BẢNG ĐIỂM KIỂU BẢNG NGANG (theo hình mẫu) -->
         <div class="info-card">
-            <div class="info-card-header"><i class="fa-solid fa-table"></i> Bảng điểm chi tiết</div>
+            <div class="info-card-header">
+                <i class="fa-solid fa-table"></i> Bảng điểm chi tiết
+                @if (!Model.LaHoiDongGiuaKy)
+                {
+                    <span style="margin-left: auto; font-weight: normal; font-size: 12px; color: #6b7280;">
+                        <i class="fa-solid fa-info-circle"></i> GVHD: 30% — Hội đồng: 70%
+                    </span>
+                }
+            </div>
             <div class="info-card-body" style="padding: 0;">
-                <div class="table-responsive" style="border: none; border-radius: 0;">
-                    <table>
+                <div class="score-table-wrap">
+                    <table class="score-table">
                         <thead>
                             <tr>
-                                <th style="width: 200px;">Người chấm</th>
-                                <th style="width: 120px;">Vai trò</th>
-                                <th style="width: 120px;">Trạng thái</th>
-                                <th style="width: 100px;">Tổng điểm</th>
+                                <th rowspan="2" style="min-width: 180px;">Tên đề tài</th>
+                                <th rowspan="2" style="min-width: 150px;">Họ và tên SV</th>
+                                @if (!Model.LaHoiDongGiuaKy)
+                                {
+                                    <th rowspan="2">Điểm<br/>GVHD</th>
+                                }
+                                <th colspan="@danhSachVaiTro.Count" class="th-group">Điểm của hội đồng</th>
+                                <th rowspan="2" style="min-width: 110px;">Điểm<br/>trung bình</th>
+                            </tr>
+                            <tr>
+                                @foreach (var vt in danhSachVaiTro)
+                                {
+                                    <th class="th-group">@GetVaiTroShort(vt)</th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Điểm GVHD -->
-                            <tr class="row-info">
-                                <td><strong>@Model.TenGVHD</strong></td>
-                                <td><span class="status-badge status-info">GVHD</span></td>
-                                <td>
-                                    @if (Model.DiemGVHD > 0)
-                                    {
-                                        <span class="status-badge status-done"><i class="fa-solid fa-check"></i> Đã chấm</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="status-badge status-pending">Chưa chấm</span>
-                                    }
-                                </td>
-                                <td><span style="font-size: 16px; font-weight: 700; color: #17a2b8;">@Model.DiemGVHD.ToString("F1")</span></td>
-                            </tr>
-
-                            <!-- Điểm các thành viên hội đồng -->
-                            @foreach (var tv in Model.DiemThanhViens.OrderBy(t => t.VaiTro == "CHU_TICH" ? 0 : t.VaiTro == "THU_KY" ? 1 : 2))
+                            @for (int i = 0; i < svCount; i++)
                             {
+                                var svItem = Model.DanhSachSinhVien[i];
                                 <tr>
-                                    <td><strong>@tv.TenGiangVien</strong></td>
-                                    <td><span class="status-badge status-secondary">@tv.VaiTroDisplay</span></td>
+                                    @if (i == 0)
+                                    {
+                                        <td rowspan="@svCount" class="td-topic">@Model.TenDeTai</td>
+                                    }
+                                    <td class="td-name">@svItem.TenSinhVien</td>
+                                    @if (!Model.LaHoiDongGiuaKy)
+                                    {
+                                        <td>
+                                            @if (svItem.DiemGVHD > 0)
+                                            {
+                                                <span class="score-val score-gvhd">@svItem.DiemGVHD.ToString("F1")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="score-na">—</span>
+                                            }
+                                        </td>
+                                    }
+                                    @foreach (var vt in danhSachVaiTro)
+                                    {
+                                        <td>
+                                            @if (svItem.DiemTheoVaiTro.ContainsKey(vt) && svItem.DiemTheoVaiTro[vt].HasValue)
+                                            {
+                                                <span class="score-val score-hd">@svItem.DiemTheoVaiTro[vt]!.Value.ToString("F1")</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="score-na">—</span>
+                                            }
+                                        </td>
+                                    }
                                     <td>
-                                        @if (tv.DaChamDiem)
-                                        {
-                                            <span class="status-badge status-done"><i class="fa-solid fa-check"></i> Đã chấm</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="status-badge status-danger">Chưa chấm</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (tv.DaChamDiem)
-                                        {
-                                            <span style="font-size: 16px; font-weight: 700;">@tv.TongDiem.ToString("F1")</span>
-                                        }
-                                        else
-                                        {
-                                            <span style="color: #9ca3af;">-</span>
-                                        }
+                                        <span class="score-val score-avg">@svItem.DiemTrungBinhCuoi.ToString("F1")</span>
                                     </td>
                                 </tr>
                             }
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" style="text-align: right;"><strong>Điểm trung bình Hội đồng:</strong></td>
-                                <td><span style="font-size: 20px; font-weight: 700; color: #0d6efd;">@Model.DiemTBHoiDong.ToString("F2")</span></td>
-                            </tr>
-                            @if (Model.DiemTongKetCuoi.HasValue)
-                            {
-                                <tr class="row-success">
-                                    <td colspan="3" style="text-align: right;"><strong>Điểm tổng kết (đã xác nhận):</strong></td>
-                                    <td><span style="font-size: 20px; font-weight: 700; color: #16a34a;">@Model.DiemTongKetCuoi.Value.ToString("F1")</span></td>
+                        @if (Model.DiemTongKetCuoi.HasValue)
+                        {
+                            <tfoot>
+                                <tr>
+                                    <td colspan="@(2 + (Model.LaHoiDongGiuaKy ? 0 : 1) + danhSachVaiTro.Count)" style="text-align: right;">
+                                        <strong>Điểm tổng kết (đã xác nhận):</strong>
+                                    </td>
+                                    <td><span style="font-size: 18px; font-weight: 800; color: #16a34a;">@Model.DiemTongKetCuoi.Value.ToString("F1")</span></td>
                                 </tr>
-                            }
-                        </tfoot>
+                            </tfoot>
+                        }
                     </table>
                 </div>
 
+                <!-- Thông tin thành viên HĐ chi tiết -->
+                <div style="padding: 12px 16px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
+                    <strong>Thành viên hội đồng:</strong>
+                    @foreach (var tv in Model.DiemThanhViens.OrderBy(t => t.VaiTro == "PHAN_BIEN" ? 0 : t.VaiTro == "CHU_TICH" ? 1 : t.VaiTro == "UY_VIEN" ? 2 : 3))
+                    {
+                        var statusColor = tv.DaChamDiem ? "#16a34a" : "#dc3545";
+                        <span style="margin-right: 16px;">
+                            <span style="color: @statusColor; font-weight: 600;">●</span>
+                            @tv.TenGiangVien <em>(@tv.VaiTroDisplay)</em>
+                            — @(tv.DaChamDiem ? "Đã chấm" : "Chưa chấm")
+                        </span>
+                    }
+                </div>
+
+                @if (!Model.LaHoiDongGiuaKy)
+                {
+                    <div class="legend-row" style="padding: 0 16px 12px;">
+                        <div class="legend-item"><span class="legend-dot" style="background: #0369a1;"></span> Điểm GVHD (30%)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #374151;"></span> Điểm hội đồng (70%)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #7c3aed;"></span> Điểm trung bình = GVHD×30% + TB Hội đồng×70%</div>
+                    </div>
+                }
+
                 @if (Model.CoChenhLechLon)
                 {
-                    <div class="alert-warning" style="margin: 16px;">
+                    <div class="alert-warning" style="margin: 0 16px 12px;">
                         <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span><strong>Cảnh báo:</strong> Phát hiện chênh lệch điểm lớn (> 1 điểm giữa các thành viên HĐ hoặc > 2 điểm với GVHD). Thư ký cần điều chỉnh và thống nhất điểm trước khi Chủ tịch xác nhận.</span>
+                        <span><strong>Cảnh báo:</strong> Phát hiện chênh lệch điểm lớn giữa các thành viên hội đồng. Thư ký cần điều chỉnh và thống nhất trước khi Chủ tịch xác nhận.</span>
                     </div>
                 }
             </div>
         </div>
 
-        <!-- Phần điều chỉnh/xác nhận -->
+        <!-- Điều chỉnh / Xác nhận -->
         @if ((Model.LaThuKy || Model.LaChuTich) && !Model.DaXacNhan)
         {
             <div class="info-card">
@@ -225,7 +269,7 @@
                     @if (Model.LaChuTich)
                     {
                         var tatCaDaCham = Model.DiemThanhViens.All(t => t.DaChamDiem);
-                        @if (!tatCaDaCham)
+                        if (!tatCaDaCham)
                         {
                             <div class="alert-info">
                                 <i class="fa-solid fa-info-circle"></i> Chưa thể xác nhận vì còn thành viên chưa chấm điểm.
@@ -258,8 +302,8 @@
             <div class="info-card">
                 <div class="info-card-header"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử cập nhật</div>
                 <div class="info-card-body" style="padding: 0;">
-                    <div class="table-responsive history-table" style="border: none; border-radius: 0;">
-                        <table>
+                    <div class="score-table-wrap history-table" style="border: none; border-radius: 0;">
+                        <table class="score-table" style="min-width: auto;">
                             <thead>
                                 <tr>
                                     <th>Thời gian</th>
@@ -275,15 +319,15 @@
                                 {
                                     <tr>
                                         <td>@ls.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <td>@ls.TenNguoiCapNhat</td>
+                                        <td class="td-left">@ls.TenNguoiCapNhat</td>
                                         <td>
                                             <span class="status-badge @(ls.LoaiCapNhat == "CHU_TICH_XAC_NHAN" ? "status-done" : "status-pending")">
                                                 @ls.LoaiCapNhatDisplay
                                             </span>
                                         </td>
-                                        <td>@(ls.DiemCu?.ToString("F1") ?? "-")</td>
-                                        <td>@(ls.DiemMoi?.ToString("F1") ?? "-")</td>
-                                        <td>@ls.LyDo</td>
+                                        <td>@(ls.DiemCu?.ToString("F1") ?? "—")</td>
+                                        <td>@(ls.DiemMoi?.ToString("F1") ?? "—")</td>
+                                        <td class="td-left">@ls.LyDo</td>
                                     </tr>
                                 }
                             </tbody>
@@ -294,3 +338,5 @@
         }
     </div>
 </div>
+
+@Html.AntiForgeryToken()

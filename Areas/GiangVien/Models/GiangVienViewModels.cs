@@ -86,13 +86,11 @@ namespace DATN_TMS.Areas.GiangVien.Models
 
         // Trạng thái chấm điểm
         public bool DaChamDiem { get; set; }
-        public string? TrangThaiText { get; set; } // "Đã nhập điểm" hoặc "Chưa nhập điểm"
+        public string? TrangThaiText { get; set; }
         public string? TrangThaiCss { get; set; }
 
-        // Tài liệu báo cáo cuối kỳ
-        public bool CoBaoCaoCuoiKyDuyet { get; set; }
-        public string? FileBaoCaoCuoiKy { get; set; }
-        public string? TenFileBaoCao { get; set; }
+        // Tài liệu báo cáo cuối kỳ - per sinh viên
+        public bool TatCaSVCoBaoCaoDuyet { get; set; }
 
         public List<SinhVienDGItem> DanhSachSV { get; set; } = new();
     }
@@ -103,8 +101,67 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string? Mssv { get; set; }
         public string? HoTen { get; set; }
         public string? KhoaHoc { get; set; }
-        public double? DiemGVHD { get; set; } // Điểm GVHD chấm
+        public double? DiemGVHD { get; set; }
         public bool DaChamDiem { get; set; }
+        public bool CoBaoCaoCuoiKyDuyet { get; set; }
+        public string? FileBaoCaoCuoiKy { get; set; }
+        public string? TenFileBaoCao { get; set; }
+    }
+
+    // ViewModel cho trang Chấm điểm theo tiêu chí
+    public class ChamDiemGVHDViewModel
+    {
+        public int IdDeTai { get; set; }
+        public string? MaDeTai { get; set; }
+        public string? TenDeTai { get; set; }
+        public string? TenDot { get; set; }
+        public string? TenLoaiPhieu { get; set; }
+        public bool DaChamDiem { get; set; }
+        public List<SinhVienChamDiemGVHDInfo> DanhSachSinhVien { get; set; } = new();
+        public List<TieuChiGVHDViewModel> TieuChis { get; set; } = new();
+    }
+
+    public class SinhVienChamDiemGVHDInfo
+    {
+        public int IdSinhVien { get; set; }
+        public int IdSinhVienDeTai { get; set; }
+        public string? Mssv { get; set; }
+        public string? HoTen { get; set; }
+        public string? FileBaoCao { get; set; }
+    }
+
+    public class TieuChiGVHDViewModel
+    {
+        public int Id { get; set; }
+        public string? TenTieuChi { get; set; }
+        public string? MoTaHuongDan { get; set; }
+        public double TrongSo { get; set; }
+        public double DiemToiDa { get; set; }
+        public int Stt { get; set; }
+        // Điểm đã chấm per SV: key = IdSinhVien
+        public Dictionary<int, double> DiemDaCham { get; set; } = new();
+        public Dictionary<int, string> NhanXetDaCham { get; set; } = new();
+    }
+
+    // Request lưu điểm GVHD theo tiêu chí
+    public class LuuDiemGVHDRequest
+    {
+        public int IdDeTai { get; set; }
+        public List<DiemGVHDSinhVienInput> DanhSachDiem { get; set; } = new();
+    }
+
+    public class DiemGVHDSinhVienInput
+    {
+        public int IdSinhVien { get; set; }
+        public string? NhanXetChung { get; set; }
+        public List<DiemTieuChiInput> DiemTieuChis { get; set; } = new();
+    }
+
+    public class DiemTieuChiInput
+    {
+        public int IdTieuChi { get; set; }
+        public double DiemSo { get; set; }
+        public string? NhanXet { get; set; }
     }
 
     // === NHẬT KÝ HƯỚNG DẪN ===

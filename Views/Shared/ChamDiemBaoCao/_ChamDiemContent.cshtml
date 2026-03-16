@@ -56,129 +56,410 @@
         </a>
 
         <div class="page-header-row">
-            <h2 class="page-title">Chấm điểm sinh viên</h2>
+            <h2 class="page-title">@(Model.ChiNhanXet ? "Nhận xét" : "Chấm điểm") sinh viên - @Model.LoaiHoiDongDisplay</h2>
             <p class="page-description">@Model.TenHoiDong</p>
+        </div>
+
+        <!-- Thông tin phiếu chấm -->
+        <div class="alert-info" style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-file-alt" style="font-size: 20px;"></i>
+            <div>
+                <strong>Loại phiếu:</strong> @Model.TenLoaiPhieu<br/>
+                <small>Vai trò: <strong>@Model.VaiTroDisplay</strong></small>
+            </div>
+            @if (Model.ChiNhanXet)
+            {
+                <span class="status-badge" style="margin-left: auto; background: #fef3c7; color: #92400e;">
+                    <i class="fa-solid fa-comment"></i> Chỉ nhận xét
+                </span>
+            }
         </div>
 
         <!-- Thông tin sinh viên -->
         <div class="info-card">
             <div class="info-card-header">
-                <i class="fa-solid fa-user"></i> Thông tin sinh viên
+                <i class="fa-solid fa-user"></i> Thông tin đề tài và sinh viên
                 @if (Model.DaChamDiem)
                 {
-                    <span class="status-badge status-done" style="margin-left: auto;"><i class="fa-solid fa-check"></i> Đã chấm - Có thể sửa</span>
+                    <span class="status-badge status-done" style="margin-left: auto;"><i class="fa-solid fa-check"></i> Đã @(Model.ChiNhanXet ? "nhận xét" : "chấm") - Có thể sửa</span>
                 }
             </div>
             <div class="info-card-body">
-                <div class="info-row">
-                    <div class="info-item">
-                        <div class="info-label">Họ tên</div>
-                        <div class="info-value">@Model.TenSinhVien</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">MSSV</div>
-                        <div class="info-value">@Model.Mssv</div>
-                    </div>
-                    <div class="info-item">
+                <div class="info-row" style="margin-bottom: 16px;">
+                    <div class="info-item" style="flex: 2;">
                         <div class="info-label">Đề tài</div>
-                        <div class="info-value">@Model.TenDeTai</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Điểm GVHD</div>
                         <div class="info-value">
-                            <span class="status-badge status-info">@Model.DiemGVHD.ToString("F1")</span>
+                            <strong>@Model.MaDeTai</strong> - @Model.TenDeTai
                         </div>
                     </div>
                 </div>
-                @if (!string.IsNullOrEmpty(Model.NhanXetGVHD))
+
+                <!-- Danh sách sinh viên -->
+                @if (Model.DanhSachSinhVien.Count > 1)
+                {
+                    <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 12px; margin-bottom: 12px;">
+                        <i class="fa-solid fa-users" style="color: #16a34a;"></i>
+                        <strong style="color: #166534;">Đề tài có @Model.DanhSachSinhVien.Count sinh viên</strong>
+                        @if (Model.LaHoiDongGiuaKy)
+                        {
+                            <span style="color: #6b7280; font-size: 12px;"> - Nhận xét chung áp dụng cho cả đề tài</span>
+                        }
+                        else
+                        {
+                            <span style="color: #6b7280; font-size: 12px;"> - Vui lòng chấm điểm riêng cho từng sinh viên</span>
+                        }
+                    </div>
+                }
+
+                <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f3f4f6;">
+                            <th style="padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb;">MSSV</th>
+                            <th style="padding: 10px; text-align: left; border-bottom: 1px solid #e5e7eb;">Họ tên</th>
+                            @if (!Model.LaHoiDongGiuaKy && !Model.ChiNhanXet)
+                            {
+                                <th style="padding: 10px; text-align: center; border-bottom: 1px solid #e5e7eb;">Điểm GVHD</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sv in Model.DanhSachSinhVien)
+                        {
+                            <tr>
+                                <td style="padding: 10px; border-bottom: 1px solid #f1f5f9;">@sv.Mssv</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #f1f5f9;"><strong>@sv.TenSinhVien</strong></td>
+                                @if (!Model.LaHoiDongGiuaKy && !Model.ChiNhanXet)
+                                {
+                                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f1f5f9;">
+                                        <span class="status-badge status-info">@(sv.DiemGVHD?.ToString("F1") ?? "-")</span>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (!Model.LaHoiDongGiuaKy && !string.IsNullOrEmpty(Model.NhanXetGVHD))
                 {
                     <div class="alert-info" style="margin-top: 12px;">
                         <strong>Nhận xét GVHD:</strong> @Model.NhanXetGVHD
                     </div>
                 }
+                @if (Model.LaHoiDongGiuaKy)
+                {
+                    <div class="alert-info" style="margin-top: 12px; background: #fef3c7; color: #92400e; border-color: #fcd34d;">
+                        <i class="fa-solid fa-info-circle"></i> <strong>Hội đồng Giữa kì:</strong> Chỉ ghi nhận xét về tiến độ đề tài. Nhận xét sẽ áp dụng chung cho tất cả sinh viên trong đề tài.
+                    </div>
+                }
+                @if (Model.LaPhanBien && !Model.LaHoiDongGiuaKy)
+                {
+                    <div class="alert-info" style="margin-top: 12px; background: #e0f2fe; color: #0369a1; border-color: #7dd3fc;">
+                        <i class="fa-solid fa-user-tie"></i> <strong>Phản biện:</strong> Bạn đang sử dụng phiếu chấm phản biện với tiêu chí riêng.
+                    </div>
+                }
             </div>
         </div>
 
-        <!-- Form chấm điểm -->
-        <div class="info-card">
-            <div class="info-card-header"><i class="fa-solid fa-clipboard-check"></i> Phiếu chấm điểm</div>
-            <div class="info-card-body" style="padding: 0;">
-                <form id="formChamDiem">
-                    <input type="hidden" name="PhienBaoVeId" value="@Model.PhienBaoVeId" />
+        <!-- Form chấm điểm/nhận xét -->
+        <form id="formChamDiem">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="PhienBaoVeId" value="@Model.PhienBaoVeId" />
+            <input type="hidden" name="IdDeTai" value="@Model.IdDeTai" />
 
-                    <div class="table-responsive" style="border: none; border-radius: 0;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;">STT</th>
-                                    <th>Tiêu chí</th>
-                                    <th style="width: 80px;">Trọng số</th>
-                                    <th style="width: 100px;">Điểm tối đa</th>
-                                    <th style="width: 100px;">Điểm chấm</th>
-                                    <th style="width: 200px;">Nhận xét</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @{
-                                    var stt = 1;
-                                }
-                                @foreach (var tc in Model.TieuChis)
-                                {
+            @if (Model.LaHoiDongGiuaKy)
+            {
+                <!-- HỘI ĐỒNG GIỮA KÌ: Form nhận xét CHUNG cho cả đề tài -->
+                var svFirst = Model.DanhSachSinhVien.FirstOrDefault();
+                var tieuChiList = svFirst?.DiemDaCham?.Any() == true ? svFirst.DiemDaCham : Model.TieuChis;
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-comment"></i> 
+                        Phiếu nhận xét giữa kì - Đề tài @Model.MaDeTai
+                        @if (Model.DaChamDiem)
+                        {
+                            <span class="status-badge status-done" style="margin-left: auto;"><i class="fa-solid fa-check"></i> Đã nhận xét - Có thể sửa</span>
+                        }
+                    </div>
+                    <div class="info-card-body" style="padding: 0;">
+                        @* Lưu thông tin tất cả sinh viên *@
+                        @for (int svIndex = 0; svIndex < Model.DanhSachSinhVien.Count; svIndex++)
+                        {
+                            var sv = Model.DanhSachSinhVien[svIndex];
+                            <input type="hidden" name="DanhSachDiemSinhVien[@svIndex].PhienBaoVeId" value="@sv.PhienBaoVeId" />
+                            <input type="hidden" name="DanhSachDiemSinhVien[@svIndex].IdSinhVien" value="@sv.IdSinhVien" />
+                        }
+
+                        <div class="table-responsive" style="border: none; border-radius: 0;">
+                            <table>
+                                <thead>
                                     <tr>
-                                        <td style="text-align: center;">@stt</td>
-                                        <td>
-                                            <strong>@tc.TenTieuChi</strong>
-                                            @if (!string.IsNullOrEmpty(tc.MoTaHuongDan))
-                                            {
-                                                <br /><small style="color: #6b7280;">@tc.MoTaHuongDan</small>
-                                            }
-                                        </td>
-                                        <td style="text-align: center;">@tc.TrongSo%</td>
-                                        <td style="text-align: center;">@tc.DiemToiDa.ToString("F1")</td>
-                                        <td>
-                                            <input type="hidden" name="DiemChiTiets[@(stt-1)].IdTieuChi" value="@tc.Id" />
-                                            <input type="number" 
-                                                   class="diem-input" 
-                                                   name="DiemChiTiets[@(stt-1)].DiemSo"
-                                                   value="@tc.DiemDaCham"
-                                                   min="0" 
-                                                   max="@tc.DiemToiDa" 
-                                                   step="0.1"
-                                                   data-max="@tc.DiemToiDa"
-                                                   required />
-                                        </td>
-                                        <td>
-                                            <textarea class="nhanxet-input" 
-                                                      name="DiemChiTiets[@(stt-1)].NhanXet"
-                                                      rows="2"
-                                                      placeholder="Nhận xét...">@tc.NhanXetDaCham</textarea>
-                                        </td>
+                                        <th style="width: 50px;">STT</th>
+                                        <th>Tiêu chí đánh giá</th>
+                                        <th>Nhận xét</th>
                                     </tr>
-                                    stt++;
-                                }
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="4" style="text-align: right;"><strong>Tổng điểm:</strong></td>
-                                    <td colspan="2">
-                                        <span id="tongDiem" style="font-size: 18px; color: #0d6efd; font-weight: 700;">0.0</span>
-                                        <span style="color: #6b7280;"> / 10</span>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @if (tieuChiList != null && tieuChiList.Any())
+                                    {
+                                        for (int tcIndex = 0; tcIndex < tieuChiList.Count; tcIndex++)
+                                        {
+                                            var tc = tieuChiList[tcIndex];
+                                            <tr>
+                                                <td style="text-align: center;">@(tcIndex + 1)</td>
+                                                <td>
+                                                    <strong>@tc.TenTieuChi</strong>
+                                                    @if (!string.IsNullOrEmpty(tc.MoTaHuongDan))
+                                                    {
+                                                        <br /><small style="color: #6b7280;">@tc.MoTaHuongDan</small>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @* Hidden fields cho tất cả sinh viên (cùng tiêu chí) *@
+                                                    @for (int svIndex = 0; svIndex < Model.DanhSachSinhVien.Count; svIndex++)
+                                                    {
+                                                        <input type="hidden" name="DanhSachDiemSinhVien[@svIndex].DiemChiTiets[@tcIndex].IdTieuChi" value="@tc.Id" />
+                                                        <input type="hidden" name="DanhSachDiemSinhVien[@svIndex].DiemChiTiets[@tcIndex].DiemSo" value="0" />
+                                                    }
+                                                    <textarea class="nhanxet-input nhanxet-chung" 
+                                                              data-tc-index="@tcIndex"
+                                                              rows="3"
+                                                              placeholder="Nhận xét về tiêu chí này..."
+                                                              required>@tc.NhanXetDaCham</textarea>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                </div>
+            }
+            else if (Model.DanhSachSinhVien.Count > 1)
+            {
+                <!-- HỘI ĐỒNG CUỐI KÌ VỚI NHIỀU SINH VIÊN: Grid tiêu chí (hàng) × sinh viên (cột) -->
+                <div class="info-card">
+                    <div class="info-card-header">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        @(Model.ChiNhanXet ? "Phiếu nhận xét" : "Phiếu chấm điểm") - Tất cả sinh viên
+                        @if (Model.DaChamDiem)
+                        {
+                            <span class="status-badge status-done" style="margin-left: auto;"><i class="fa-solid fa-check"></i> Đã @(Model.ChiNhanXet ? "nhận xét" : "chấm") - Có thể sửa</span>
+                        }
+                    </div>
+                    <div class="info-card-body" style="padding: 0;">
+                        @for (int svIndex = 0; svIndex < Model.DanhSachSinhVien.Count; svIndex++)
+                        {
+                            var svHidden = Model.DanhSachSinhVien[svIndex];
+                            <input type="hidden" name="DanhSachDiemSinhVien[@svIndex].PhienBaoVeId" value="@svHidden.PhienBaoVeId" />
+                            <input type="hidden" name="DanhSachDiemSinhVien[@svIndex].IdSinhVien" value="@svHidden.IdSinhVien" />
+                        }
 
-                    <div class="form-footer" style="padding: 16px;">
-                        <a href="@Url.Action("Detail", new { id = Model.HoiDongId })" class="btn-action btn-secondary">
-                            Hủy bỏ
-                        </a>
-                        <button type="submit" class="btn-action btn-primary">
-                            <i class="fa-solid fa-save"></i> Lưu điểm
-                        </button>
+                        <div class="table-responsive" style="border: none; border-radius: 0; overflow-x: auto;">
+                            <table style="min-width: 700px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">STT</th>
+                                        <th style="min-width: 200px;">Tiêu chí đánh giá</th>
+                                        @foreach (var svHead in Model.DanhSachSinhVien)
+                                        {
+                                            <th style="text-align: center; min-width: 180px; background: #eef2ff;">
+                                                <div><strong>@svHead.TenSinhVien</strong></div>
+                                                <div style="font-size: 11px; font-weight: 400; color: #6b7280;">@svHead.Mssv</div>
+                                                @if (!Model.LaHoiDongGiuaKy && !Model.ChiNhanXet && svHead.DiemGVHD.HasValue)
+                                                {
+                                                    <div style="margin-top: 4px;">
+                                                        <span class="status-badge status-info" style="font-size: 10px;">GVHD: @svHead.DiemGVHD.Value.ToString("F1")</span>
+                                                    </div>
+                                                }
+                                            </th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var firstSV = Model.DanhSachSinhVien.FirstOrDefault();
+                                        var tieuChiCount = firstSV?.DiemDaCham?.Count ?? Model.TieuChis?.Count ?? 0;
+                                    }
+                                    @for (int tcIndex = 0; tcIndex < tieuChiCount; tcIndex++)
+                                    {
+                                        var tcInfo = firstSV?.DiemDaCham?.ElementAtOrDefault(tcIndex) ?? Model.TieuChis?.ElementAtOrDefault(tcIndex);
+                                        if (tcInfo == null) continue;
+                                        <tr>
+                                            <td style="text-align: center;">@(tcIndex + 1)</td>
+                                            <td>
+                                                <strong>@tcInfo.TenTieuChi</strong>
+                                                @if (!string.IsNullOrEmpty(tcInfo.MoTaHuongDan))
+                                                {
+                                                    <br /><small style="color: #6b7280;">@tcInfo.MoTaHuongDan</small>
+                                                }
+                                                @if (!Model.ChiNhanXet)
+                                                {
+                                                    <br /><small style="color: #2563eb; font-weight: 500;">Trọng số: @tcInfo.TrongSo% — Tối đa: @tcInfo.DiemToiDa.ToString("F1")</small>
+                                                }
+                                            </td>
+                                            @for (int svIdx = 0; svIdx < Model.DanhSachSinhVien.Count; svIdx++)
+                                            {
+                                                var svData = Model.DanhSachSinhVien[svIdx];
+                                                var tcData = svData.DiemDaCham?.ElementAtOrDefault(tcIndex);
+                                                <td style="text-align: center; vertical-align: top; padding: 8px;">
+                                                    @if (!Model.ChiNhanXet)
+                                                    {
+                                                        <input type="hidden" name="DanhSachDiemSinhVien[@svIdx].DiemChiTiets[@tcIndex].IdTieuChi" value="@(tcData?.Id ?? tcInfo.Id)" />
+                                                        <input type="number"
+                                                               class="diem-input diem-sv-@svIdx"
+                                                               name="DanhSachDiemSinhVien[@svIdx].DiemChiTiets[@tcIndex].DiemSo"
+                                                               value="@(tcData?.DiemDaCham)"
+                                                               min="0"
+                                                               max="@(tcData?.DiemToiDa ?? tcInfo.DiemToiDa)"
+                                                               step="0.1"
+                                                               data-max="@(tcData?.DiemToiDa ?? tcInfo.DiemToiDa)"
+                                                               data-trongso="@(tcData?.TrongSo ?? tcInfo.TrongSo)"
+                                                               required />
+                                                        <span style="font-size: 11px; color: #9ca3af; display: block;">/ @((tcData?.DiemToiDa ?? tcInfo.DiemToiDa).ToString("F1"))</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <input type="hidden" name="DanhSachDiemSinhVien[@svIdx].DiemChiTiets[@tcIndex].IdTieuChi" value="@(tcData?.Id ?? tcInfo.Id)" />
+                                                        <input type="hidden" name="DanhSachDiemSinhVien[@svIdx].DiemChiTiets[@tcIndex].DiemSo" value="0" />
+                                                    }
+                                                    <textarea class="nhanxet-input"
+                                                              name="DanhSachDiemSinhVien[@svIdx].DiemChiTiets[@tcIndex].NhanXet"
+                                                              rows="2"
+                                                              style="margin-top: 4px; font-size: 12px;"
+                                                              placeholder="Nhận xét...">@(tcData?.NhanXetDaCham)</textarea>
+                                                </td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                                @if (!Model.ChiNhanXet)
+                                {
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="2" style="text-align: right;"><strong>Tổng điểm:</strong></td>
+                                            @for (int svIdx = 0; svIdx < Model.DanhSachSinhVien.Count; svIdx++)
+                                            {
+                                                <td style="text-align: center;">
+                                                    <span class="tongDiem-sv-@svIdx" style="font-size: 18px; color: #0d6efd; font-weight: 700;">0.0</span>
+                                                    <span style="color: #6b7280;"> / 10</span>
+                                                </td>
+                                            }
+                                        </tr>
+                                    </tfoot>
+                                }
+                            </table>
+                        </div>
                     </div>
-                </form>
+                </div>
+            }
+            else
+            {
+                <!-- Form đơn giản cho 1 sinh viên -->
+                var sv = Model.DanhSachSinhVien.FirstOrDefault();
+                if (sv != null)
+                {
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fa-solid fa-clipboard-check"></i> 
+                            @(Model.ChiNhanXet ? "Phiếu nhận xét" : "Phiếu chấm điểm") - @sv.TenSinhVien (@sv.Mssv)
+                        </div>
+                        <div class="info-card-body" style="padding: 0;">
+                            <input type="hidden" name="DanhSachDiemSinhVien[0].PhienBaoVeId" value="@sv.PhienBaoVeId" />
+                            <input type="hidden" name="DanhSachDiemSinhVien[0].IdSinhVien" value="@sv.IdSinhVien" />
+
+                            <div class="table-responsive" style="border: none; border-radius: 0;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;">STT</th>
+                                            <th>Tiêu chí</th>
+                                            @if (!Model.ChiNhanXet)
+                                            {
+                                                <th style="width: 80px;">Trọng số</th>
+                                                <th style="width: 100px;">Điểm tối đa</th>
+                                                <th style="width: 100px;">Điểm chấm</th>
+                                            }
+                                            <th style="@(Model.ChiNhanXet ? "" : "width: 200px;")">Nhận xét</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (int tcIndex = 0; tcIndex < sv.DiemDaCham.Count; tcIndex++)
+                                        {
+                                            var tc = sv.DiemDaCham[tcIndex];
+                                            <tr>
+                                                <td style="text-align: center;">@(tcIndex + 1)</td>
+                                                <td>
+                                                    <strong>@tc.TenTieuChi</strong>
+                                                    @if (!string.IsNullOrEmpty(tc.MoTaHuongDan))
+                                                    {
+                                                        <br /><small style="color: #6b7280;">@tc.MoTaHuongDan</small>
+                                                    }
+                                                </td>
+                                                @if (!Model.ChiNhanXet)
+                                                {
+                                                    <td style="text-align: center;">@tc.TrongSo%</td>
+                                                    <td style="text-align: center;">@tc.DiemToiDa.ToString("F1")</td>
+                                                    <td>
+                                                        <input type="hidden" name="DanhSachDiemSinhVien[0].DiemChiTiets[@tcIndex].IdTieuChi" value="@tc.Id" />
+                                                        <input type="number" 
+                                                               class="diem-input diem-sv-0" 
+                                                               name="DanhSachDiemSinhVien[0].DiemChiTiets[@tcIndex].DiemSo"
+                                                               value="@tc.DiemDaCham"
+                                                               min="0" 
+                                                               max="@tc.DiemToiDa" 
+                                                               step="0.1"
+                                                               data-max="@tc.DiemToiDa"
+                                                               data-trongso="@tc.TrongSo"
+                                                               required />
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <input type="hidden" name="DanhSachDiemSinhVien[0].DiemChiTiets[@tcIndex].IdTieuChi" value="@tc.Id" />
+                                                    <input type="hidden" name="DanhSachDiemSinhVien[0].DiemChiTiets[@tcIndex].DiemSo" value="0" />
+                                                }
+                                                <td>
+                                                    <textarea class="nhanxet-input" 
+                                                              name="DanhSachDiemSinhVien[0].DiemChiTiets[@tcIndex].NhanXet"
+                                                              rows="@(Model.ChiNhanXet ? 3 : 2)"
+                                                              placeholder="Nhận xét..." @(Model.ChiNhanXet ? "required" : "")>@tc.NhanXetDaCham</textarea>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    @if (!Model.ChiNhanXet)
+                                    {
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="4" style="text-align: right;"><strong>Tổng điểm:</strong></td>
+                                                <td colspan="2">
+                                                    <span class="tongDiem-sv-0" style="font-size: 18px; color: #0d6efd; font-weight: 700;">0.0</span>
+                                                    <span style="color: #6b7280;"> / 10</span>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    }
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+            <div class="form-footer" style="padding: 16px;">
+                <a href="@Url.Action("Detail", new { id = Model.HoiDongId })" class="btn-action btn-secondary">
+                    Hủy bỏ
+                </a>
+                <button type="submit" class="btn-action btn-primary">
+                    <i class="fa-solid fa-save"></i> @(Model.ChiNhanXet ? "Lưu nhận xét" : "Lưu điểm")
+                </button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
+
+<style>
+    .sv-tab:hover { background: #e5e7eb !important; }
+    .sv-tab.active { background: #fff !important; border-bottom-color: #0d6efd !important; color: #0d6efd; }
+</style>

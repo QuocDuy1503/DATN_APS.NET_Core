@@ -1,4 +1,5 @@
 using DATN_TMS.Models;
+using DATN_TMS.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -18,6 +19,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddDbContext<QuanLyDoAnTotNghiepContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IChamDiemBaoCaoService, ChamDiemBaoCaoService>();
 
 var app = builder.Build();
 

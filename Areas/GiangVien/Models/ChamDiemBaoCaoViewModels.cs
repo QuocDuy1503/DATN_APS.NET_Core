@@ -41,6 +41,7 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public HoiDongChamDiemViewModel HoiDong { get; set; } = new();
         public List<ThanhVienHoiDongChamDiemViewModel> ThanhViens { get; set; } = new();
         public List<PhienBaoVeViewModel> PhienBaoVes { get; set; } = new();
+        public List<DeTaiChamDiemViewModel> DanhSachDeTai { get; set; } = new(); // Danh sách đề tài (nhóm theo đề tài)
         public string VaiTroHienTai { get; set; } = "";
         public bool LaChuTich { get; set; }
         public bool LaThuKy { get; set; }
@@ -64,7 +65,53 @@ namespace DATN_TMS.Areas.GiangVien.Models
         };
     }
 
-    // ViewModel phiên bảo vệ
+    // ViewModel sinh viên trong đề tài
+    public class SinhVienDeTaiChamDiemViewModel
+    {
+        public int IdSinhVien { get; set; }
+        public int IdSinhVienDeTai { get; set; }
+        public int PhienBaoVeId { get; set; }
+        public string TenSinhVien { get; set; } = "";
+        public string Mssv { get; set; } = "";
+        public double? DiemGVHD { get; set; }
+        public string NhanXetGVHD { get; set; } = "";
+        public double? DiemCuaBan { get; set; } // Điểm người dùng hiện tại đã chấm
+        public string LinkTaiLieu { get; set; } = "";
+        public List<DiemThanhVienViewModel> DiemHoiDong { get; set; } = new();
+    }
+
+    // ViewModel đề tài trong hội đồng (nhóm các sinh viên cùng đề tài)
+    public class DeTaiChamDiemViewModel
+    {
+        public int IdDeTai { get; set; }
+        public string MaDeTai { get; set; } = "";
+        public string TenDeTai { get; set; } = "";
+        public string TenGVHD { get; set; } = "";
+        public int SttBaoCao { get; set; }
+        public List<SinhVienDeTaiChamDiemViewModel> DanhSachSinhVien { get; set; } = new();
+        public string TrangThaiXacNhan { get; set; } = "CHO_XAC_NHAN";
+        public double? DiemTongKetCuoi { get; set; }
+
+        public bool DaXacNhan => TrangThaiXacNhan == "DA_XAC_NHAN";
+
+        // Kiểm tra đã chấm điểm chưa (có ít nhất 1 sinh viên có điểm)
+        public bool DaChamDiem => DanhSachSinhVien.Any(sv => sv.DiemCuaBan.HasValue);
+
+        // Tính điểm trung bình hội đồng
+        public double? DiemTBHoiDong
+        {
+            get
+            {
+                var allDiem = DanhSachSinhVien.SelectMany(sv => sv.DiemHoiDong).Select(d => d.DiemSo).ToList();
+                return allDiem.Any() ? allDiem.Average() : null;
+            }
+        }
+
+        // Lấy phiên bảo vệ đầu tiên (để dùng cho link chấm điểm)
+        public int PhienBaoVeId => DanhSachSinhVien.FirstOrDefault()?.PhienBaoVeId ?? 0;
+    }
+
+    // ViewModel phiên bảo vệ (giữ lại để tương thích)
     public class PhienBaoVeViewModel
     {
         public int Id { get; set; }
@@ -94,19 +141,70 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string NhanXet { get; set; } = "";
     }
 
-    // ViewModel trang chấm điểm
-    public class ChamDiemPhienBaoVeViewModel
+    // ViewModel sinh viên để chấm điểm
+    public class SinhVienChamDiemInfo
     {
+        public int IdSinhVien { get; set; }
+        public int IdSinhVienDeTai { get; set; }
         public int PhienBaoVeId { get; set; }
-        public int HoiDongId { get; set; }
-        public string TenHoiDong { get; set; } = "";
         public string TenSinhVien { get; set; } = "";
         public string Mssv { get; set; } = "";
+        public double? DiemGVHD { get; set; }
+        public string NhanXetGVHD { get; set; } = "";
+
+        // Điểm đã chấm cho sinh viên này (riêng biệt)
+        public List<TieuChiChamDiemViewModel> DiemDaCham { get; set; } = new();
+        public bool DaChamDiem => DiemDaCham.Any(d => d.DiemDaCham > 0 || !string.IsNullOrEmpty(d.NhanXetDaCham));
+    }
+
+    // ViewModel trang chấm điểm (hỗ trợ nhiều sinh viên cùng đề tài)
+    public class ChamDiemPhienBaoVeViewModel
+    {
+        public int PhienBaoVeId { get; set; } // Phiên bảo vệ đầu tiên
+        public int IdDeTai { get; set; }
+        public int HoiDongId { get; set; }
+        public string TenHoiDong { get; set; } = "";
+        public string LoaiHoiDong { get; set; } = "";
         public string TenDeTai { get; set; } = "";
+        public string MaDeTai { get; set; } = "";
+        public bool LaHoiDongGiuaKy { get; set; }
+
+        // Danh sách sinh viên cùng đề tài
+        public List<SinhVienChamDiemInfo> DanhSachSinhVien { get; set; } = new();
+
+        // Giữ lại để tương thích với view cũ
+        public string TenSinhVien { get; set; } = "";
+        public string Mssv { get; set; } = "";
         public double DiemGVHD { get; set; }
         public string NhanXetGVHD { get; set; } = "";
+
+        // Thông tin vai trò và loại phiếu
+        public string VaiTroHienTai { get; set; } = "";
+        public bool LaPhanBien { get; set; }
+        public string TenLoaiPhieu { get; set; } = "";
+        public bool ChiNhanXet { get; set; }
+
         public List<TieuChiChamDiemViewModel> TieuChis { get; set; } = new();
         public bool DaChamDiem { get; set; }
+
+        public string LoaiHoiDongDisplay => LoaiHoiDong switch
+        {
+            "GIUA_KY" => "Giữa kì",
+            "CUOI_KY" => "Cuối kỳ",
+            _ => LoaiHoiDong
+        };
+
+        public string VaiTroDisplay => VaiTroHienTai switch
+        {
+            "CHU_TICH" => "Chủ tịch",
+            "THU_KY" => "Thư ký",
+            "PHAN_BIEN" => "Phản biện",
+            "UY_VIEN" => "Ủy viên",
+            _ => VaiTroHienTai
+        };
+
+        // Kiểm tra có nhiều sinh viên không
+        public bool CoNhieuSinhVien => DanhSachSinhVien.Count > 1;
     }
 
     // ViewModel tiêu chí chấm điểm
@@ -121,10 +219,19 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string NhanXetDaCham { get; set; } = "";
     }
 
-    // Request lưu điểm
+    // Request lưu điểm (hỗ trợ nhiều sinh viên với điểm riêng biệt)
     public class LuuDiemRequest
     {
         public int PhienBaoVeId { get; set; }
+        public int IdDeTai { get; set; }
+        public List<DiemSinhVienInput> DanhSachDiemSinhVien { get; set; } = new(); // Điểm riêng biệt cho từng SV
+    }
+
+    // Điểm của từng sinh viên
+    public class DiemSinhVienInput
+    {
+        public int PhienBaoVeId { get; set; }
+        public int IdSinhVien { get; set; }
         public List<DiemChiTietInput> DiemChiTiets { get; set; } = new();
     }
 
@@ -160,15 +267,21 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public int PhienBaoVeId { get; set; }
         public int HoiDongId { get; set; }
         public string TenHoiDong { get; set; } = "";
-        public string TenSinhVien { get; set; } = "";
-        public string Mssv { get; set; } = "";
+        public string LoaiHoiDong { get; set; } = "";
+
+        // Thông tin đề tài
         public string TenDeTai { get; set; } = "";
         public string MaDeTai { get; set; } = "";
-
-        // Điểm GVHD
         public string TenGVHD { get; set; } = "";
+
+        // Giữ lại cho backward compatibility (SV đầu tiên)
+        public string TenSinhVien { get; set; } = "";
+        public string Mssv { get; set; } = "";
         public double DiemGVHD { get; set; }
         public string NhanXetGVHD { get; set; } = "";
+
+        // Danh sách sinh viên cùng đề tài (cho bảng điểm kiểu bảng ngang)
+        public List<SinhVienBangDiemItem> DanhSachSinhVien { get; set; } = new();
 
         // Điểm các thành viên hội đồng
         public List<DiemThanhVienTongHopViewModel> DiemThanhViens { get; set; } = new();
@@ -190,6 +303,38 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public bool LaChuTich { get; set; }
 
         public bool DaXacNhan => TrangThaiXacNhan == "DA_XAC_NHAN";
+        public bool LaHoiDongGiuaKy => LoaiHoiDong == "GIUA_KY";
+
+        public string LoaiHoiDongDisplay => LoaiHoiDong switch
+        {
+            "GIUA_KY" => "Giữa kì",
+            "CUOI_KY" => "Cuối kỳ",
+            _ => LoaiHoiDong
+        };
+
+        // Lấy danh sách vai trò hội đồng (không trùng) để tạo header bảng
+        public List<string> DanhSachVaiTroHoiDong =>
+            DiemThanhViens
+                .OrderBy(t => t.VaiTro == "PHAN_BIEN" ? 0 : t.VaiTro == "CHU_TICH" ? 1 : t.VaiTro == "UY_VIEN" ? 2 : 3)
+                .Select(t => t.VaiTro)
+                .Distinct()
+                .ToList();
+    }
+
+    // Thông tin điểm cho 1 sinh viên trong bảng tổng hợp
+    public class SinhVienBangDiemItem
+    {
+        public int IdSinhVien { get; set; }
+        public int PhienBaoVeId { get; set; }
+        public string TenSinhVien { get; set; } = "";
+        public string Mssv { get; set; } = "";
+        public double DiemGVHD { get; set; }
+        // Điểm từng thành viên hội đồng: key = VaiTro, value = TongDiem
+        public Dictionary<string, double?> DiemTheoVaiTro { get; set; } = new();
+        // Điểm TB hội đồng cho SV này
+        public double DiemTBHoiDong { get; set; }
+        // Điểm trung bình cuối = GVHD*30% + HĐ*70%
+        public double DiemTrungBinhCuoi { get; set; }
     }
 
     public class DiemThanhVienTongHopViewModel

@@ -17,33 +17,46 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(int? loaiPhieuId, int? dotId)
+        /// <summary>
+        /// Kiểm tra xem có đang trong giai đoạn chấm điểm (giữa kì hoặc cuối kì) không
+        /// </summary>
+        private async Task<(bool DangTrongGiaiDoan, string ThongBao)> KiemTraGiaiDoanChamDiem()
         {
-            var dotOptions = await _context.DotDoAns
-                .OrderByDescending(d => d.Id)
-                .Select(d => new SelectListItem
-                {
-                    Value = d.Id.ToString(),
-                    Text = d.TenDot ?? $"Đợt {d.Id}"
-                })
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            // Kiểm tra tất cả các đợt đang hoạt động
+            var dotDangHoatDong = await _context.DotDoAns
+                .Where(d => d.TrangThai == true)
                 .ToListAsync();
 
-            var loaiPhieuQuery = _context.LoaiPhieuChams.AsQueryable();
-            if (dotId.HasValue)
+            foreach (var dot in dotDangHoatDong)
             {
-                var loaiIdsTheoDot = await _context.CauHinhPhieuChamDots
-                    .Where(x => x.IdDot == dotId.Value && x.IdLoaiPhieu.HasValue)
-                    .Select(x => x.IdLoaiPhieu!.Value)
-                    .Distinct()
-                    .ToListAsync();
-
-                if (loaiIdsTheoDot.Any())
+                // Kiểm tra giai đoạn báo cáo giữa kì
+                if (dot.NgayBatDauBaoCaoGiuaKi.HasValue && dot.NgayKetThucBaoCaoGiuaKi.HasValue)
                 {
-                    loaiPhieuQuery = loaiPhieuQuery.Where(lp => loaiIdsTheoDot.Contains(lp.Id));
+                    if (today >= dot.NgayBatDauBaoCaoGiuaKi.Value && today <= dot.NgayKetThucBaoCaoGiuaKi.Value)
+                    {
+                        return (true, $"Đang trong giai đoạn báo cáo giữa kì của đợt '{dot.TenDot}' ({dot.NgayBatDauBaoCaoGiuaKi.Value:dd/MM/yyyy} - {dot.NgayKetThucBaoCaoGiuaKi.Value:dd/MM/yyyy}). Không thể chỉnh sửa tiêu chí.");
+                    }
+                }
+
+                // Kiểm tra giai đoạn báo cáo cuối kì
+                if (dot.NgayBatDauBaoCaoCuoiKi.HasValue && dot.NgayKetThucBaoCaoCuoiKi.HasValue)
+                {
+                    if (today >= dot.NgayBatDauBaoCaoCuoiKi.Value && today <= dot.NgayKetThucBaoCaoCuoiKi.Value)
+                    {
+                        return (true, $"Đang trong giai đoạn báo cáo cuối kì của đợt '{dot.TenDot}' ({dot.NgayBatDauBaoCaoCuoiKi.Value:dd/MM/yyyy} - {dot.NgayKetThucBaoCaoCuoiKi.Value:dd/MM/yyyy}). Không thể chỉnh sửa tiêu chí.");
+                    }
                 }
             }
 
-            var loaiPhieuOptions = await loaiPhieuQuery
+            return (false, string.Empty);
+        }
+
+        public async Task<IActionResult> Index(int? loaiPhieuId)
+        {
+            // Lấy tất cả loại phiếu chấm
+            var loaiPhieuOptions = await _context.LoaiPhieuChams
                 .OrderBy(lp => lp.TenLoaiPhieu)
                 .Select(lp => new SelectListItem
                 {
@@ -52,11 +65,13 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 })
                 .ToListAsync();
 
+            // Nếu chưa chọn loại phiếu, mặc định chọn loại đầu tiên
             if (!loaiPhieuId.HasValue && loaiPhieuOptions.Any())
             {
                 loaiPhieuId = int.TryParse(loaiPhieuOptions.First().Value, out var firstId) ? firstId : null;
             }
 
+            // Lấy danh sách tiêu chí theo loại phiếu
             var tieuChis = await _context.TieuChiChamDiems
                 .AsNoTracking()
                 .Where(tc => !loaiPhieuId.HasValue || tc.IdLoaiPhieu == loaiPhieuId)
@@ -72,6 +87,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 })
                 .ToListAsync();
 
+            // Kiểm tra loại phiếu có phải chỉ nhận xét không
             var chiNhanXet = false;
             if (loaiPhieuId.HasValue)
             {
@@ -81,14 +97,17 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                     .FirstOrDefaultAsync();
             }
 
+            // Kiểm tra ràng buộc giai đoạn chấm điểm
+            var (dangTrongGiaiDoan, thongBaoRangBuoc) = await KiemTraGiaiDoanChamDiem();
+
             var vm = new TieuChiViewModel
             {
-                SelectedDotId = dotId,
                 SelectedLoaiPhieuId = loaiPhieuId,
                 ChiNhanXet = chiNhanXet,
                 LoaiPhieuOptions = loaiPhieuOptions,
-                DotOptions = dotOptions,
-                TieuChis = tieuChis
+                TieuChis = tieuChis,
+                DangTrongGiaiDoanChamDiem = dangTrongGiaiDoan,
+                ThongBaoRangBuoc = thongBaoRangBuoc
             };
 
             return View(vm);
@@ -96,12 +115,20 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveAll(List<TieuChiItem> items, int loaiPhieuId, int? dotId)
+        public async Task<IActionResult> SaveAll(List<TieuChiItem> items, int loaiPhieuId)
         {
+            // Kiểm tra ràng buộc giai đoạn chấm điểm
+            var (dangTrongGiaiDoan, thongBao) = await KiemTraGiaiDoanChamDiem();
+            if (dangTrongGiaiDoan)
+            {
+                TempData["ErrorMessage"] = thongBao;
+                return RedirectToAction(nameof(Index), new { loaiPhieuId });
+            }
+
             if (loaiPhieuId == 0)
             {
                 TempData["ErrorMessage"] = "Vui lòng chọn loại phiếu.";
-                return RedirectToAction(nameof(Index), new { loaiPhieuId, dotId });
+                return RedirectToAction(nameof(Index), new { loaiPhieuId });
             }
 
             var list = items ?? new List<TieuChiItem>();
@@ -147,23 +174,31 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = "Đã lưu cấu hình tiêu chí.";
-            return RedirectToAction(nameof(Index), new { loaiPhieuId, dotId });
+            return RedirectToAction(nameof(Index), new { loaiPhieuId });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(TieuChiItem model, int loaiPhieuId, int? dotId)
+        public async Task<IActionResult> Create(TieuChiItem model, int loaiPhieuId)
         {
+            // Kiểm tra ràng buộc giai đoạn chấm điểm
+            var (dangTrongGiaiDoan, thongBao) = await KiemTraGiaiDoanChamDiem();
+            if (dangTrongGiaiDoan)
+            {
+                TempData["ErrorMessage"] = thongBao;
+                return RedirectToAction(nameof(Index), new { loaiPhieuId });
+            }
+
             if (loaiPhieuId == 0)
             {
                 TempData["ErrorMessage"] = "Vui lòng chọn loại phiếu.";
-                return RedirectToAction(nameof(Index), new { loaiPhieuId, dotId });
+                return RedirectToAction(nameof(Index), new { loaiPhieuId });
             }
 
             if (string.IsNullOrWhiteSpace(model.TenTieuChi))
             {
                 TempData["ErrorMessage"] = "Tên tiêu chí không được để trống.";
-                return RedirectToAction(nameof(Index), new { loaiPhieuId, dotId });
+                return RedirectToAction(nameof(Index), new { loaiPhieuId });
             }
 
             var entity = new TieuChiChamDiem
@@ -180,18 +215,26 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Đã thêm tiêu chí thành công.";
-            return RedirectToAction(nameof(Index), new { loaiPhieuId, dotId });
+            return RedirectToAction(nameof(Index), new { loaiPhieuId });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id, int? loaiPhieuId, int? dotId)
+        public async Task<IActionResult> Delete(int id, int? loaiPhieuId)
         {
+            // Kiểm tra ràng buộc giai đoạn chấm điểm
+            var (dangTrongGiaiDoan, thongBao) = await KiemTraGiaiDoanChamDiem();
+            if (dangTrongGiaiDoan)
+            {
+                TempData["ErrorMessage"] = thongBao;
+                return RedirectToAction(nameof(Index), new { loaiPhieuId });
+            }
+
             var entity = await _context.TieuChiChamDiems.FindAsync(id);
             if (entity == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy tiêu chí.";
-                return RedirectToAction(nameof(Index), new { loaiPhieuId, dotId });
+                return RedirectToAction(nameof(Index), new { loaiPhieuId });
             }
 
             _context.TieuChiChamDiems.Remove(entity);
@@ -205,7 +248,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 TempData["ErrorMessage"] = "Không thể xóa tiêu chí (đang được sử dụng).";
             }
 
-            return RedirectToAction(nameof(Index), new { loaiPhieuId, dotId });
+            return RedirectToAction(nameof(Index), new { loaiPhieuId });
         }
     }
 }

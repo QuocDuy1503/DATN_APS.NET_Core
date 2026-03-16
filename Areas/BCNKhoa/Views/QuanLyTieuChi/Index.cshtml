@@ -6,9 +6,11 @@
     var weightValid = totalWeight >= 100;
     var weightStatusText = weightValid ? "(Đủ 100%)" : "(Chưa đủ 100%)";
     var weightStatusColor = weightValid ? "color:#28a745;" : "color:red;";
-    var selectedDotId = Model?.SelectedDotId?.ToString() ?? "";
     var selectedLoaiPhieuId = Model?.SelectedLoaiPhieuId?.ToString() ?? "";
     var chiNhanXet = Model?.ChiNhanXet ?? false;
+    var choPhepChinhSua = Model?.ChoPhepChinhSua ?? true;
+    var dangTrongGiaiDoan = Model?.DangTrongGiaiDoanChamDiem ?? false;
+    var thongBaoRangBuoc = Model?.ThongBaoRangBuoc ?? "";
 }
 
 <style>
@@ -28,6 +30,30 @@
         text-transform: uppercase;
     }
 
+    /* --- ALERT CẢNH BÁO --- */
+    .alert-lock {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+        padding: 15px 20px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .alert-lock i {
+        font-size: 24px;
+        color: #ffc107;
+    }
+    .alert-lock-content {
+        flex: 1;
+    }
+    .alert-lock-title {
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
     /* --- FORM CHỌN LOẠI PHIẾU --- */
     .setup-header {
         background: #f8f9fa;
@@ -39,7 +65,7 @@
 
     .setup-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 20px;
     }
 
@@ -60,13 +86,19 @@
         padding: 8px;
         width: 100%;
         font-size: 13px;
-        resize: vertical; /* Cho phép kéo giãn chiều cao textarea */
+        resize: vertical;
     }
 
     .criteria-table input:focus,
     .criteria-table textarea:focus {
         border-color: #D71920;
         outline: none;
+    }
+
+    .criteria-table input:disabled,
+    .criteria-table textarea:disabled {
+        background-color: #f5f5f5;
+        cursor: not-allowed;
     }
 
     /* Cột trọng số và điểm */
@@ -87,6 +119,11 @@
     .btn-remove-row:hover {
         color: #a71d2a;
         transform: scale(1.1);
+    }
+    .btn-remove-row:disabled {
+        color: #ccc;
+        cursor: not-allowed;
+        transform: none;
     }
 
     /* --- THANH TỔNG KẾT (FOOTER FIXED) --- */
@@ -131,6 +168,16 @@
     .btn-add-row:hover {
         background-color: #d0e3ff;
     }
+
+    .info-note {
+        background: #e8f4fd;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
 </style>
 
 <div class="content-body">
@@ -139,19 +186,26 @@
             <h2 class="page-title">Cấu hình tiêu chí chấm điểm</h2>
         </div>
 
+        <div class="info-note">
+            <i class="fa-solid fa-circle-info"></i> 
+            <strong>Lưu ý:</strong> Tiêu chí chấm điểm được cấu hình theo loại phiếu và áp dụng chung cho tất cả các đợt đồ án.
+        </div>
+
+        @if (dangTrongGiaiDoan)
+        {
+            <div class="alert-lock">
+                <i class="fa-solid fa-lock"></i>
+                <div class="alert-lock-content">
+                    <div class="alert-lock-title"><i class="fa-solid fa-triangle-exclamation"></i> Không thể chỉnh sửa tiêu chí</div>
+                    <div>@thongBaoRangBuoc</div>
+                </div>
+            </div>
+        }
+
         <div class="setup-header">
-            <h4 style="margin-bottom:15px; font-size:15px; color:var(--primary-red);">1. Thông tin phiếu chấm</h4>
+            <h4 style="margin-bottom:15px; font-size:15px; color:var(--primary-red);">1. Chọn loại phiếu chấm</h4>
             <form method="get">
                 <div class="setup-grid">
-                    <div class="form-group">
-                        <label>Áp dụng cho đợt:</label>
-                        <select class="form-control" name="dotId" onchange="this.form.submit()">
-                            @foreach (var opt in Model?.DotOptions ?? Enumerable.Empty<SelectListItem>())
-                            {
-                                <option value="@opt.Value" selected="@(opt.Value == selectedDotId ? "selected" : null)">@opt.Text</option>
-                            }
-                        </select>
-                    </div>
                     <div class="form-group">
                         <label>Loại phiếu chấm:</label>
                         <select class="form-control" id="selectRubricType" name="loaiPhieuId" onchange="this.form.submit()">
@@ -179,10 +233,9 @@
         <form asp-action="SaveAll" method="post">
             @Html.AntiForgeryToken()
             <input type="hidden" name="loaiPhieuId" value="@Model?.SelectedLoaiPhieuId" />
-            <input type="hidden" name="dotId" value="@Model?.SelectedDotId" />
         <div>
             <h4 style="margin-bottom:15px; font-size:15px; color:var(--primary-red);">2. Chi tiết tiêu chí</h4>
-            
+
             <div class="table-responsive">
                 <table class="criteria-table" id="criteriaTable">
                     <thead>
@@ -206,15 +259,15 @@
                                 var item = Model.TieuChis[i];
                                 <tr data-index="@i">
                                     <td class="text-center stt"><span class="stt-display">@(item.Stt ?? (i + 1))</span><input type="hidden" name="items[@i].Id" value="@item.Id" /><input type="hidden" class="stt-input" name="items[@i].Stt" value="@(item.Stt ?? (i + 1))" /></td>
-                                    <td><input type="text" name="items[@i].TenTieuChi" class="form-control" value="@item.TenTieuChi" required></td>
-                                    <td><textarea name="items[@i].MoTa" class="form-control" rows="1">@item.MoTa</textarea></td>
+                                    <td><input type="text" name="items[@i].TenTieuChi" class="form-control" value="@item.TenTieuChi" required @(choPhepChinhSua ? "" : "disabled")></td>
+                                    <td><textarea name="items[@i].MoTa" class="form-control" rows="1" @(choPhepChinhSua ? "" : "disabled")>@item.MoTa</textarea></td>
                                     @if (!chiNhanXet)
                                     {
-                                        <td><input type="number" name="items[@i].TrongSo" class="form-control input-number weight-input" value="@item.TrongSo" min="0" max="100" step="0.1" required></td>
-                                        <td><input type="number" name="items[@i].DiemToiDa" class="form-control input-number" value="@item.DiemToiDa" min="0" step="0.1" required></td>
+                                        <td><input type="number" name="items[@i].TrongSo" class="form-control input-number weight-input" value="@item.TrongSo" min="0" max="100" step="0.1" required @(choPhepChinhSua ? "" : "disabled")></td>
+                                        <td><input type="number" name="items[@i].DiemToiDa" class="form-control input-number" value="@item.DiemToiDa" min="0" step="0.1" required @(choPhepChinhSua ? "" : "disabled")></td>
                                     }
                                     <td class="text-center">
-                                        <button class="btn-remove-row btn-delete-existing" type="button" data-id="@item.Id"><i class="fa-solid fa-trash"></i></button>
+                                        <button class="btn-remove-row btn-delete-existing" type="button" data-id="@item.Id" @(choPhepChinhSua ? "" : "disabled")><i class="fa-solid fa-trash"></i></button>
                                     </td>
                                 </tr>
                             }
@@ -229,9 +282,18 @@
                 </table>
             </div>
 
-            <button type="button" class="btn-add-row" id="btnAddInline">
-                <i class="fa-solid fa-plus"></i> Thêm tiêu chí mới
-            </button>
+            @if (choPhepChinhSua)
+            {
+                <button type="button" class="btn-add-row" id="btnAddInline">
+                    <i class="fa-solid fa-plus"></i> Thêm tiêu chí mới
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn-add-row" disabled style="background: #f5f5f5; color: #999; border-color: #ccc; cursor: not-allowed;">
+                    <i class="fa-solid fa-lock"></i> Không thể thêm tiêu chí trong giai đoạn chấm điểm
+                </button>
+            }
 
             <div class="total-summary-bar">
                 @if (!chiNhanXet)
@@ -249,9 +311,18 @@
                 }
                 <div>
                     <button class="btn btn-secondary" type="button" style="margin-right: 10px;">Hủy bỏ</button>
-                    <button class="btn btn-save" id="btnSaveCriteria" type="submit">
-                        <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình
-                    </button>
+                    @if (choPhepChinhSua)
+                    {
+                        <button class="btn btn-save" id="btnSaveCriteria" type="submit">
+                            <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-save" type="button" disabled style="background: #ccc; cursor: not-allowed;">
+                            <i class="fa-solid fa-lock"></i> Không thể lưu
+                        </button>
+                    }
                 </div>
             </div>
         </div>
@@ -361,8 +432,7 @@
         form.innerHTML = `
             <input type="hidden" name="__RequestVerificationToken" value="${token}">
             <input type="hidden" name="id" value="${id}">
-            <input type="hidden" name="loaiPhieuId" value="@Model?.SelectedLoaiPhieuId">
-            <input type="hidden" name="dotId" value="@Model?.SelectedDotId">`;
+            <input type="hidden" name="loaiPhieuId" value="@Model?.SelectedLoaiPhieuId">`;
         document.body.appendChild(form);
         form.submit();
     }

@@ -1,0 +1,320 @@
+@model DATN_TMS.Areas.GiangVien.Models.ChamDiemGVHDViewModel
+@{
+    ViewData["Title"] = "Chấm điểm GVHD - " + Model.MaDeTai;
+    Layout = "~/Views/Shared/_Layout_GV.cshtml";
+}
+
+<style>
+    :root { --primary: #484BE0; }
+    .cd-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
+    .cd-page .content-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+    .page-desc { font-size: 13px; color: #6c757d; margin-top: 4px; }
+    .btn-back { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 6px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+    .btn-back:hover { background: #e5e7eb; color: #1f2937; }
+
+    .info-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px; }
+    .info-card-header { background: #f8f9fa; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 14px; color: #374151; display: flex; align-items: center; gap: 8px; }
+    .info-card-body { padding: 16px; }
+
+    .info-row { display: flex; gap: 24px; flex-wrap: wrap; }
+    .info-item { flex: 1; min-width: 200px; }
+    .info-label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+    .info-value { font-size: 14px; color: #1f2937; font-weight: 500; }
+
+    .alert-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+    .alert-done { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .alert-info i { font-size: 16px; }
+
+    /* Grid chấm điểm */
+    .grade-grid { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; }
+    .grade-grid table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .grade-grid thead th { background: #f3f4f6; padding: 12px; text-align: center; border-bottom: 2px solid #e5e7eb; font-weight: 700; color: #374151; white-space: nowrap; }
+    .grade-grid thead th.th-criteria { text-align: left; min-width: 200px; }
+    .grade-grid thead th.th-student { min-width: 180px; background: #eef2ff; }
+    .grade-grid tbody td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    .grade-grid tbody td.td-criteria { background: #fafbfc; }
+    .grade-grid tbody tr:hover { background: #f9fafb; }
+
+    .tc-name { font-weight: 600; color: #1e293b; font-size: 13px; }
+    .tc-desc { font-size: 11px; color: #6b7280; margin-top: 2px; }
+    .tc-weight { font-size: 11px; color: #2563eb; font-weight: 600; margin-top: 4px; }
+
+    .sv-header { text-align: center; }
+    .sv-header .sv-name { font-weight: 700; color: #1e293b; font-size: 13px; }
+    .sv-header .sv-mssv { font-size: 11px; color: #6b7280; }
+    .sv-header .sv-file { margin-top: 4px; }
+    .sv-header .sv-file a { font-size: 11px; color: #2563eb; text-decoration: none; }
+    .sv-header .sv-file a:hover { text-decoration: underline; }
+
+    .diem-cell { text-align: center; }
+    .diem-input { width: 80px; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; text-align: center; font-weight: 600; }
+    .diem-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
+    .diem-max { font-size: 11px; color: #9ca3af; display: block; margin-top: 2px; }
+
+    .nhanxet-cell textarea { width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; resize: vertical; min-height: 40px; }
+    .nhanxet-cell textarea:focus { border-color: var(--primary); outline: none; }
+
+    /* Tổng điểm */
+    .grade-grid tfoot td { background: #f0f9ff; padding: 12px; border-top: 2px solid #93c5fd; font-weight: 700; font-size: 14px; }
+    .tong-diem { font-size: 18px; color: #1e40af; }
+
+    /* Nhận xét chung */
+    .nhanxet-section { margin-top: 20px; }
+    .nhanxet-section label { display: block; font-weight: 600; font-size: 13px; color: #374151; margin-bottom: 6px; }
+    .nhanxet-section textarea { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; resize: vertical; min-height: 80px; box-sizing: border-box; }
+    .nhanxet-section textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(72,75,224,0.1); }
+
+    .form-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+    .btn-action { padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #3538b2; }
+    .btn-secondary { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+    .btn-secondary:hover { background: #f3f4f6; }
+</style>
+
+<div class="content-body cd-page">
+    <div class="content-card">
+        <a href="@Url.Action("Index")" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
+        </a>
+
+        <div style="margin-bottom: 20px;">
+            <h2 class="page-title">Chấm điểm GVHD</h2>
+            <p class="page-desc">@Model.TenLoaiPhieu</p>
+        </div>
+
+        <!-- Thông tin đề tài -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="fa-solid fa-file-alt"></i> Thông tin đề tài
+            </div>
+            <div class="info-card-body">
+                <div class="info-row">
+                    <div class="info-item">
+                        <div class="info-label">Mã đề tài</div>
+                        <div class="info-value">@Model.MaDeTai</div>
+                    </div>
+                    <div class="info-item" style="flex: 3;">
+                        <div class="info-label">Tên đề tài</div>
+                        <div class="info-value">@Model.TenDeTai</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Đợt đồ án</div>
+                        <div class="info-value">@Model.TenDot</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.DaChamDiem)
+        {
+            <div class="alert-info alert-done">
+                <i class="fa-solid fa-check-circle"></i>
+                <span>Đã chấm điểm — bạn có thể cập nhật lại.</span>
+            </div>
+        }
+        else
+        {
+            <div class="alert-info">
+                <i class="fa-solid fa-info-circle"></i>
+                <span>Chấm điểm riêng cho từng sinh viên theo từng tiêu chí. Tổng điểm sẽ được tính tự động.</span>
+            </div>
+        }
+
+        <!-- Bảng chấm điểm: Tiêu chí (hàng) × Sinh viên (cột) -->
+        <form id="formChamDiem">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="idDeTai" value="@Model.IdDeTai" />
+
+            <div class="grade-grid">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">STT</th>
+                            <th class="th-criteria">Tiêu chí đánh giá</th>
+                            @foreach (var sv in Model.DanhSachSinhVien)
+                            {
+                                <th class="th-student">
+                                    <div class="sv-header">
+                                        <div class="sv-name">@sv.HoTen</div>
+                                        <div class="sv-mssv">@sv.Mssv</div>
+                                        @if (!string.IsNullOrEmpty(sv.FileBaoCao))
+                                        {
+                                            <div class="sv-file">
+                                                <a href="@sv.FileBaoCao" target="_blank">
+                                                    <i class="fa-solid fa-file-pdf"></i> Xem báo cáo
+                                                </a>
+                                            </div>
+                                        }
+                                    </div>
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int tcIndex = 0; tcIndex < Model.TieuChis.Count; tcIndex++)
+                        {
+                            var tc = Model.TieuChis[tcIndex];
+                            <tr>
+                                <td style="text-align:center; font-weight:600;">@(tcIndex + 1)</td>
+                                <td class="td-criteria">
+                                    <div class="tc-name">@tc.TenTieuChi</div>
+                                    @if (!string.IsNullOrEmpty(tc.MoTaHuongDan))
+                                    {
+                                        <div class="tc-desc">@tc.MoTaHuongDan</div>
+                                    }
+                                    <div class="tc-weight">Trọng số: @tc.TrongSo% — Tối đa: @tc.DiemToiDa.ToString("F1")</div>
+                                </td>
+                                @foreach (var sv in Model.DanhSachSinhVien)
+                                {
+                                    var diemCu = tc.DiemDaCham.ContainsKey(sv.IdSinhVien) ? tc.DiemDaCham[sv.IdSinhVien] : (double?)null;
+                                    <td class="diem-cell">
+                                        <input type="number"
+                                               class="diem-input diem-sv-@sv.IdSinhVien"
+                                               data-sv="@sv.IdSinhVien"
+                                               data-tc="@tc.Id"
+                                               data-max="@tc.DiemToiDa"
+                                               data-trongso="@tc.TrongSo"
+                                               min="0"
+                                               max="@tc.DiemToiDa"
+                                               step="0.1"
+                                               value="@(diemCu?.ToString("F1") ?? "")"
+                                               placeholder="0" />
+                                        <span class="diem-max">/ @tc.DiemToiDa.ToString("F1")</span>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2" style="text-align:right;">Tổng điểm:</td>
+                            @foreach (var sv in Model.DanhSachSinhVien)
+                            {
+                                <td style="text-align:center;">
+                                    <span class="tong-diem" id="tong-@sv.IdSinhVien">0.0</span>
+                                    <span style="color:#6b7280; font-size:12px;"> / 10</span>
+                                </td>
+                            }
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Nhận xét chung per SV -->
+            @foreach (var sv in Model.DanhSachSinhVien)
+            {
+                var nxCu = Model.TieuChis.FirstOrDefault()?.NhanXetDaCham.GetValueOrDefault(sv.IdSinhVien, "");
+                <div class="nhanxet-section">
+                    <label><i class="fa-solid fa-comment"></i> Nhận xét chung — @sv.HoTen (@sv.Mssv)</label>
+                    <textarea class="nhanxet-sv" data-sv="@sv.IdSinhVien" placeholder="Nhận xét cho @sv.HoTen...">@(nxCu ?? "")</textarea>
+                </div>
+            }
+
+            <div class="form-footer">
+                <a href="@Url.Action("Index")" class="btn-action btn-secondary">Hủy bỏ</a>
+                <button type="submit" class="btn-action btn-primary" id="btnSave">
+                    <i class="fa-solid fa-save"></i> Lưu điểm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Tính tổng điểm cho mỗi sinh viên
+    function tinhTongDiem(svId) {
+        var tong = 0;
+        document.querySelectorAll('.diem-sv-' + svId).forEach(function (input) {
+            var val = parseFloat(input.value) || 0;
+            var ts = parseFloat(input.getAttribute('data-trongso')) || 0;
+            tong += val * ts / 100;
+        });
+        var el = document.getElementById('tong-' + svId);
+        if (el) el.textContent = tong.toFixed(1);
+    }
+
+    // Validate và clamp điểm
+    document.querySelectorAll('.diem-input').forEach(function (input) {
+        input.addEventListener('input', function () {
+            var max = parseFloat(this.getAttribute('data-max'));
+            var val = parseFloat(this.value);
+            if (val > max) this.value = max;
+            if (val < 0) this.value = 0;
+            tinhTongDiem(this.getAttribute('data-sv'));
+        });
+    });
+
+    // Tính tổng khi load
+    @foreach (var sv in Model.DanhSachSinhVien)
+    {
+        <text>tinhTongDiem(@sv.IdSinhVien);</text>
+    }
+
+    // Submit form
+    document.getElementById('formChamDiem').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        var idDeTai = parseInt(document.getElementById('idDeTai').value);
+        var svIds = [@string.Join(",", Model.DanhSachSinhVien.Select(s => s.IdSinhVien))];
+        var danhSachDiem = [];
+
+        for (var i = 0; i < svIds.length; i++) {
+            var svId = svIds[i];
+            var diemTieuChis = [];
+            var allValid = true;
+
+            document.querySelectorAll('.diem-sv-' + svId).forEach(function (input) {
+                var val = parseFloat(input.value);
+                if (isNaN(val) || val < 0) {
+                    allValid = false;
+                    input.style.borderColor = '#ef4444';
+                } else {
+                    input.style.borderColor = '#d1d5db';
+                    diemTieuChis.push({
+                        idTieuChi: parseInt(input.getAttribute('data-tc')),
+                        diemSo: val,
+                        nhanXet: ''
+                    });
+                }
+            });
+
+            if (!allValid) {
+                toastr.error('Vui lòng nhập điểm hợp lệ cho tất cả tiêu chí.');
+                return;
+            }
+
+            var nhanXetEl = document.querySelector('.nhanxet-sv[data-sv="' + svId + '"]');
+            danhSachDiem.push({
+                idSinhVien: svId,
+                nhanXetChung: nhanXetEl ? nhanXetEl.value : '',
+                diemTieuChis: diemTieuChis
+            });
+        }
+
+        var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        fetch('@Url.Action("LuuDiemGVHD")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+            body: JSON.stringify({ idDeTai: idDeTai, danhSachDiem: danhSachDiem })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                toastr.success(data.message);
+                setTimeout(function () {
+                    window.location.href = '@Url.Action("Index")';
+                }, 1500);
+            } else {
+                toastr.error(data.message || 'Có lỗi xảy ra.');
+            }
+        })
+        .catch(function () {
+            toastr.error('Có lỗi kết nối đến server.');
+        });
+    });
+</script>
+}

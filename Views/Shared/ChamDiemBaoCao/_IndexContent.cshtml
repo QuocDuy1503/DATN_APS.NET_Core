@@ -110,7 +110,7 @@
                                     </td>
                                     <td>
                                         <span class="status-badge @(hd.LoaiHoiDong == "CUOI_KY" ? "status-cuoiky" : "status-giuaky")">
-                                            @hd.LoaiHoiDongDisplay
+                                            @(hd.LoaiHoiDong == "CUOI_KY" ? "Cuối kỳ" : "Giữa kì")
                                         </span>
                                     </td>
                                     <td>@(hd.NgayBaoCao.HasValue ? hd.NgayBaoCao.Value.ToString("dd/MM/yyyy") : "-")</td>
@@ -120,27 +120,29 @@
                                     <td>
                                         @if (hd.DaChamDiem)
                                         {
-                                            <span class="status-badge status-done"><i class="fa-solid fa-check"></i> Đã chấm</span>
+                                            <span class="status-badge status-done">Đã chấm</span>
                                         }
                                         else if (!hd.CoDenNgayBaoCao)
                                         {
-                                            <span class="status-badge status-pending"><i class="fa-solid fa-clock"></i> Chưa đến</span>
+                                            <span class="status-badge status-pending">Chưa đến ngày</span>
                                         }
                                         else
                                         {
-                                            <span class="status-badge status-notyet"><i class="fa-solid fa-exclamation"></i> Chưa chấm</span>
+                                            <span class="status-badge status-notyet">Chưa chấm</span>
                                         }
                                     </td>
                                     <td>
                                         @if (hd.CoDenNgayBaoCao)
                                         {
-                                            <a href="@Url.Action("Detail", new { id = hd.Id })" class="btn-action btn-view">
-                                                <i class="fa-solid fa-eye"></i> Chi tiết
+                                            <a href="@Url.Action("Detail", new { id = hd.Id })" class="btn-action btn-view" title="Xem chi tiết">
+                                                <i class="fa-solid fa-eye"></i>
                                             </a>
                                         }
                                         else
                                         {
-                                            <button class="btn-action btn-disabled" disabled><i class="fa-solid fa-lock"></i> Chờ</button>
+                                            <button class="btn-action btn-disabled" disabled title="Chờ đến ngày báo cáo">
+                                                <i class="fa-solid fa-lock"></i>
+                                            </button>
                                         }
                                     </td>
                                 </tr>
