@@ -42,6 +42,7 @@ namespace DATN_TMS.Services
                     .ThenInclude(tv => tv.IdGiangVienNavigation)
                         .ThenInclude(gv => gv != null ? gv.IdNguoiDungNavigation : null)
                 .Include(hd => hd.PhienBaoVes)
+                    .ThenInclude(pb => pb.IdSinhVienDeTaiNavigation)
                 .Where(hd => hd.TrangThaiDuyet == "DA_DUYET" &&
                              hd.LoaiHoiDong != "DUYET_DE_TAI" &&
                              hd.ThanhVienHdBaoCaos.Any(tv => tv.IdGiangVien == currentUserId))
@@ -57,7 +58,11 @@ namespace DATN_TMS.Services
                 TenBoMon = hd.IdBoMonNavigation?.TenBoMon ?? "N/A",
                 NgayBaoCao = hd.NgayBaoCao,
                 DiaDiem = hd.DiaDiem ?? "",
-                SoLuongDeTai = hd.PhienBaoVes.Count,
+                SoLuongDeTai = hd.PhienBaoVes
+                    .Where(pb => pb.IdSinhVienDeTaiNavigation?.IdDeTai != null)
+                    .Select(pb => pb.IdSinhVienDeTaiNavigation!.IdDeTai)
+                    .Distinct()
+                    .Count(),
                 VaiTroTrongHoiDong = hd.ThanhVienHdBaoCaos
                     .FirstOrDefault(tv => tv.IdGiangVien == currentUserId)?.VaiTro ?? "",
                 DaChamDiem = hd.ThanhVienHdBaoCaos
@@ -135,19 +140,27 @@ namespace DATN_TMS.Services
                         .Where(d => d.IdPhienBaoVe == pb.Id && d.IdSinhVien == idSinhVien)
                         .ToListAsync();
 
-                    var diemCuaBan = diemHoiDong.FirstOrDefault(d => d.IdNguoiCham == currentUserId);
+                    var diemCuaBanList = diemHoiDong.Where(d => d.IdNguoiCham == currentUserId).ToList();
+                    double? tongDiemCuaBan = diemCuaBanList.Any() ? diemCuaBanList.Sum(d => d.DiemSo ?? 0) : null;
 
                     string linkTaiLieu = pb.LinkTaiLieu ?? "";
-                    if (laHoiDongGiuaKy && string.IsNullOrEmpty(linkTaiLieu))
+                    if (string.IsNullOrEmpty(linkTaiLieu))
                     {
-                        var baoCaoGiuaKy = await _context.BaoCaoNops
+                        var loaiBaoCao = laHoiDongGiuaKy ? "GIUA_KY" : "CUOI_KY";
+                        // Giữa kì: mỗi SV nộp riêng → lọc theo IdSinhVien
+                        // Cuối kì: 1 SV nộp đại diện cả nhóm → chỉ lọc theo IdDeTai
+                        var query = _context.BaoCaoNops
                             .Where(bc => bc.IdDeTai == idDeTai &&
-                                        bc.IdSinhVien == idSinhVien &&
-                                        bc.LoaiBaoCao == "GIUA_KY" &&
-                                        bc.TrangThai == "DA_DUYET")
+                                        bc.LoaiBaoCao == loaiBaoCao &&
+                                        bc.TrangThai == "DA_DUYET");
+                        if (laHoiDongGiuaKy)
+                        {
+                            query = query.Where(bc => bc.IdSinhVien == idSinhVien);
+                        }
+                        var baoCaoDaDuyet = await query
                             .OrderByDescending(bc => bc.NgayNop)
                             .FirstOrDefaultAsync();
-                        linkTaiLieu = baoCaoGiuaKy?.FileBaocao ?? "";
+                        linkTaiLieu = baoCaoDaDuyet?.FileBaocao ?? "";
                     }
 
                     sinhViens.Add(new SinhVienDeTaiChamDiemViewModel
@@ -159,7 +172,7 @@ namespace DATN_TMS.Services
                         Mssv = sv?.Mssv ?? "",
                         DiemGVHD = svdt?.DiemGvhd,
                         NhanXetGVHD = svdt?.NhanXetGvhd ?? "",
-                        DiemCuaBan = diemCuaBan?.DiemSo,
+                        DiemCuaBan = tongDiemCuaBan,
                         LinkTaiLieu = linkTaiLieu,
                         DiemHoiDong = diemHoiDong.Select(d => new DiemThanhVienViewModel
                         {
@@ -514,6 +527,7 @@ namespace DATN_TMS.Services
             var phien = await _context.PhienBaoVes
                 .Include(p => p.IdHdBaocaoNavigation)
                     .ThenInclude(hd => hd != null ? hd.ThanhVienHdBaoCaos : null)
+                .Include(p => p.IdSinhVienDeTaiNavigation)
                 .FirstOrDefaultAsync(p => p.Id == request.PhienBaoVeId);
 
             if (phien == null)
@@ -525,17 +539,25 @@ namespace DATN_TMS.Services
             if (thanhVien?.VaiTro != "THU_KY")
                 return new LuuDiemResult { Success = false, Message = "Chỉ Thư ký mới có quyền điều chỉnh điểm." };
 
-            _context.LichSuCapNhatDiems.Add(new LichSuCapNhatDiem
+            // Lấy IdSinhVien từ phiên bảo vệ nếu request không cung cấp
+            var idSinhVien = request.IdSinhVien > 0
+                ? request.IdSinhVien
+                : phien.IdSinhVienDeTaiNavigation?.IdSinhVien ?? 0;
+
+            if (idSinhVien > 0)
             {
-                IdPhienBaoVe = request.PhienBaoVeId,
-                IdSinhVien = request.IdSinhVien,
-                IdNguoiCapNhat = currentUserId,
-                LoaiCapNhat = "THU_KY_DIEU_CHINH",
-                DiemCu = request.DiemCu,
-                DiemMoi = request.DiemMoi,
-                LyDo = request.LyDo,
-                NgayCapNhat = DateTime.Now
-            });
+                _context.LichSuCapNhatDiems.Add(new LichSuCapNhatDiem
+                {
+                    IdPhienBaoVe = request.PhienBaoVeId,
+                    IdSinhVien = idSinhVien,
+                    IdNguoiCapNhat = currentUserId,
+                    LoaiCapNhat = "THU_KY_DIEU_CHINH",
+                    DiemCu = request.DiemCu,
+                    DiemMoi = request.DiemMoi,
+                    LyDo = request.LyDo,
+                    NgayCapNhat = DateTime.Now
+                });
+            }
 
             await _context.SaveChangesAsync();
             return new LuuDiemResult { Success = true, Message = "Đã điều chỉnh điểm thành công!" };
@@ -546,57 +568,78 @@ namespace DATN_TMS.Services
             var phien = await _context.PhienBaoVes
                 .Include(p => p.IdHdBaocaoNavigation)
                     .ThenInclude(hd => hd != null ? hd.ThanhVienHdBaoCaos : null)
+                .Include(p => p.IdSinhVienDeTaiNavigation)
+                    .ThenInclude(svdt => svdt != null ? svdt.IdDeTaiNavigation : null)
                 .FirstOrDefaultAsync(p => p.Id == request.PhienBaoVeId);
 
             if (phien == null)
                 return new LuuDiemResult { Success = false, Message = "Không tìm thấy phiên bảo vệ." };
 
-            var thanhVien = phien.IdHdBaocaoNavigation?.ThanhVienHdBaoCaos?
+            var hoiDong = phien.IdHdBaocaoNavigation;
+            var thanhVien = hoiDong?.ThanhVienHdBaoCaos?
                 .FirstOrDefault(tv => tv.IdGiangVien == currentUserId);
 
             if (thanhVien?.VaiTro != "CHU_TICH")
                 return new LuuDiemResult { Success = false, Message = "Chỉ Chủ tịch mới có quyền xác nhận điểm." };
 
-            var tatCaDaCham = phien.IdHdBaocaoNavigation?.ThanhVienHdBaoCaos?
+            var tatCaDaCham = hoiDong?.ThanhVienHdBaoCaos?
                 .All(tv => tv.DaChamDiem == true) ?? false;
 
             if (!tatCaDaCham)
                 return new LuuDiemResult { Success = false, Message = "Chưa tất cả thành viên hội đồng chấm điểm." };
 
-            var xacNhan = await _context.XacNhanDiemChuTichs
-                .FirstOrDefaultAsync(x => x.IdPhienBaoVe == request.PhienBaoVeId);
+            // Lấy tất cả phiên bảo vệ cùng đề tài để xác nhận cho từng SV
+            var idDeTai = phien.IdSinhVienDeTaiNavigation?.IdDeTai ?? 0;
+            var tatCaPhienCungDeTai = await _context.PhienBaoVes
+                .Include(p => p.IdSinhVienDeTaiNavigation)
+                .Where(p => p.IdHdBaocao == hoiDong!.Id &&
+                            p.IdSinhVienDeTaiNavigation != null &&
+                            p.IdSinhVienDeTaiNavigation.IdDeTai == idDeTai)
+                .ToListAsync();
 
-            if (xacNhan == null)
+            // Tạo/cập nhật xác nhận cho từng phiên bảo vệ (mỗi SV)
+            foreach (var pb in tatCaPhienCungDeTai)
             {
-                xacNhan = new XacNhanDiemChuTich
+                var xacNhan = await _context.XacNhanDiemChuTichs
+                    .FirstOrDefaultAsync(x => x.IdPhienBaoVe == pb.Id);
+
+                if (xacNhan == null)
                 {
-                    IdPhienBaoVe = request.PhienBaoVeId,
-                    IdChuTich = currentUserId,
-                    TrangThai = "DA_XAC_NHAN",
-                    DiemTongKetCuoi = request.DiemTongKet,
-                    GhiChu = request.GhiChu,
-                    NgayXacNhan = DateTime.Now
-                };
-                _context.XacNhanDiemChuTichs.Add(xacNhan);
-            }
-            else
-            {
-                xacNhan.TrangThai = "DA_XAC_NHAN";
-                xacNhan.DiemTongKetCuoi = request.DiemTongKet;
-                xacNhan.GhiChu = request.GhiChu;
-                xacNhan.NgayXacNhan = DateTime.Now;
-            }
+                    xacNhan = new XacNhanDiemChuTich
+                    {
+                        IdPhienBaoVe = pb.Id,
+                        IdChuTich = currentUserId,
+                        TrangThai = "DA_XAC_NHAN",
+                        DiemTongKetCuoi = request.DiemTongKet,
+                        GhiChu = request.GhiChu,
+                        NgayXacNhan = DateTime.Now
+                    };
+                    _context.XacNhanDiemChuTichs.Add(xacNhan);
+                }
+                else
+                {
+                    xacNhan.TrangThai = "DA_XAC_NHAN";
+                    xacNhan.DiemTongKetCuoi = request.DiemTongKet;
+                    xacNhan.GhiChu = request.GhiChu;
+                    xacNhan.NgayXacNhan = DateTime.Now;
+                }
 
-            _context.LichSuCapNhatDiems.Add(new LichSuCapNhatDiem
-            {
-                IdPhienBaoVe = request.PhienBaoVeId,
-                IdSinhVien = request.IdSinhVien,
-                IdNguoiCapNhat = currentUserId,
-                LoaiCapNhat = "CHU_TICH_XAC_NHAN",
-                DiemMoi = request.DiemTongKet,
-                LyDo = request.GhiChu,
-                NgayCapNhat = DateTime.Now
-            });
+                // Tạo lịch sử xác nhận cho từng sinh viên
+                var idSinhVien = pb.IdSinhVienDeTaiNavigation?.IdSinhVien;
+                if (idSinhVien.HasValue && idSinhVien.Value > 0)
+                {
+                    _context.LichSuCapNhatDiems.Add(new LichSuCapNhatDiem
+                    {
+                        IdPhienBaoVe = pb.Id,
+                        IdSinhVien = idSinhVien.Value,
+                        IdNguoiCapNhat = currentUserId,
+                        LoaiCapNhat = "CHU_TICH_XAC_NHAN",
+                        DiemMoi = request.DiemTongKet,
+                        LyDo = request.GhiChu,
+                        NgayCapNhat = DateTime.Now
+                    });
+                }
+            }
 
             await _context.SaveChangesAsync();
             return new LuuDiemResult { Success = true, Message = "Đã xác nhận điểm thành công! Có thể chuyển sang đề tài tiếp theo." };

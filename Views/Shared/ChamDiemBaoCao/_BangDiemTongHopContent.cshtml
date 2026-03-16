@@ -17,11 +17,16 @@
 <style>
     .content-body.chamdiem-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
     .chamdiem-page .content-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.05); min-height: calc(100vh - 140px); }
-    .page-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; }
-    .page-description { font-size: 13px; color: #6c757d; margin-top: 4px; }
-    .btn-back { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 6px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; }
-    .btn-back:hover { background: #e5e7eb; color: #1f2937; }
+    .page-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 12px; }
+    .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
+
+    /* Breadcrumb */
+    .breadcrumb-nav { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f5f5f5; }
+    .breadcrumb { display: flex; align-items: center; list-style: none; padding: 0; margin: 0; font-size: 13px; background: transparent; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: #D71920; text-decoration: underline; }
+    .breadcrumb-item.active { color: #333; font-weight: 600; cursor: default; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: #ccc; }
 
     .info-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 20px; }
     .info-card-header { background: #f8f9fa; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; font-size: 14px; color: #374151; display: flex; align-items: center; gap: 8px; }
@@ -73,14 +78,9 @@
 
 <div class="content-body chamdiem-page">
     <div class="content-card">
-        <a href="@Url.Action("Detail", new { id = Model.HoiDongId })" class="btn-back">
-            <i class="fa-solid fa-arrow-left"></i> Quay lại
-        </a>
-
         <div class="page-header-row">
             <div>
                 <h2 class="page-title">Bảng điểm tổng hợp</h2>
-                <p class="page-description">@Model.TenHoiDong — @Model.LoaiHoiDongDisplay</p>
             </div>
             @if (Model.DaXacNhan)
             {
@@ -91,6 +91,14 @@
                 <span class="status-badge status-pending" style="font-size: 14px;"><i class="fa-solid fa-clock"></i> Chờ xác nhận</span>
             }
         </div>
+
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index")">Danh sách hội đồng</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Detail", new { id = Model.HoiDongId })">@Model.TenHoiDong</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Bảng điểm - @Model.MaDeTai</li>
+            </ol>
+        </nav>
 
         <!-- Thông tin đề tài -->
         <div class="info-card">

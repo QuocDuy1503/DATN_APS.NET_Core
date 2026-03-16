@@ -14,28 +14,34 @@
     }
     .page-header-row { margin-bottom: 15px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
-    .page-description { font-size: 13px; color: #6c757d; margin-top: 4px; }
+
+    .toolbar-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+    .filter-wrapper { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; background: transparent; padding: 0; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
+    .toolbar-input, .toolbar-select { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
+    .toolbar-input:focus, .toolbar-select:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
 
     .table-responsive { border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff; flex: 1; display: flex; flex-direction: column; }
-    .table-scroll { flex: 1; max-height: calc(100vh - 280px); overflow-y: auto; }
+    .table-scroll { flex: 1; max-height: calc(100vh - 340px); overflow-y: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px !important; }
     thead th { position: sticky; top: 0; background: #f3f4f6; z-index: 2; font-weight: 700 !important; padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px !important; color: #444; white-space: nowrap; }
     tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
     tbody tr:hover { background: #f9f9f9; }
 
-    .status-badge { padding: 5px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
     .status-cuoiky { background: #0d6efd; }
     .status-giuaky { background: #17a2b8; }
-    .status-done { background: #16a34a; }
-    .status-pending { background: #f59e0b; }
+    .status-done, .status-approved { background: #16a34a; }
+    .status-pending { background: #6b7280; }
     .status-notyet { background: #dc3545; }
     .status-role { background: #6c757d; }
     .status-count { background: #343a40; }
 
-    .btn-action { padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; border: none; cursor: pointer; }
-    .btn-view { background: #0d6efd; color: #fff; }
-    .btn-view:hover { background: #0b5ed7; color: #fff; }
-    .btn-disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+    .action-btn { border: none; background: none; cursor: pointer; padding: 5px; font-size: 16px; text-decoration: none; }
+    .action-btn.btn-view { color: #2980b9; }
+    .action-btn.btn-view:hover { color: #1a5276; }
+    .action-btn.btn-disabled { color: #9ca3af; cursor: not-allowed; }
 
     .empty-state { text-align: center; padding: 60px 20px; color: #6c757d; }
     .empty-state i { font-size: 48px; margin-bottom: 16px; color: #d1d5db; }
@@ -47,13 +53,19 @@
     .alert-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     .alert .btn-close { background: none; border: none; font-size: 18px; cursor: pointer; color: inherit; opacity: 0.7; }
     .alert .btn-close:hover { opacity: 1; }
+
+    .pagination-container { display: flex; justify-content: center; margin-top: 12px; padding-top: 8px; }
+    .pagination { display: inline-flex; gap: 8px; padding: 0; margin: 0; list-style: none; }
+    .pagination li a, .pagination li span { min-width: 42px; height: 38px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #374151; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; text-decoration: none; font-weight: 600; transition: all 0.15s ease; cursor: pointer; user-select: none; }
+    .pagination li a:hover { border-color: #2563eb; color: #2563eb; }
+    .pagination li.active span { background: #0d6efd; border-color: #0d6efd; color: #fff; box-shadow: 0 6px 18px rgba(13,110,253,0.25); }
+    .pagination li.disabled span, .pagination li.disabled a { color: #9ca3af; border-color: #e5e7eb; cursor: default; box-shadow: none; }
 </style>
 
 <div class="content-body chamdiem-page">
     <div class="content-card">
         <div class="page-header-row">
             <h2 class="page-title">Chấm điểm báo cáo</h2>
-            <p class="page-description">Danh sách các hội đồng bạn tham gia chấm điểm</p>
         </div>
 
         @if (TempData["SuccessMessage"] != null)
@@ -82,29 +94,58 @@
         }
         else
         {
+            <div class="toolbar-row">
+                <div class="filter-wrapper">
+                    <div class="filter-item">
+                        <span class="filter-label">Loại hội đồng</span>
+                        <select id="filterLoai" class="toolbar-select" onchange="applyFilters()">
+                            <option value="">-- Tất cả --</option>
+                            <option value="GIUA_KY">Giữa kì</option>
+                            <option value="CUOI_KY">Cuối kỳ</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <span class="filter-label">Trạng thái</span>
+                        <select id="filterTrangThai" class="toolbar-select" onchange="applyFilters()">
+                            <option value="">-- Tất cả --</option>
+                            <option value="DA_CHAM">Đã chấm</option>
+                            <option value="CHUA_CHAM">Chưa chấm</option>
+                            <option value="CHUA_DEN">Chưa đến ngày</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:flex-end; gap:10px;">
+                    <div class="filter-item">
+                        <span class="filter-label">Tìm kiếm</span>
+                        <input type="text" id="searchInput" class="toolbar-input" placeholder="Tên hội đồng, bộ môn, địa điểm..." style="width: 280px;" oninput="applyFilters()" />
+                    </div>
+                </div>
+            </div>
+
             <div class="table-responsive">
                 <div class="table-scroll">
                     <table>
                         <thead>
                             <tr>
                                 <th style="width: 50px;">STT</th>
-                                <th style="min-width: 200px;">Tên hội đồng</th>
+                                <th style="width: 180px; max-width: 200px;">Tên hội đồng</th>
                                 <th style="width: 100px;">Loại</th>
                                 <th style="width: 120px;">Ngày báo cáo</th>
                                 <th style="width: 150px;">Địa điểm</th>
                                 <th style="width: 120px;">Vai trò</th>
                                 <th style="width: 100px;">Số đề tài</th>
                                 <th style="width: 120px;">Trạng thái</th>
-                                <th style="width: 100px;">Thao tác</th>
+                                <th style="text-align: center; width: 80px;">Chi tiết</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tableBody">
                             @{ var stt = 1; }
                             @foreach (var hd in Model)
                             {
-                                <tr>
-                                    <td>@stt</td>
-                                    <td>
+                                var trangThaiData = hd.DaChamDiem ? "DA_CHAM" : (!hd.CoDenNgayBaoCao ? "CHUA_DEN" : "CHUA_CHAM");
+                                <tr class="data-row" data-loai="@hd.LoaiHoiDong" data-trangthai="@trangThaiData" data-search="@hd.TenHoiDong @hd.TenBoMon @hd.DiaDiem @hd.VaiTroDisplay">
+                                    <td class="stt-cell">@stt</td>
+                                    <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="@hd.TenHoiDong">
                                         <strong>@hd.TenHoiDong</strong><br />
                                         <small style="color: #6b7280;">@hd.TenBoMon</small>
                                     </td>
@@ -131,18 +172,18 @@
                                             <span class="status-badge status-notyet">Chưa chấm</span>
                                         }
                                     </td>
-                                    <td>
+                                    <td style="text-align: center;">
                                         @if (hd.CoDenNgayBaoCao)
                                         {
-                                            <a href="@Url.Action("Detail", new { id = hd.Id })" class="btn-action btn-view" title="Xem chi tiết">
+                                            <a href="@Url.Action("Detail", new { id = hd.Id })" class="action-btn btn-view" title="Xem chi tiết">
                                                 <i class="fa-solid fa-eye"></i>
                                             </a>
                                         }
                                         else
                                         {
-                                            <button class="btn-action btn-disabled" disabled title="Chờ đến ngày báo cáo">
+                                            <span class="action-btn btn-disabled" title="Chờ đến ngày báo cáo">
                                                 <i class="fa-solid fa-lock"></i>
-                                            </button>
+                                            </span>
                                         }
                                     </td>
                                 </tr>
@@ -152,6 +193,136 @@
                     </table>
                 </div>
             </div>
+
+            <div class="pagination-container">
+                <ul class="pagination" id="pagination"></ul>
+            </div>
         }
     </div>
 </div>
+
+<script>
+(function () {
+    var PAGE_SIZE = 10;
+    var currentPage = 1;
+
+    function getFilteredRows() {
+        var loai = document.getElementById('filterLoai')?.value || '';
+        var trangThai = document.getElementById('filterTrangThai')?.value || '';
+        var keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+        var rows = document.querySelectorAll('#tableBody .data-row');
+        var filtered = [];
+        rows.forEach(function (row) {
+            var matchLoai = !loai || row.getAttribute('data-loai') === loai;
+            var matchTT = !trangThai || row.getAttribute('data-trangthai') === trangThai;
+            var matchSearch = !keyword || (row.getAttribute('data-search') || '').toLowerCase().indexOf(keyword) > -1;
+            if (matchLoai && matchTT && matchSearch) {
+                filtered.push(row);
+            }
+        });
+        return filtered;
+    }
+
+    function renderPage() {
+        var filtered = getFilteredRows();
+        var totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        // Hide all, then show filtered + paged
+        document.querySelectorAll('#tableBody .data-row').forEach(function (r) { r.style.display = 'none'; });
+        var start = (currentPage - 1) * PAGE_SIZE;
+        var end = start + PAGE_SIZE;
+        for (var i = 0; i < filtered.length; i++) {
+            if (i >= start && i < end) {
+                filtered[i].style.display = '';
+                filtered[i].querySelector('.stt-cell').textContent = i + 1;
+            }
+        }
+
+        renderPagination(totalPages, filtered.length);
+    }
+
+    function renderPagination(totalPages, totalItems) {
+        var ul = document.getElementById('pagination');
+        if (!ul) return;
+        ul.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        // Prev
+        var liPrev = document.createElement('li');
+        if (currentPage === 1) liPrev.className = 'disabled';
+        var aPrev = document.createElement(currentPage === 1 ? 'span' : 'a');
+        aPrev.textContent = '«';
+        if (currentPage > 1) aPrev.onclick = function () { currentPage--; renderPage(); };
+        liPrev.appendChild(aPrev);
+        ul.appendChild(liPrev);
+
+        // Pages
+        var startPage = Math.max(1, currentPage - 2);
+        var endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+        if (startPage > 1) {
+            ul.appendChild(createPageLi(1));
+            if (startPage > 2) {
+                var liDots = document.createElement('li');
+                liDots.className = 'disabled';
+                var sp = document.createElement('span');
+                sp.textContent = '...';
+                liDots.appendChild(sp);
+                ul.appendChild(liDots);
+            }
+        }
+
+        for (var p = startPage; p <= endPage; p++) {
+            ul.appendChild(createPageLi(p));
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                var liDots2 = document.createElement('li');
+                liDots2.className = 'disabled';
+                var sp2 = document.createElement('span');
+                sp2.textContent = '...';
+                liDots2.appendChild(sp2);
+                ul.appendChild(liDots2);
+            }
+            ul.appendChild(createPageLi(totalPages));
+        }
+
+        // Next
+        var liNext = document.createElement('li');
+        if (currentPage === totalPages) liNext.className = 'disabled';
+        var aNext = document.createElement(currentPage === totalPages ? 'span' : 'a');
+        aNext.textContent = '»';
+        if (currentPage < totalPages) aNext.onclick = function () { currentPage++; renderPage(); };
+        liNext.appendChild(aNext);
+        ul.appendChild(liNext);
+    }
+
+    function createPageLi(page) {
+        var li = document.createElement('li');
+        if (page === currentPage) {
+            li.className = 'active';
+            var sp = document.createElement('span');
+            sp.textContent = page;
+            li.appendChild(sp);
+        } else {
+            var a = document.createElement('a');
+            a.textContent = page;
+            a.onclick = function () { currentPage = page; renderPage(); };
+            li.appendChild(a);
+        }
+        return li;
+    }
+
+    window.applyFilters = function () {
+        currentPage = 1;
+        renderPage();
+    };
+
+    // Initial render
+    renderPage();
+})();
+</script>

@@ -5,8 +5,6 @@
 }
 
 <style>
-    :root { --primary: #484BE0; }
-
     .content-body.chamdiem-page { font-family: 'Segoe UI', Tahoma, sans-serif !important; }
     .chamdiem-page .content-card {
         background: #fff; border-radius: 8px; padding: 20px;
@@ -14,11 +12,16 @@
         min-height: calc(100vh - 140px); font-family: inherit;
     }
 
-    .page-header-row { margin-bottom: 15px; }
+    .page-header-row { margin-bottom: 10px; }
     .page-title { font-size: 20px; font-weight: 700; color: #2c3e50; margin: 0; text-transform: uppercase; }
 
-    .btn-back { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 8px 14px; border-radius: 6px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px; }
-    .btn-back:hover { background: #e5e7eb; color: #1f2937; }
+    /* Breadcrumb */
+    .breadcrumb-nav { margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #f5f5f5; }
+    .breadcrumb { display: flex; align-items: center; list-style: none; padding: 0; margin: 0; font-size: 13px; background: transparent; }
+    .breadcrumb-item a { color: #6c757d; text-decoration: none; transition: color 0.2s; }
+    .breadcrumb-item a:hover { color: #D71920; text-decoration: underline; }
+    .breadcrumb-item.active { color: #333; font-weight: 600; cursor: default; }
+    .breadcrumb-item + .breadcrumb-item::before { content: "/"; padding: 0 8px; color: #ccc; }
 
     .hd-info { background: #f0f4ff; border: 1px solid #dbeafe; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; color: #333; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
     .hd-info i { color: #2563eb; }
@@ -29,7 +32,7 @@
     .filter-item { display: flex; flex-direction: column; gap: 4px; }
     .filter-label { font-weight: 500 !important; font-size: 13px !important; color: #333; display: block; margin-bottom: 4px; }
     .toolbar-input { background: #fff !important; font-size: 13px !important; padding: 8px 12px !important; border: 1px solid #ced4da !important; border-radius: 4px !important; height: 36px !important; }
-    .toolbar-input:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
+    .toolbar-input:focus { border-color: #484BE0 !important; box-shadow: 0 0 0 2px rgba(72, 75, 224, 0.1) !important; outline: none; }
 
     .hd-note { font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 6px; }
     .hd-note i { color: #f59e0b; }
@@ -41,38 +44,41 @@
     tbody td { padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: middle; font-size: 13px !important; color: #333; }
     tbody tr:hover { background: #f9f9f9; }
 
-    .td-ellipsis { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .td-ellipsis { max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .toggle-btn { width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: .15s ease; font-size: 13px; color: #111827; }
-    .toggle-btn:hover { background: #f3f4f6; border-color: var(--primary); color: var(--primary); }
+    .toggle-btn:hover { background: #f3f4f6; border-color: #484BE0; color: #484BE0; }
 
     .detail-row { background: #f9fafb; }
     .detail-row > td { padding: 16px !important; }
 
     .student-table { width: 100%; margin: 0; border: 1px solid #e5e7eb; border-radius: 8px; border-collapse: separate; border-spacing: 0; overflow: hidden; background: #fff; }
-    .student-table thead th { background: #f8fafc; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; font-size: 12px !important; font-weight: 600; color: #374151; }
-    .student-table tbody td { font-size: 12px !important; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #111827; }
+    .student-table thead th { background: #f8fafc; padding: 10px 12px; border-bottom: 1px solid #e5e7eb; white-space: nowrap; font-size: 12px !important; font-weight: 600; color: #374151; text-align: left; }
+    .student-table tbody td { font-size: 12px !important; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #111827; white-space: nowrap; }
     .student-table tbody tr:last-child td { border-bottom: none; }
-    .student-table td[rowspan] { vertical-align: middle; text-align: center; }
+    .student-table tbody tr:hover td { background: transparent; }
+    .student-table td[rowspan] { vertical-align: middle; text-align: center; background: #fff !important; }
 
-    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-block; }
-    .status-approved { background: #dcfce7; color: #166534; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-    .status-cuoiky { background: #dbeafe; color: #1e40af; }
-    .status-giuaky { background: #e0e7ff; color: #3730a3; }
-    .status-notyet { background: #fee2e2; color: #991b1b; }
+    /* Status badges - solid colors matching _IndexContent */
+    .status-badge { padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; background: #6b7280; }
+    .status-approved { background: #16a34a; }
+    .status-pending { background: #6b7280; }
+    .status-cuoiky { background: #0d6efd; }
+    .status-giuaky { background: #17a2b8; }
+    .status-notyet { background: #dc3545; }
 
-    .file-link { color: #2563eb; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; font-size: 12px; }
+    .file-link { color: #2563eb; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; font-size: 12px; white-space: nowrap; }
     .file-link:hover { text-decoration: underline; }
 
-    .edit-icon { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: .15s ease; text-decoration: none; }
-    .edit-icon i { font-size: 14px; color: #111827; }
-    .edit-icon:hover { background: #f3f4f6; border-color: var(--primary); }
-    .edit-icon:hover i { color: var(--primary); }
-    .btn-bangdiem { background: #e7f1ff; border-color: #93c5fd; }
-    .btn-bangdiem:hover { background: #dbeafe; }
+    /* Action buttons - matching _IndexContent */
+    .action-btn { border: none; background: none; cursor: pointer; padding: 5px; font-size: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .action-btn.btn-cham { color: #2980b9; }
+    .action-btn.btn-cham:hover { color: #1a5276; }
+    .action-btn.btn-bangdiem { color: #7c3aed; }
+    .action-btn.btn-bangdiem:hover { color: #5b21b6; }
+    .action-btn.btn-disabled { color: #9ca3af; cursor: not-allowed; }
 
-    .plan-cell { vertical-align: middle; text-align: center; }
+    .plan-cell { vertical-align: middle; text-align: center; white-space: nowrap; }
     .score-cell { font-weight: 600; color: #1e40af; font-size: 13px; }
     .no-score { color: #9ca3af; font-style: italic; font-weight: 400; }
 
@@ -100,13 +106,16 @@
 
 <div class="content-body chamdiem-page">
     <div class="content-card">
-        <a href="@Url.Action("Index")" class="btn-back">
-            <i class="fa-solid fa-arrow-left"></i> Quay lại
-        </a>
-
         <div class="page-header-row">
             <h2 class="page-title">Chấm điểm báo cáo</h2>
         </div>
+
+        <nav aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index")">Danh sách hội đồng</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.HoiDong.TenHoiDong</li>
+            </ol>
+        </nav>
 
         <div class="hd-info">
             <div class="hd-info-item">
@@ -166,7 +175,7 @@
             @if (laHoiDongGiuaKy)
             {
                 <div class="hd-note">
-                    <i class="fa-solid fa-info-circle"></i> Hội đồng giữa kì - Chấm điểm độc lập
+                    <i class="fa-solid fa-info-circle"></i> Hội đồng giữa kì
                 </div>
             }
         </div>
@@ -176,13 +185,13 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 50px;"></th>
-                            <th style="width: 100px;">Mã đề tài</th>
-                            <th>Tên đề tài</th>
+                            <th style="width: 0px;"></th>
+                            <th style="width: 30px;">Mã đề tài</th>
+                            <th style="width: 220px; max-width: 240px;">Tên đề tài</th>
                             <th style="width: 140px;">GVHD</th>
                             @if (!laHoiDongGiuaKy)
                             {
-                                <th style="width: 100px; text-align: center;">Điểm TB HĐ</th>
+                                <th style="width: 100px; text-align: center;">Điểm trung bình</th>
                             }
                             <th style="width: 120px;">Trạng thái</th>
                         </tr>
@@ -236,15 +245,15 @@
                                         <table class="student-table">
                                             <thead>
                                                 <tr>
-                                                    <th>Mã số sinh viên</th>
-                                                    <th>Họ và tên</th>
+                                                    <th style="width: 100px;">MSSV</th>
+                                                    <th style="width: 130px;">Họ và tên</th>
                                                     @if (!laHoiDongGiuaKy)
                                                     {
-                                                        <th style="text-align:center; width:100px;">Điểm GVHD</th>
-                                                        <th style="text-align:center; width:100px;">Điểm của bạn</th>
+                                                        <th style="text-align:center; width:80px;">Điểm giảng viên hướng dẫn</th>
+                                                        <th style="text-align:center; width:80px;">Điểm hội đồng cuối kì</th>
                                                     }
-                                                    <th style="width:200px;">Tài liệu báo cáo @(laHoiDongGiuaKy ? "giữa kì" : "")</th>
-                                                    <th style="text-align:center; width:150px;">Thao tác</th>
+                                                    <th style="text-align:center; width:200px;">Tài liệu báo cáo</th>
+                                                    <th style="text-align:center; width:100px;">Thao tác</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -270,9 +279,9 @@
                                                                 }
                                                             </td>
                                                             <td class="plan-cell">
-                                                                @if (sv.DiemCuaBan.HasValue)
+                                                                @if (sv.DiemTBHoiDongSV.HasValue)
                                                                 {
-                                                                    <span class="score-cell">@sv.DiemCuaBan.Value.ToString("F1")</span>
+                                                                    <span class="score-cell">@sv.DiemTBHoiDongSV.Value.ToString("F1")</span>
                                                                 }
                                                                 else
                                                                 {
@@ -280,38 +289,37 @@
                                                                 }
                                                             </td>
                                                         }
-                                                        <td class="plan-cell">
-                                                            @if (!string.IsNullOrEmpty(sv.LinkTaiLieu))
-                                                            {
-                                                                <a href="@sv.LinkTaiLieu" target="_blank" class="file-link">
-                                                                    <i class="fa-solid fa-file-pdf"></i>
-                                                                    Xem báo cáo
-                                                                </a>
-                                                            }
-                                                            else
-                                                            {
-                                                                <span class="no-score">Chưa có</span>
-                                                            }
-                                                        </td>
                                                         @if (i == 0)
                                                         {
-                                                            <!-- Chỉ hiển thị nút thao tác ở dòng đầu tiên với rowspan -->
+                                                            var linkTaiLieuDeTai = dt.DanhSachSinhVien.FirstOrDefault(s => !string.IsNullOrEmpty(s.LinkTaiLieu))?.LinkTaiLieu ?? "";
+                                                            <td rowspan="@svCount" class="plan-cell" style="vertical-align: middle; white-space: nowrap;">
+                                                                @if (!string.IsNullOrEmpty(linkTaiLieuDeTai))
+                                                                {
+                                                                    <a href="@linkTaiLieuDeTai" target="_blank" class="file-link">
+                                                                        <i class="fa-solid fa-file-pdf"></i> Xem báo cáo
+                                                                    </a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="no-score">Chưa có</span>
+                                                                }
+                                                            </td>
                                                             <td rowspan="@svCount" class="plan-cell" style="vertical-align: middle;">
                                                                 @if (!dt.DaXacNhan && coTheChamDiem)
                                                                 {
-                                                                    <a href="@Url.Action("ChamDiem", new { phienBaoVeId = dt.PhienBaoVeId })" class="edit-icon" title="@(laHoiDongGiuaKy ? "Nhận xét đề tài" : "Chấm điểm")">
+                                                                    <a href="@Url.Action("ChamDiem", new { phienBaoVeId = dt.PhienBaoVeId })" class="action-btn btn-cham" title="@(laHoiDongGiuaKy ? "Nhận xét đề tài" : "Chấm điểm")">
                                                                         <i class="fa-solid @(laHoiDongGiuaKy ? "fa-comment" : "fa-pen-to-square")"></i>
                                                                     </a>
                                                                 }
                                                                 else if (!dt.DaXacNhan && !coTheChamDiem)
                                                                 {
-                                                                    <span class="edit-icon" style="background: #f3f4f6; cursor: not-allowed;" title="Chờ GVHD chấm điểm">
-                                                                        <i class="fa-solid fa-lock" style="color: #9ca3af;"></i>
+                                                                    <span class="action-btn btn-disabled" title="Chờ GVHD chấm điểm">
+                                                                        <i class="fa-solid fa-lock"></i>
                                                                     </span>
                                                                 }
                                                                 @if (!laHoiDongGiuaKy)
                                                                 {
-                                                                    <a href="@Url.Action("BangDiemTongHop", new { phienBaoVeId = dt.PhienBaoVeId })" class="edit-icon btn-bangdiem" title="Bảng điểm tổng hợp">
+                                                                    <a href="@Url.Action("BangDiemTongHop", new { phienBaoVeId = dt.PhienBaoVeId })" class="action-btn btn-bangdiem" title="Bảng điểm tổng hợp">
                                                                         <i class="fa-solid fa-table-cells"></i>
                                                                     </a>
                                                                 }

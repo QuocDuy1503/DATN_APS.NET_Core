@@ -75,9 +75,34 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string Mssv { get; set; } = "";
         public double? DiemGVHD { get; set; }
         public string NhanXetGVHD { get; set; } = "";
-        public double? DiemCuaBan { get; set; } // Điểm người dùng hiện tại đã chấm
+        public double? DiemCuaBan { get; set; } // Tổng điểm người dùng hiện tại đã chấm
         public string LinkTaiLieu { get; set; } = "";
         public List<DiemThanhVienViewModel> DiemHoiDong { get; set; } = new();
+
+        // Điểm TB hội đồng cho SV này: group theo thành viên, sum mỗi người, rồi lấy average
+        public double? DiemTBHoiDongSV
+        {
+            get
+            {
+                if (!DiemHoiDong.Any()) return null;
+                var diemTheoThanhVien = DiemHoiDong
+                    .GroupBy(d => d.IdNguoiCham)
+                    .Select(g => g.Sum(d => d.DiemSo))
+                    .ToList();
+                return diemTheoThanhVien.Any() ? Math.Round(diemTheoThanhVien.Average(), 2) : null;
+            }
+        }
+
+        // Điểm trung bình cuối = 30% GVHD + 70% Hội đồng
+        public double? DiemTrungBinhCuoi
+        {
+            get
+            {
+                var diemHD = DiemTBHoiDongSV;
+                if (!DiemGVHD.HasValue || !diemHD.HasValue) return null;
+                return Math.Round(DiemGVHD.Value * 0.3 + diemHD.Value * 0.7, 2);
+            }
+        }
     }
 
     // ViewModel đề tài trong hội đồng (nhóm các sinh viên cùng đề tài)
@@ -97,13 +122,17 @@ namespace DATN_TMS.Areas.GiangVien.Models
         // Kiểm tra đã chấm điểm chưa (có ít nhất 1 sinh viên có điểm)
         public bool DaChamDiem => DanhSachSinhVien.Any(sv => sv.DiemCuaBan.HasValue);
 
-        // Tính điểm trung bình hội đồng
+        // Tính điểm trung bình (30% GVHD + 70% Hội đồng) trung bình các SV
         public double? DiemTBHoiDong
         {
             get
             {
-                var allDiem = DanhSachSinhVien.SelectMany(sv => sv.DiemHoiDong).Select(d => d.DiemSo).ToList();
-                return allDiem.Any() ? allDiem.Average() : null;
+                var diemCuoiList = DanhSachSinhVien
+                    .Select(sv => sv.DiemTrungBinhCuoi)
+                    .Where(d => d.HasValue)
+                    .Select(d => d!.Value)
+                    .ToList();
+                return diemCuoiList.Any() ? Math.Round(diemCuoiList.Average(), 2) : (double?)null;
             }
         }
 

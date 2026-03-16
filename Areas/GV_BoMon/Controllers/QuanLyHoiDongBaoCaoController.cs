@@ -97,7 +97,8 @@ namespace DATN_TMS.Areas.GV_BoMon.Controllers
                 NgayBaoCao = hd.NgayBaoCao,
                 ThoiGianDuKien = hd.ThoiGianDuKien,
                 DiaDiem = hd.DiaDiem ?? "",
-                TrangThai = hd.TrangThai ?? false
+                TrangThai = hd.TrangThai ?? false,
+                TrangThaiDuyet = hd.TrangThaiDuyet ?? "CHO_DUYET"
             });
 
             var pagedList = modelQuery.OrderByDescending(x => x.Id).ToPagedList(pageNumber, pageSize);

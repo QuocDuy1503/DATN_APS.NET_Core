@@ -157,7 +157,7 @@
                     </div>
                     <div class="form-group">
                         <label>Thời gian dự kiến:</label>
-                        <input name="ThoiGianDuKien" value="@(Model.ThoiGianDuKien != null ? Model.ThoiGianDuKien.Value.ToString("HH\\:mm") + " - " + Model.ThoiGianDuKien.Value.AddHours(4).ToString("HH\\:mm") : "")" class="form-control" placeholder="07:30 - 11:30" @(Model.TrangThai ? "readonly" : "")>
+                        <input type="time" name="ThoiGianDuKien" value="@(Model.ThoiGianDuKien?.ToString("HH:mm"))" class="form-control" @(Model.TrangThai ? "readonly" : "")>
                     </div>
                 </div>
             </div>
