@@ -45,11 +45,24 @@ namespace DATN_TMS.Areas.SinhVien.Models
         public int? IdSinhVien { get; set; }
 
         public List<ChuyenNganhItem>? DanhSachChuyenNganh { get; set; }
+
+        public DieuKienXetDuyetResult? DieuKienXetDuyet { get; set; }
     }
 
     public class ChuyenNganhItem
     {
         public int Id { get; set; }
         public string? TenChuyenNganh { get; set; }
+    }
+
+    public class DieuKienXetDuyetResult
+    {
+        public bool IsEligible { get; set; }
+        public double TongTinChiDaiCuong { get; set; }
+        public double TongTinChiCoSoNganhBB { get; set; }
+        public double TongTinChiCoSoNganhTC { get; set; }
+        public double TongTinChiChuyenNganh { get; set; }
+        public string? ChuyenNganhDatYeuCau { get; set; }
+        public List<string> ThongBaoLoi { get; set; } = new();
     }
 }

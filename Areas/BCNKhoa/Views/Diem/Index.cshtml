@@ -1,11 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Rendering
 @{
     ViewData["Title"] = "Import Điểm";
-    var hocKyOptions = ViewBag.HocKyList as IEnumerable<SelectListItem> ?? new List<SelectListItem>
+    var ctdtOptions = ViewBag.CtdtList as IEnumerable<SelectListItem> ?? new List<SelectListItem>
     {
-        new SelectListItem { Text = "-- Chọn học kỳ --", Value = "" },
-        new SelectListItem { Text = "HK1 2024-2025", Value = "HK1_2024_2025" },
-        new SelectListItem { Text = "HK2 2024-2025", Value = "HK2_2024_2025" }
+        new SelectListItem { Text = "-- Chọn chương trình đào tạo --", Value = "" }
     };
 }
 
@@ -55,11 +53,11 @@
             @Html.AntiForgeryToken()
 
             <div class="form-group">
-                <label for="hocKySelect">Học kỳ</label>
-                <select id="hocKySelect" name="hocKy" class="form-control">
-                    @foreach (var hk in hocKyOptions)
+                <label for="ctdtSelect">Chương trình đào tạo <span style="color:red">*</span></label>
+                <select id="ctdtSelect" name="idCtdt" class="form-control" required>
+                    @foreach (var item in ctdtOptions)
                     {
-                        <option value="@hk.Value">@hk.Text</option>
+                        <option value="@item.Value">@item.Text</option>
                     }
                 </select>
             </div>
@@ -67,11 +65,11 @@
             <div id="statusArea" class="status-area" role="alert" aria-live="polite"></div>
 
             <div class="dropzone" id="dropzone">
-                <input type="file" id="fileInput" name="file" accept=".csv,.xls,.xlsx" hidden />
+                <input type="file" id="fileInput" name="file" accept=".xls,.xlsx" hidden />
                 <div class="dropzone-content">
                     <div class="icon">📤</div>
                     <p class="headline">Kéo thả file điểm vào đây</p>
-                    <p class="subtext">Hỗ trợ định dạng .csv, .xls, .xlsx (≤ 10MB)</p>
+                    <p class="subtext">Hỗ trợ định dạng .xls, .xlsx (≤ 10MB)</p>
                     <button type="button" class="btn btn-purple" id="btnChoose">Chọn file</button>
                     <div class="file-info" id="fileInfo">Chưa chọn file</div>
                 </div>
@@ -96,7 +94,7 @@
     const statusArea = document.getElementById('statusArea');
     const form = document.getElementById('importForm');
     const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-    const allowedExt = ['.csv', '.xls', '.xlsx'];
+    const allowedExt = ['.xls', '.xlsx'];
 
     function setStatus(message, type) {
         statusArea.textContent = message || '';
@@ -112,7 +110,7 @@
         if (!file) return false;
         const ext = getExtension(file.name);
         if (!allowedExt.includes(ext)) {
-            setStatus('Định dạng không hợp lệ. Chỉ chấp nhận .csv, .xls, .xlsx', 'error');
+            setStatus('Định dạng không hợp lệ. Chỉ chấp nhận .xls, .xlsx', 'error');
             return false;
         }
         if (file.size > MAX_SIZE) {
@@ -185,4 +183,36 @@
         btnImport.textContent = 'Đang import...';
     });
 })();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var successMsg = '@Html.Raw(TempData["SuccessMessage"])';
+    var errorMsg = '@Html.Raw(TempData["ErrorMessage"])';
+    var warningMsg = '@Html.Raw(TempData["WarningMessage"])';
+
+    if (successMsg && successMsg.length > 0) {
+        Swal.fire({ icon: 'success', title: 'Thành công!', text: successMsg, confirmButtonColor: '#8A2BE2', timer: 4000 });
+    }
+    if (errorMsg && errorMsg.length > 0) {
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: errorMsg, confirmButtonColor: '#d33' });
+    }
+    if (warningMsg && warningMsg.length > 0) {
+        Swal.fire({ icon: 'warning', title: 'Cảnh báo', text: warningMsg, confirmButtonColor: '#f59e0b' });
+    }
+
+    var ctdtWarning = '@Html.Raw(TempData["WarningCtdt"])';
+    if (ctdtWarning && ctdtWarning.length > 0) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Đối chiếu CTDT',
+            html: '<div style="text-align:left; max-height:300px; overflow-y:auto; font-size:13px;">' +
+                  ctdtWarning.split('\n').map(function(w) { return '<p style="margin:4px 0;">⚠ ' + w + '</p>'; }).join('') +
+                  '</div>',
+            confirmButtonColor: '#8A2BE2',
+            width: 600
+        });
+    }
+});
 </script>

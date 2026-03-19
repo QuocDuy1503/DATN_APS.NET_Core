@@ -1,6 +1,5 @@
 ﻿using DATN_TMS.Areas.SinhVien.Models;
 using DATN_TMS.Models;
-//using DATN_TMS.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +58,9 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
 
                     // Lấy GPA
                     viewModel.Gpa = await TinhGPA(sinhVien.IdNguoiDung);
+
+                    // Kiểm tra điều kiện tốt nghiệp
+                    viewModel.DieuKienXetDuyet = await KiemTraDieuKienTotNghiep(sinhVien.IdNguoiDung);
                 }
             }
 
@@ -174,6 +176,113 @@ namespace DATN_TMS.Areas.SinhVien.Controllers
                 .FirstOrDefaultAsync();
 
             return ketQua?.Gpa;  
+        }
+
+        /// <summary>
+        /// Kiểm tra điều kiện tốt nghiệp dựa trên kết quả học tập và CTDT
+        /// - Đại cương >= 60 TC
+        /// - Cơ sở ngành: BB >= 18, TC >= 18
+        /// - Chuyên ngành: tổng >= 18 (cho phép thiếu 3 TC)
+        /// </summary>
+        private async Task<DieuKienXetDuyetResult> KiemTraDieuKienTotNghiep(int idSinhVien)
+        {
+            var result = new DieuKienXetDuyetResult();
+
+            var sinhVien = await _context.SinhViens.FindAsync(idSinhVien);
+            if (sinhVien == null) return result;
+
+            // Tìm CTDT theo khóa học của sinh viên
+            var ctdt = await _context.ChuongTrinhDaoTaos
+                .FirstOrDefaultAsync(c => c.IdKhoaHoc == sinhVien.IdKhoaHoc && c.TrangThai == true);
+
+            if (ctdt == null)
+            {
+                result.ThongBaoLoi.Add("Không tìm thấy chương trình đào tạo cho sinh viên.");
+                return result;
+            }
+
+            // Lấy chi tiết CTDT kèm khối kiến thức
+            var chiTietList = await _context.ChiTietCtdts
+                .Include(ct => ct.IdKhoiKienThucNavigation)
+                .Where(ct => ct.IdCtdt == ctdt.Id)
+                .ToListAsync();
+
+            // Tạo bản đồ: mã học phần → (tên khối, loại HP)
+            var courseMap = new Dictionary<string, (string TenKhoi, string LoaiHP)>(StringComparer.OrdinalIgnoreCase);
+            foreach (var ct in chiTietList)
+            {
+                string code = ct.MaHocPhan?.Trim() ?? "";
+                if (!string.IsNullOrEmpty(code) && !courseMap.ContainsKey(code))
+                {
+                    courseMap[code] = (
+                        ct.IdKhoiKienThucNavigation?.TenKhoi ?? "",
+                        ct.LoaiHocPhan ?? ""
+                    );
+                }
+            }
+
+            // Lấy các môn đã đạt
+            var passedCourses = await _context.KetQuaHocTaps
+                .Where(kq => kq.IdSinhVien == idSinhVien && kq.KetQua == true)
+                .ToListAsync();
+
+            double tcDaiCuong = 0;
+            double tcCoSoBB = 0, tcCoSoTC = 0;
+            double tcCNBB = 0, tcCNTC = 0;
+
+            foreach (var kq in passedCourses)
+            {
+                string maHP = kq.MaHocPhan?.Trim() ?? "";
+                if (string.IsNullOrEmpty(maHP) || !courseMap.TryGetValue(maHP, out var info))
+                    continue;
+
+                string khoi = info.TenKhoi.ToLower();
+                string loai = info.LoaiHP.ToLower();
+                double tc = kq.SoTc ?? 0;
+
+                if (khoi.Contains("đại cương"))
+                {
+                    tcDaiCuong += tc;
+                }
+                else if (khoi.Contains("cơ sở"))
+                {
+                    if (loai.Contains("bắt buộc")) tcCoSoBB += tc;
+                    else tcCoSoTC += tc;
+                }
+                else if (khoi.Contains("chuyên ngành"))
+                {
+                    if (loai.Contains("bắt buộc")) tcCNBB += tc;
+                    else tcCNTC += tc;
+                }
+                else if (khoi.Contains("tự chọn"))
+                {
+                    // Khối tự chọn chung → tính vào chuyên ngành TC
+                    tcCNTC += tc;
+                }
+            }
+
+            result.TongTinChiDaiCuong = tcDaiCuong;
+            result.TongTinChiCoSoNganhBB = tcCoSoBB;
+            result.TongTinChiCoSoNganhTC = tcCoSoTC;
+            result.TongTinChiChuyenNganh = tcCNBB + tcCNTC;
+
+            // Kiểm tra điều kiện
+            if (tcDaiCuong < 60)
+                result.ThongBaoLoi.Add($"Thiếu {60 - tcDaiCuong} tín chỉ đại cương (hiện có: {tcDaiCuong}/60)");
+
+            if (tcCoSoBB < 18)
+                result.ThongBaoLoi.Add($"Thiếu {18 - tcCoSoBB} tín chỉ cơ sở ngành bắt buộc (hiện có: {tcCoSoBB}/18)");
+
+            if (tcCoSoTC < 18)
+                result.ThongBaoLoi.Add($"Thiếu {18 - tcCoSoTC} tín chỉ cơ sở ngành tự chọn (hiện có: {tcCoSoTC}/18)");
+
+            // Chuyên ngành: cho phép thiếu 3 TC (21 - 3 = 18)
+            double totalCN = tcCNBB + tcCNTC;
+            if (totalCN < 18)
+                result.ThongBaoLoi.Add($"Thiếu tín chỉ chuyên ngành (hiện có: {totalCN}/18 tối thiểu)");
+
+            result.IsEligible = result.ThongBaoLoi.Count == 0;
+            return result;
         }
 
         #endregion

@@ -401,6 +401,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('dkNvForm');
@@ -408,9 +409,41 @@ document.addEventListener('DOMContentLoaded', function() {
     var btnText = btnSubmit.querySelector('.btn-text');
     var btnLoading = btnSubmit.querySelector('.btn-loading');
 
+    var dieuKienData = @Html.Raw(Json.Serialize(Model.DieuKienXetDuyet));
+    var isEligible = dieuKienData ? dieuKienData.isEligible : true;
+    var thongBaoLoi = dieuKienData ? (dieuKienData.thongBaoLoi || []) : [];
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
+        if (!isEligible && thongBaoLoi.length > 0) {
+            var errorHtml = '<ul style="text-align:left; margin:10px 0;">' +
+                thongBaoLoi.map(function(err) { return '<li style="margin-bottom:4px;">' + err + '</li>'; }).join('') +
+                '</ul>';
+
+            Swal.fire({
+                title: 'Cảnh báo!',
+                html: '<p>Bạn chưa hoàn thành đủ điều kiện tín chỉ của chương trình đào tạo:</p>' +
+                      errorHtml +
+                      '<p><strong>Bạn có chắc chắn vẫn muốn tiếp tục đăng ký nguyện vọng không?</strong></p>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy',
+                confirmButtonColor: '#484BE0',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: true
+            }).then(function(result) {
+                if (result.isConfirmed) {
+                    doSubmit();
+                }
+            });
+        } else {
+            doSubmit();
+        }
+    });
+
+    function doSubmit() {
         btnText.style.display = 'none';
         btnLoading.style.display = 'inline-flex';
         btnSubmit.disabled = true;
@@ -423,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(function(res) { return res.json(); })
         .then(function(data) {
             resetButton();
-            
+
             if (data.success) {
                 document.getElementById('successMessage').textContent = data.message;
                 showModal('successModal');
@@ -440,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('errorMessage').textContent = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
             showModal('errorModal');
         });
-    });
+    }
 
     function resetButton() {
         btnText.style.display = 'inline';
