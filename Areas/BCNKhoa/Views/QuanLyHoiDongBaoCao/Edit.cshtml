@@ -279,11 +279,9 @@
             <table id="topicTable">
                 <thead>
                     <tr>
-                        <th style="width: 40%;">Tên đề tài</th>
+                        <th style="width: 50%;">Tên đề tài</th>
                         <th>Chuyên ngành</th>
                         <th>GV Hướng dẫn</th>
-                        <th>Tài liệu báo cáo</th>
-                        <th>Đánh giá & Nhận xét</th>
                         @if (!Model.TrangThai) { <th class="text-center" style="width: 80px;">Thao tác</th> }
                     </tr>
                 </thead>
@@ -301,8 +299,6 @@
                                 </td>
                                 <td>@dt.ChuyenNganh</td>
                                 <td>@dt.GVHD</td>
-                                <td><a href="#" class="text-primary">DATN_@dt.IdDeTai</a></td>
-                                <td><a href="#" class="text-primary">Đánh giá và nhận xét</a></td>
                                 @if (!Model.TrangThai)
                                 {
                                     <td class="text-center" onclick="event.stopPropagation();">
@@ -313,7 +309,7 @@
                                 }
                             </tr>
                             <tr id="detail-topic-@dt.IdDeTai" class="student-detail-row" style="display: none;">
-                                <td colspan="@(Model.TrangThai ? 5 : 6)" style="padding: 0 12px 12px 50px;">
+                                <td colspan="@(Model.TrangThai ? 3 : 4)" style="padding: 0 12px 12px 50px;">
                                     <table class="student-table">
                                         <thead>
                                             <tr>
@@ -341,7 +337,7 @@
                     }
                     else
                     {
-                        <tr id="noTopicRow"><td colspan="@(Model.TrangThai ? 5 : 6)" class="no-data">Chưa có đề tài nào</td></tr>
+                        <tr id="noTopicRow"><td colspan="@(Model.TrangThai ? 3 : 4)" class="no-data">Chưa có đề tài nào</td></tr>
                     }
                 </tbody>
             </table>

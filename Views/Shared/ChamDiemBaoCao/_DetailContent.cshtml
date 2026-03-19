@@ -2,6 +2,7 @@
 
 @{
     var laHoiDongGiuaKy = Model.HoiDong.LoaiHoiDong == "GIUA_KY";
+    var daHetHan = Model.DaHetHanBaoCao;
 }
 
 <style>
@@ -155,6 +156,14 @@
             </div>
         }
 
+        @if (daHetHan)
+        {
+            <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #856404;">
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 16px;"></i>
+                <span>Đã hết hạn báo cáo. Không thể nhận xét hoặc chấm điểm.</span>
+            </div>
+        }
+
         <!-- Thành viên hội đồng -->
         <div class="member-badges">
             @foreach (var tv in Model.ThanhViens.OrderBy(t => t.VaiTro == "CHU_TICH" ? 0 : t.VaiTro == "THU_KY" ? 1 : t.VaiTro == "PHAN_BIEN" ? 2 : 3))
@@ -305,7 +314,13 @@
                                                                 }
                                                             </td>
                                                             <td rowspan="@svCount" class="plan-cell" style="vertical-align: middle;">
-                                                                @if (!dt.DaXacNhan && coTheChamDiem)
+                                                                @if (daHetHan)
+                                                                {
+                                                                    <span class="action-btn btn-disabled" title="Đã hết hạn báo cáo">
+                                                                        <i class="fa-solid fa-lock"></i>
+                                                                    </span>
+                                                                }
+                                                                else if (!dt.DaXacNhan && coTheChamDiem)
                                                                 {
                                                                     <a href="@Url.Action("ChamDiem", new { phienBaoVeId = dt.PhienBaoVeId })" class="action-btn btn-cham" title="@(laHoiDongGiuaKy ? "Nhận xét đề tài" : "Chấm điểm")">
                                                                         <i class="fa-solid @(laHoiDongGiuaKy ? "fa-comment" : "fa-pen-to-square")"></i>

@@ -17,6 +17,7 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string VaiTroTrongHoiDong { get; set; } = "";
         public bool DaChamDiem { get; set; }
         public bool CoDenNgayBaoCao { get; set; }
+        public bool DaHetHanBaoCao { get; set; }
 
         public string LoaiHoiDongDisplay => LoaiHoiDong switch
         {
@@ -45,6 +46,7 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string VaiTroHienTai { get; set; } = "";
         public bool LaChuTich { get; set; }
         public bool LaThuKy { get; set; }
+        public bool DaHetHanBaoCao { get; set; }
     }
 
     // ViewModel thành viên hội đồng
@@ -281,6 +283,17 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string LyDo { get; set; } = "";
     }
 
+    // Request thư ký chỉnh sửa điểm thành viên hội đồng trên bảng điểm tổng hợp
+    public class ThuKyChinhSuaDiemThanhVienRequest
+    {
+        public int PhienBaoVeId { get; set; }
+        public int IdSinhVien { get; set; }
+        public int IdNguoiCham { get; set; }
+        public double DiemCu { get; set; }
+        public double DiemMoi { get; set; }
+        public string LyDo { get; set; } = "";
+    }
+
     // Request xác nhận điểm (chủ tịch)
     public class XacNhanDiemRequest
     {
@@ -330,6 +343,8 @@ namespace DATN_TMS.Areas.GiangVien.Models
         // Quyền
         public bool LaThuKy { get; set; }
         public bool LaChuTich { get; set; }
+        public bool DaHetHanBaoCao { get; set; }
+        public bool ConTrongGiaiDoanBaoCao { get; set; }
 
         public bool DaXacNhan => TrangThaiXacNhan == "DA_XAC_NHAN";
         public bool LaHoiDongGiuaKy => LoaiHoiDong == "GIUA_KY";
@@ -341,12 +356,11 @@ namespace DATN_TMS.Areas.GiangVien.Models
             _ => LoaiHoiDong
         };
 
-        // Lấy danh sách vai trò hội đồng (không trùng) để tạo header bảng
-        public List<string> DanhSachVaiTroHoiDong =>
+        // Lấy danh sách thành viên hội đồng (sắp xếp theo vai trò) để tạo header bảng
+        public List<DiemThanhVienTongHopViewModel> DanhSachThanhVienHoiDong =>
             DiemThanhViens
                 .OrderBy(t => t.VaiTro == "PHAN_BIEN" ? 0 : t.VaiTro == "CHU_TICH" ? 1 : t.VaiTro == "UY_VIEN" ? 2 : 3)
-                .Select(t => t.VaiTro)
-                .Distinct()
+                .ThenBy(t => t.TenGiangVien)
                 .ToList();
     }
 
@@ -358,8 +372,8 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string TenSinhVien { get; set; } = "";
         public string Mssv { get; set; } = "";
         public double DiemGVHD { get; set; }
-        // Điểm từng thành viên hội đồng: key = VaiTro, value = TongDiem
-        public Dictionary<string, double?> DiemTheoVaiTro { get; set; } = new();
+        // Điểm từng thành viên hội đồng: key = IdGiangVien, value = TongDiem
+        public Dictionary<int, double?> DiemTheoThanhVien { get; set; } = new();
         // Điểm TB hội đồng cho SV này
         public double DiemTBHoiDong { get; set; }
         // Điểm trung bình cuối = GVHD*30% + HĐ*70%
@@ -396,6 +410,7 @@ namespace DATN_TMS.Areas.GiangVien.Models
         public string LoaiCapNhatDisplay => LoaiCapNhat switch
         {
             "THU_KY_DIEU_CHINH" => "Thư ký điều chỉnh",
+            "THU_KY_CHINH_SUA_DIEM_THANH_VIEN" => "Thư ký sửa điểm thành viên",
             "CHU_TICH_XAC_NHAN" => "Chủ tịch xác nhận",
             _ => LoaiCapNhat
         };

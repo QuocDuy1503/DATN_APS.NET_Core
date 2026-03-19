@@ -14,6 +14,7 @@ namespace DATN_TMS.Services
         Task<ChamDiemPhienBaoVeViewModel?> GetChamDiemViewModel(int phienBaoVeId, int currentUserId);
         Task<LuuDiemResult> LuuDiem(LuuDiemRequest request, int currentUserId);
         Task<LuuDiemResult> ThuKyDieuChinhDiem(DieuChinhDiemRequest request, int currentUserId);
+        Task<LuuDiemResult> ThuKyChinhSuaDiemThanhVien(ThuKyChinhSuaDiemThanhVienRequest request, int currentUserId);
         Task<LuuDiemResult> ChuTichXacNhan(XacNhanDiemRequest request, int currentUserId);
         Task<BangDiemTongHopViewModel?> GetBangDiemTongHop(int phienBaoVeId, int currentUserId);
         string? GetValidationError(string key);

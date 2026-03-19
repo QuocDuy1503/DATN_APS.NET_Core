@@ -10,8 +10,29 @@
     };
     string GetVaiTroShort(string vaiTro) => vaiTroDisplay.ContainsKey(vaiTro) ? vaiTroDisplay[vaiTro] : vaiTro;
 
-    var danhSachVaiTro = Model.DanhSachVaiTroHoiDong;
+    var danhSachThanhVien = Model.DanhSachThanhVienHoiDong;
     var svCount = Model.DanhSachSinhVien.Count;
+
+    // Đánh số thứ tự cho các thành viên cùng vai trò (VD: Ủy viên 1, Ủy viên 2)
+    var vaiTroCounters = new Dictionary<string, int>();
+    var vaiTroTotals = danhSachThanhVien.GroupBy(t => t.VaiTro).ToDictionary(g => g.Key, g => g.Count());
+    var tenCotThanhVien = new Dictionary<int, string>(); // IdGiangVien -> tên cột hiển thị
+    foreach (var tv in danhSachThanhVien)
+    {
+        if (!vaiTroCounters.ContainsKey(tv.VaiTro)) vaiTroCounters[tv.VaiTro] = 0;
+        vaiTroCounters[tv.VaiTro]++;
+        var shortName = GetVaiTroShort(tv.VaiTro);
+        if (vaiTroTotals[tv.VaiTro] > 1)
+            tenCotThanhVien[tv.IdGiangVien] = shortName + " " + vaiTroCounters[tv.VaiTro];
+        else
+            tenCotThanhVien[tv.IdGiangVien] = shortName;
+    }
+
+    var daHetHan = Model.DaHetHanBaoCao;
+    var conTrongGiaiDoan = Model.ConTrongGiaiDoanBaoCao;
+    // Thư ký / Chủ tịch có thể thao tác nếu còn trong giai đoạn báo cáo
+    var thuKyCoTheSua = Model.LaThuKy && conTrongGiaiDoan;
+    var chuTichCoTheXacNhan = Model.LaChuTich && conTrongGiaiDoan;
 }
 
 <style>
@@ -74,6 +95,18 @@
 
     .history-table { font-size: 12px; }
     .history-table th, .history-table td { padding: 8px 10px; }
+
+    .score-editable { cursor: pointer; position: relative; border-radius: 4px; padding: 2px 6px; transition: background 0.15s; }
+    .score-editable:hover { background: #eef2ff; outline: 2px dashed #818cf8; }
+    .score-edit-input { width: 60px; padding: 4px 6px; border: 2px solid #818cf8; border-radius: 4px; font-size: 13px; text-align: center; font-weight: 700; }
+    .score-edit-input:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
+
+    /* Cảnh báo chênh lệch điểm */
+    .score-warn-member { background: #fef3c7 !important; color: #92400e !important; }
+    .score-warn-member .score-val { color: #b45309 !important; }
+    .score-warn-gvhd { background: #fee2e2 !important; color: #991b1b !important; }
+    .score-warn-gvhd .score-val { color: #dc2626 !important; }
+    .score-warn-icon { font-size: 10px; margin-left: 2px; vertical-align: super; }
 </style>
 
 <div class="content-body chamdiem-page">
@@ -99,6 +132,21 @@
                 <li class="breadcrumb-item active" aria-current="page">Bảng điểm - @Model.MaDeTai</li>
             </ol>
         </nav>
+
+        @if (daHetHan && !conTrongGiaiDoan)
+        {
+            <div style="background: #fee2e2; border: 1px solid #fca5a5; border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #991b1b;">
+                <i class="fa-solid fa-lock" style="font-size: 16px;"></i>
+                <span>Đã hết giai đoạn báo cáo. Bảng điểm chỉ có thể xem, không thể chỉnh sửa.</span>
+            </div>
+        }
+        else if (daHetHan && conTrongGiaiDoan && (Model.LaThuKy || Model.LaChuTich))
+        {
+            <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #856404;">
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 16px;"></i>
+                <span>Đã hết hạn báo cáo hội đồng. @(Model.LaThuKy ? "Thư ký vẫn có thể chỉnh sửa điểm trên bảng tổng hợp." : "Chủ tịch vẫn có thể xác nhận điểm.")</span>
+            </div>
+        }
 
         <!-- Thông tin đề tài -->
         <div class="info-card">
@@ -143,13 +191,13 @@
                                 {
                                     <th rowspan="2">Điểm<br/>GVHD</th>
                                 }
-                                <th colspan="@danhSachVaiTro.Count" class="th-group">Điểm của hội đồng</th>
+                                <th colspan="@danhSachThanhVien.Count" class="th-group">Điểm của hội đồng</th>
                                 <th rowspan="2" style="min-width: 110px;">Điểm<br/>trung bình</th>
                             </tr>
                             <tr>
-                                @foreach (var vt in danhSachVaiTro)
+                                @foreach (var tv in danhSachThanhVien)
                                 {
-                                    <th class="th-group">@GetVaiTroShort(vt)</th>
+                                    <th class="th-group">@tenCotThanhVien[tv.IdGiangVien]</th>
                                 }
                             </tr>
                         </thead>
@@ -157,6 +205,22 @@
                             @for (int i = 0; i < svCount; i++)
                             {
                                 var svItem = Model.DanhSachSinhVien[i];
+
+                                // Tính chênh lệch điểm giữa các thành viên hội đồng cho SV này
+                                var diemThanhVienValues = svItem.DiemTheoThanhVien
+                                    .Where(kv => kv.Value.HasValue)
+                                    .Select(kv => new { Id = kv.Key, Diem = kv.Value!.Value })
+                                    .ToList();
+                                double diemMaxHD = diemThanhVienValues.Any() ? diemThanhVienValues.Max(x => x.Diem) : 0;
+                                double diemMinHD = diemThanhVienValues.Any() ? diemThanhVienValues.Min(x => x.Diem) : 0;
+                                bool coChenhLechThanhVien = diemThanhVienValues.Count > 1 && (diemMaxHD - diemMinHD) > 1;
+
+                                // Tính chênh lệch GVHD vs TB hội đồng
+                                double diemTBHD_SV = diemThanhVienValues.Any() ? diemThanhVienValues.Average(x => x.Diem) : 0;
+                                bool coChenhLechGVHD = !Model.LaHoiDongGiuaKy && svItem.DiemGVHD > 0
+                                    && diemThanhVienValues.Any()
+                                    && Math.Abs(svItem.DiemGVHD - diemTBHD_SV) > 2;
+
                                 <tr>
                                     @if (i == 0)
                                     {
@@ -165,10 +229,14 @@
                                     <td class="td-name">@svItem.TenSinhVien</td>
                                     @if (!Model.LaHoiDongGiuaKy)
                                     {
-                                        <td>
+                                        <td class="@(coChenhLechGVHD ? "score-warn-gvhd" : "")">
                                             @if (svItem.DiemGVHD > 0)
                                             {
                                                 <span class="score-val score-gvhd">@svItem.DiemGVHD.ToString("F1")</span>
+                                                @if (coChenhLechGVHD)
+                                                {
+                                                    <i class="fa-solid fa-triangle-exclamation score-warn-icon" title="Chênh lệch > 2 điểm so với TB hội đồng (@diemTBHD_SV.ToString("F1"))"></i>
+                                                }
                                             }
                                             else
                                             {
@@ -176,18 +244,38 @@
                                             }
                                         </td>
                                     }
-                                    @foreach (var vt in danhSachVaiTro)
+                                    @foreach (var tv in danhSachThanhVien)
                                     {
-                                        <td>
-                                            @if (svItem.DiemTheoVaiTro.ContainsKey(vt) && svItem.DiemTheoVaiTro[vt].HasValue)
-                                            {
-                                                <span class="score-val score-hd">@svItem.DiemTheoVaiTro[vt]!.Value.ToString("F1")</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="score-na">—</span>
-                                            }
-                                        </td>
+                                        @if (svItem.DiemTheoThanhVien.ContainsKey(tv.IdGiangVien) && svItem.DiemTheoThanhVien[tv.IdGiangVien].HasValue)
+                                        {
+                                            var diemVal = svItem.DiemTheoThanhVien[tv.IdGiangVien]!.Value;
+                                            // Kiểm tra ô này có phải outlier (chênh lệch > 1 so với thành viên khác)
+                                            bool laOutlier = coChenhLechThanhVien && (diemVal == diemMaxHD || diemVal == diemMinHD) && diemMaxHD != diemMinHD;
+
+                                            <td class="@(laOutlier ? "score-warn-member" : "")">
+                                                @if (thuKyCoTheSua)
+                                                {
+                                                    <span class="score-val score-hd score-editable"
+                                                          data-phien="@svItem.PhienBaoVeId"
+                                                          data-sv="@svItem.IdSinhVien"
+                                                          data-nguoicham="@tv.IdGiangVien"
+                                                          data-diemcu="@diemVal.ToString("F1")"
+                                                          title="Click để chỉnh sửa">@diemVal.ToString("F1")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="score-val score-hd">@diemVal.ToString("F1")</span>
+                                                }
+                                                @if (laOutlier)
+                                                {
+                                                    <i class="fa-solid fa-triangle-exclamation score-warn-icon" title="Chênh lệch > 1 điểm giữa các thành viên (Cao nhất: @diemMaxHD.ToString("F1"), Thấp nhất: @diemMinHD.ToString("F1"))"></i>
+                                                }
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td><span class="score-na">—</span></td>
+                                        }
                                     }
                                     <td>
                                         <span class="score-val score-avg">@svItem.DiemTrungBinhCuoi.ToString("F1")</span>
@@ -199,7 +287,7 @@
                         {
                             <tfoot>
                                 <tr>
-                                    <td colspan="@(2 + (Model.LaHoiDongGiuaKy ? 0 : 1) + danhSachVaiTro.Count)" style="text-align: right;">
+                                    <td colspan="@(2 + (Model.LaHoiDongGiuaKy ? 0 : 1) + danhSachThanhVien.Count)" style="text-align: right;">
                                         <strong>Điểm tổng kết (đã xác nhận):</strong>
                                     </td>
                                     <td><span style="font-size: 18px; font-weight: 800; color: #16a34a;">@Model.DiemTongKetCuoi.Value.ToString("F1")</span></td>
@@ -228,26 +316,58 @@
                     <div class="legend-row" style="padding: 0 16px 12px;">
                         <div class="legend-item"><span class="legend-dot" style="background: #0369a1;"></span> Điểm GVHD (30%)</div>
                         <div class="legend-item"><span class="legend-dot" style="background: #374151;"></span> Điểm hội đồng (70%)</div>
-                        <div class="legend-item"><span class="legend-dot" style="background: #7c3aed;"></span> Điểm trung bình = GVHD×30% + TB Hội đồng×70%</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #7c3aed;"></span> Điểm TB = GVHD×30% + TB HĐ×70%</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #fef3c7; border: 1px solid #f59e0b;"></span> Chênh lệch > 1 điểm (thành viên HĐ)</div>
+                        <div class="legend-item"><span class="legend-dot" style="background: #fee2e2; border: 1px solid #f87171;"></span> Chênh lệch > 2 điểm (GVHD vs TB HĐ)</div>
                     </div>
                 }
 
-                @if (Model.CoChenhLechLon)
+                @{
+                    // Tính tổng hợp cảnh báo cho tất cả sinh viên
+                    var tongChenhLechThanhVien = false;
+                    var tongChenhLechGVHD = false;
+                    foreach (var svCheck in Model.DanhSachSinhVien)
+                    {
+                        var diemTVCheck = svCheck.DiemTheoThanhVien.Where(kv => kv.Value.HasValue).Select(kv => kv.Value!.Value).ToList();
+                        if (diemTVCheck.Count > 1 && (diemTVCheck.Max() - diemTVCheck.Min()) > 1)
+                            tongChenhLechThanhVien = true;
+                        if (!Model.LaHoiDongGiuaKy && svCheck.DiemGVHD > 0 && diemTVCheck.Any() && Math.Abs(svCheck.DiemGVHD - diemTVCheck.Average()) > 2)
+                            tongChenhLechGVHD = true;
+                    }
+                }
+
+                @if (tongChenhLechThanhVien || tongChenhLechGVHD)
                 {
-                    <div class="alert-warning" style="margin: 0 16px 12px;">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span><strong>Cảnh báo:</strong> Phát hiện chênh lệch điểm lớn giữa các thành viên hội đồng. Thư ký cần điều chỉnh và thống nhất trước khi Chủ tịch xác nhận.</span>
+                    <div class="alert-warning" style="margin: 0 16px 12px; flex-direction: column; align-items: flex-start; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <strong>Phát hiện chênh lệch điểm:</strong>
+                        </div>
+                        @if (tongChenhLechThanhVien)
+                        {
+                            <div style="padding-left: 24px; font-size: 12px;">
+                                <span style="background: #fef3c7; padding: 2px 8px; border-radius: 4px; border: 1px solid #f59e0b; margin-right: 4px;">⚠</span>
+                                Điểm giữa các thành viên hội đồng chênh lệch <strong>hơn 1 điểm</strong>. Thư ký cần điều chỉnh thống nhất.
+                            </div>
+                        }
+                        @if (tongChenhLechGVHD)
+                        {
+                            <div style="padding-left: 24px; font-size: 12px;">
+                                <span style="background: #fee2e2; padding: 2px 8px; border-radius: 4px; border: 1px solid #f87171; margin-right: 4px;">⚠</span>
+                                Điểm GVHD chênh lệch <strong>hơn 2 điểm</strong> so với điểm trung bình hội đồng.
+                            </div>
+                        }
                     </div>
                 }
             </div>
         </div>
 
         <!-- Điều chỉnh / Xác nhận -->
-        @if ((Model.LaThuKy || Model.LaChuTich) && !Model.DaXacNhan)
+        @if ((thuKyCoTheSua || chuTichCoTheXacNhan) && !Model.LaHoiDongGiuaKy)
         {
             <div class="info-card">
                 <div class="info-card-header">
-                    @if (Model.LaThuKy)
+                    @if (thuKyCoTheSua)
                     {
                         <i class="fa-solid fa-pen"></i> <span>Điều chỉnh điểm (Thư ký)</span>
                     }
@@ -257,7 +377,7 @@
                     }
                 </div>
                 <div class="info-card-body">
-                    @if (Model.LaThuKy && Model.CoChenhLechLon)
+                    @if (thuKyCoTheSua && Model.CoChenhLechLon)
                     {
                         <form id="formDieuChinhDiem">
                             <div style="display: flex; gap: 16px; flex-wrap: wrap;">
@@ -274,7 +394,7 @@
                         </form>
                     }
 
-                    @if (Model.LaChuTich)
+                    @if (chuTichCoTheXacNhan)
                     {
                         var tatCaDaCham = Model.DiemThanhViens.All(t => t.DaChamDiem);
                         if (!tatCaDaCham)
@@ -289,14 +409,16 @@
                                 <div style="display: flex; gap: 16px; flex-wrap: wrap;">
                                     <div class="form-group" style="flex: 1; min-width: 150px;">
                                         <label class="form-label">Điểm tổng kết cuối cùng</label>
-                                        <input type="number" class="form-control" id="diemTongKet" min="0" max="10" step="0.1" value="@Model.DiemTBHoiDong.ToString("F1")" />
+                                        <input type="number" class="form-control" id="diemTongKet" min="0" max="10" step="0.1" value="@(Model.DiemTongKetCuoi?.ToString("F1") ?? Model.DiemTBHoiDong.ToString("F1"))" />
                                     </div>
                                     <div class="form-group" style="flex: 2; min-width: 300px;">
                                         <label class="form-label">Ghi chú</label>
-                                        <textarea class="form-control" id="ghiChuXacNhan" rows="2" placeholder="Ghi chú xác nhận (nếu có)..."></textarea>
+                                        <textarea class="form-control" id="ghiChuXacNhan" rows="2" placeholder="Ghi chú xác nhận (nếu có)...">@Model.GhiChuXacNhan</textarea>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn-action btn-success"><i class="fa-solid fa-check"></i> Xác nhận điểm</button>
+                                <button type="submit" class="btn-action btn-success">
+                                    <i class="fa-solid fa-check"></i> @(Model.DaXacNhan ? "Xác nhận lại điểm" : "Xác nhận điểm")
+                                </button>
                             </form>
                         }
                     }

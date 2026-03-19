@@ -178,9 +178,35 @@
         setStatus('', '');
     });
 
-    form.addEventListener('submit', () => {
-        btnImport.disabled = true;
-        btnImport.textContent = 'Đang import...';
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var ctdtSelect = document.getElementById('ctdtSelect');
+        if (!ctdtSelect.value) {
+            Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng chọn chương trình đào tạo trước khi import.', confirmButtonColor: '#f59e0b' });
+            return;
+        }
+        if (!fileInput.files || fileInput.files.length === 0) {
+            Swal.fire({ icon: 'warning', title: 'Thiếu file', text: 'Vui lòng chọn file điểm trước khi import.', confirmButtonColor: '#f59e0b' });
+            return;
+        }
+        Swal.fire({
+            title: 'Xác nhận import?',
+            html: '<div style="text-align:left; font-size:13px;">' +
+                  
+                  '<p>Bạn có chắc chắn muốn tiếp tục?</p></div>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#8A2BE2',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Xác nhận import',
+            cancelButtonText: 'Hủy'
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                btnImport.disabled = true;
+                btnImport.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang import...';
+                form.submit();
+            }
+        });
     });
 })();
 </script>
@@ -188,23 +214,32 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var successMsg = '@Html.Raw(TempData["SuccessMessage"])';
-    var errorMsg = '@Html.Raw(TempData["ErrorMessage"])';
-    var warningMsg = '@Html.Raw(TempData["WarningMessage"])';
+    var successMsg = @Json.Serialize(TempData["SuccessMessage"]?.ToString() ?? "");
+    var errorMsg = @Json.Serialize(TempData["ErrorMessage"]?.ToString() ?? "");
+    var warningMsg = @Json.Serialize(TempData["WarningMessage"]?.ToString() ?? "");
+    var ctdtWarning = @Json.Serialize(TempData["WarningCtdt"]?.ToString() ?? "");
+
+    var queue = [];
 
     if (successMsg && successMsg.length > 0) {
-        Swal.fire({ icon: 'success', title: 'Thành công!', text: successMsg, confirmButtonColor: '#8A2BE2', timer: 4000 });
+        queue.push({ icon: 'success', title: 'Thành công!', text: successMsg, confirmButtonColor: '#8A2BE2' });
     }
     if (errorMsg && errorMsg.length > 0) {
-        Swal.fire({ icon: 'error', title: 'Lỗi', text: errorMsg, confirmButtonColor: '#d33' });
+        queue.push({ icon: 'error', title: 'Lỗi', text: errorMsg, confirmButtonColor: '#d33' });
     }
     if (warningMsg && warningMsg.length > 0) {
-        Swal.fire({ icon: 'warning', title: 'Cảnh báo', text: warningMsg, confirmButtonColor: '#f59e0b' });
+        queue.push({
+            icon: 'warning',
+            title: 'Cảnh báo',
+            html: '<div style="text-align:left; max-height:300px; overflow-y:auto; font-size:13px;">' +
+                  warningMsg.split('\n').map(function(w) { return '<p style="margin:4px 0;">⚠ ' + w + '</p>'; }).join('') +
+                  '</div>',
+            confirmButtonColor: '#f59e0b',
+            width: 600
+        });
     }
-
-    var ctdtWarning = '@Html.Raw(TempData["WarningCtdt"])';
     if (ctdtWarning && ctdtWarning.length > 0) {
-        Swal.fire({
+        queue.push({
             icon: 'info',
             title: 'Đối chiếu CTDT',
             html: '<div style="text-align:left; max-height:300px; overflow-y:auto; font-size:13px;">' +
@@ -214,5 +249,13 @@ document.addEventListener('DOMContentLoaded', function () {
             width: 600
         });
     }
+
+    function showNext(index) {
+        if (index >= queue.length) return;
+        Swal.fire(queue[index]).then(function () {
+            showNext(index + 1);
+        });
+    }
+    showNext(0);
 });
 </script>

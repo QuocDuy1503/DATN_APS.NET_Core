@@ -10,5 +10,6 @@
         public string TenChuyenNganh { get; set; }
         public int TinChiTichLuy { get; set; }
         public int? TrangThai { get; set; }
+        public bool IsInDuyetPeriod { get; set; }
     }
 }

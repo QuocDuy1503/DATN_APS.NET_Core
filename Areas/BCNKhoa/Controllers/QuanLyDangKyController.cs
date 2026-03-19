@@ -80,7 +80,33 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
             ViewBag.CurrentKhoaId = khoaId;
             ViewBag.CurrentChuyenNganh = chuyenNganhId;
 
+            // Kiểm tra giai đoạn duyệt nguyện vọng (banner cho đợt được chọn)
+            string? duyetPeriodMessage = null;
+            if (dotId.HasValue)
+            {
+                var selectedDot = _context.DotDoAns.Find(dotId.Value);
+                if (selectedDot != null)
+                {
+                    var todayCheck = DateOnly.FromDateTime(DateTime.Now);
+                    var batDau = selectedDot.NgayBatDauDkDuyetNguyenVong;
+                    var ketThuc = selectedDot.NgayKetThucDkDuyetNguyenVong;
+                    var isInPeriod = (!batDau.HasValue || todayCheck >= batDau.Value)
+                                  && (!ketThuc.HasValue || todayCheck <= ketThuc.Value);
+                    if (!isInPeriod)
+                    {
+                        var periodStr = (batDau.HasValue ? batDau.Value.ToString("dd/MM/yyyy") : "?")
+                                      + " - "
+                                      + (ketThuc.HasValue ? ketThuc.Value.ToString("dd/MM/yyyy") : "?");
+                        duyetPeriodMessage = $"Giai đoạn duyệt nguyện vọng của đợt này: {periodStr}. Hiện tại không thể duyệt hoặc từ chối.";
+                    }
+                }
+            }
+            ViewBag.DuyetPeriodMessage = duyetPeriodMessage;
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
             var query = _context.DangKyNguyenVongs
+                .Include(dk => dk.IdDotNavigation)
                 .Include(dk => dk.IdSinhVienNavigation)
                     .ThenInclude(sv => sv.IdChuyenNganhNavigation) 
                 .Include(dk => dk.IdSinhVienNavigation)
@@ -123,7 +149,10 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 TenKhoa = dk.IdSinhVienNavigation.IdKhoaHocNavigation.TenKhoa,
                 TenChuyenNganh = dk.IdSinhVienNavigation.IdChuyenNganhNavigation.TenChuyenNganh,
                 TinChiTichLuy = (int)(dk.IdSinhVienNavigation.TinChiTichLuy ?? 0),
-                TrangThai = dk.TrangThai ?? 0
+                TrangThai = dk.TrangThai ?? 0,
+                IsInDuyetPeriod = dk.IdDotNavigation == null ||
+                    ((!dk.IdDotNavigation.NgayBatDauDkDuyetNguyenVong.HasValue || dk.IdDotNavigation.NgayBatDauDkDuyetNguyenVong.Value <= today)
+                    && (!dk.IdDotNavigation.NgayKetThucDkDuyetNguyenVong.HasValue || dk.IdDotNavigation.NgayKetThucDkDuyetNguyenVong.Value >= today))
             });
 
             var pagedList = modelQuery.OrderBy(x => x.MaSinhVien).ToPagedList(pageNumber, pageSize);
@@ -135,8 +164,21 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         [HttpPost]
         public async Task<IActionResult> DuyetDangKy(int id)
         {
-            var dangKy = await _context.DangKyNguyenVongs.FindAsync(id);
+            var dangKy = await _context.DangKyNguyenVongs
+                .Include(dk => dk.IdDotNavigation)
+                .FirstOrDefaultAsync(dk => dk.Id == id);
             if (dangKy == null) return Json(new { success = false, message = "Không tìm thấy bản ghi!" });
+
+            // Kiểm tra giai đoạn duyệt nguyện vọng
+            var dot = dangKy.IdDotNavigation;
+            if (dot != null)
+            {
+                var today = DateOnly.FromDateTime(DateTime.Now);
+                if (dot.NgayBatDauDkDuyetNguyenVong.HasValue && today < dot.NgayBatDauDkDuyetNguyenVong.Value)
+                    return Json(new { success = false, message = "Chưa đến giai đoạn duyệt nguyện vọng! Bắt đầu từ " + dot.NgayBatDauDkDuyetNguyenVong.Value.ToString("dd/MM/yyyy") + "." });
+                if (dot.NgayKetThucDkDuyetNguyenVong.HasValue && today > dot.NgayKetThucDkDuyetNguyenVong.Value)
+                    return Json(new { success = false, message = "Đã hết giai đoạn duyệt nguyện vọng! Kết thúc vào " + dot.NgayKetThucDkDuyetNguyenVong.Value.ToString("dd/MM/yyyy") + "." });
+            }
 
             try
             {
@@ -154,8 +196,21 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         [HttpPost]
         public async Task<IActionResult> TuChoiDangKy(int id)
         {
-            var dangKy = await _context.DangKyNguyenVongs.FindAsync(id);
+            var dangKy = await _context.DangKyNguyenVongs
+                .Include(dk => dk.IdDotNavigation)
+                .FirstOrDefaultAsync(dk => dk.Id == id);
             if (dangKy == null) return Json(new { success = false, message = "Không tìm thấy bản ghi!" });
+
+            // Kiểm tra giai đoạn duyệt nguyện vọng
+            var dot = dangKy.IdDotNavigation;
+            if (dot != null)
+            {
+                var today = DateOnly.FromDateTime(DateTime.Now);
+                if (dot.NgayBatDauDkDuyetNguyenVong.HasValue && today < dot.NgayBatDauDkDuyetNguyenVong.Value)
+                    return Json(new { success = false, message = "Chưa đến giai đoạn duyệt nguyện vọng! Bắt đầu từ " + dot.NgayBatDauDkDuyetNguyenVong.Value.ToString("dd/MM/yyyy") + "." });
+                if (dot.NgayKetThucDkDuyetNguyenVong.HasValue && today > dot.NgayKetThucDkDuyetNguyenVong.Value)
+                    return Json(new { success = false, message = "Đã hết giai đoạn duyệt nguyện vọng! Kết thúc vào " + dot.NgayKetThucDkDuyetNguyenVong.Value.ToString("dd/MM/yyyy") + "." });
+            }
 
             try
             {

@@ -49,26 +49,34 @@ namespace DATN_TMS.Services
                 .OrderByDescending(hd => hd.NgayBaoCao)
                 .ToListAsync();
 
-            return hoiDongs.Select(hd => new HoiDongChamDiemViewModel
+            return hoiDongs.Select(hd =>
             {
-                Id = hd.Id,
-                MaHoiDong = hd.MaHoiDong ?? "",
-                TenHoiDong = hd.TenHoiDong ?? "",
-                LoaiHoiDong = hd.LoaiHoiDong ?? "",
-                TenBoMon = hd.IdBoMonNavigation?.TenBoMon ?? "N/A",
-                NgayBaoCao = hd.NgayBaoCao,
-                DiaDiem = hd.DiaDiem ?? "",
-                SoLuongDeTai = hd.PhienBaoVes
-                    .Where(pb => pb.IdSinhVienDeTaiNavigation?.IdDeTai != null)
-                    .Select(pb => pb.IdSinhVienDeTaiNavigation!.IdDeTai)
-                    .Distinct()
-                    .Count(),
-                VaiTroTrongHoiDong = hd.ThanhVienHdBaoCaos
-                    .FirstOrDefault(tv => tv.IdGiangVien == currentUserId)?.VaiTro ?? "",
-                DaChamDiem = hd.ThanhVienHdBaoCaos
-                    .FirstOrDefault(tv => tv.IdGiangVien == currentUserId)?.DaChamDiem ?? false,
-                CoDenNgayBaoCao = hd.NgayBaoCao.HasValue &&
-                                   DateOnly.FromDateTime(DateTime.Today) >= hd.NgayBaoCao.Value
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                var ngayKetThuc = hd.NgayKetThuc ?? hd.NgayBaoCao;
+                var daHetHan = ngayKetThuc.HasValue && today > ngayKetThuc.Value;
+
+                return new HoiDongChamDiemViewModel
+                {
+                    Id = hd.Id,
+                    MaHoiDong = hd.MaHoiDong ?? "",
+                    TenHoiDong = hd.TenHoiDong ?? "",
+                    LoaiHoiDong = hd.LoaiHoiDong ?? "",
+                    TenBoMon = hd.IdBoMonNavigation?.TenBoMon ?? "N/A",
+                    NgayBaoCao = hd.NgayBaoCao,
+                    DiaDiem = hd.DiaDiem ?? "",
+                    SoLuongDeTai = hd.PhienBaoVes
+                        .Where(pb => pb.IdSinhVienDeTaiNavigation?.IdDeTai != null)
+                        .Select(pb => pb.IdSinhVienDeTaiNavigation!.IdDeTai)
+                        .Distinct()
+                        .Count(),
+                    VaiTroTrongHoiDong = hd.ThanhVienHdBaoCaos
+                        .FirstOrDefault(tv => tv.IdGiangVien == currentUserId)?.VaiTro ?? "",
+                    DaChamDiem = hd.ThanhVienHdBaoCaos
+                        .FirstOrDefault(tv => tv.IdGiangVien == currentUserId)?.DaChamDiem ?? false,
+                    CoDenNgayBaoCao = hd.NgayBaoCao.HasValue &&
+                                       DateOnly.FromDateTime(DateTime.Today) >= hd.NgayBaoCao.Value,
+                    DaHetHanBaoCao = daHetHan
+                };
             }).ToList();
         }
 
@@ -111,6 +119,11 @@ namespace DATN_TMS.Services
                 _validationError = $"Chưa đến ngày báo cáo ({hoiDong.NgayBaoCao.Value:dd/MM/yyyy}). Không thể xem chi tiết.";
                 return null;
             }
+
+            // Kiểm tra hết hạn báo cáo
+            var todayCheck = DateOnly.FromDateTime(DateTime.Today);
+            var ngayKetThucHD = hoiDong.NgayKetThuc ?? hoiDong.NgayBaoCao;
+            var daHetHanBaoCao = ngayKetThucHD.HasValue && todayCheck > ngayKetThucHD.Value;
 
             var danhSachDeTai = new List<DeTaiChamDiemViewModel>();
             var laHoiDongGiuaKy = hoiDong.LoaiHoiDong == "GIUA_KY";
@@ -223,7 +236,8 @@ namespace DATN_TMS.Services
                 DanhSachDeTai = danhSachDeTai,
                 VaiTroHienTai = thanhVien.VaiTro ?? "",
                 LaChuTich = thanhVien.VaiTro == "CHU_TICH",
-                LaThuKy = thanhVien.VaiTro == "THU_KY"
+                LaThuKy = thanhVien.VaiTro == "THU_KY",
+                DaHetHanBaoCao = daHetHanBaoCao
             };
         }
 
@@ -265,6 +279,18 @@ namespace DATN_TMS.Services
             {
                 _validationError = "REDIRECT_DETAIL:" + hoiDong.Id + ":Chưa đến ngày báo cáo.";
                 return null;
+            }
+
+            // Kiểm tra hết hạn báo cáo
+            {
+                var todayCheck = DateOnly.FromDateTime(DateTime.Today);
+                var ngayKetThucHD = hoiDong.NgayKetThuc ?? hoiDong.NgayBaoCao;
+                if (ngayKetThucHD.HasValue && todayCheck > ngayKetThucHD.Value)
+                {
+                    var ngayHetHanStr = ngayKetThucHD.Value.ToString("dd/MM/yyyy");
+                    _validationError = "REDIRECT_DETAIL:" + hoiDong.Id + ":Đã hết hạn báo cáo (kết thúc ngày " + ngayHetHanStr + "). Không thể nhận xét hoặc chấm điểm.";
+                    return null;
+                }
             }
 
             var svdt = phien.IdSinhVienDeTaiNavigation;
@@ -456,6 +482,22 @@ namespace DATN_TMS.Services
             var hoiDongId = phien.IdHdBaocao ?? 0;
             var laHoiDongGiuaKy = phien.IdHdBaocaoNavigation?.LoaiHoiDong == "GIUA_KY";
 
+            // Kiểm tra hết hạn báo cáo
+            var hoiDongLuu = phien.IdHdBaocaoNavigation;
+            if (hoiDongLuu != null)
+            {
+                var todayCheck = DateOnly.FromDateTime(DateTime.Today);
+                var ngayKetThucHD = hoiDongLuu.NgayKetThuc ?? hoiDongLuu.NgayBaoCao;
+                if (ngayKetThucHD.HasValue && todayCheck > ngayKetThucHD.Value)
+                {
+                    return new LuuDiemResult
+                    {
+                        Success = false,
+                        Message = "Đã hết hạn báo cáo (kết thúc ngày " + ngayKetThucHD.Value.ToString("dd/MM/yyyy") + "). Không thể lưu nhận xét hoặc điểm."
+                    };
+                }
+            }
+
             // Server-side validation cho giữa kì: nhận xét không được trống
             if (laHoiDongGiuaKy)
             {
@@ -527,17 +569,25 @@ namespace DATN_TMS.Services
             var phien = await _context.PhienBaoVes
                 .Include(p => p.IdHdBaocaoNavigation)
                     .ThenInclude(hd => hd != null ? hd.ThanhVienHdBaoCaos : null)
+                .Include(p => p.IdHdBaocaoNavigation)
+                    .ThenInclude(hd => hd != null ? hd.IdDotNavigation : null)
                 .Include(p => p.IdSinhVienDeTaiNavigation)
                 .FirstOrDefaultAsync(p => p.Id == request.PhienBaoVeId);
 
             if (phien == null)
                 return new LuuDiemResult { Success = false, Message = "Không tìm thấy phiên bảo vệ." };
 
-            var thanhVien = phien.IdHdBaocaoNavigation?.ThanhVienHdBaoCaos?
+            var hoiDong = phien.IdHdBaocaoNavigation;
+            var thanhVien = hoiDong?.ThanhVienHdBaoCaos?
                 .FirstOrDefault(tv => tv.IdGiangVien == currentUserId);
 
             if (thanhVien?.VaiTro != "THU_KY")
                 return new LuuDiemResult { Success = false, Message = "Chỉ Thư ký mới có quyền điều chỉnh điểm." };
+
+            // Kiểm tra giai đoạn báo cáo
+            var periodCheck = KiemTraGiaiDoanBaoCao(hoiDong);
+            if (!periodCheck.ConTrong)
+                return new LuuDiemResult { Success = false, Message = "Đã hết giai đoạn báo cáo. Không thể điều chỉnh điểm." };
 
             // Lấy IdSinhVien từ phiên bảo vệ nếu request không cung cấp
             var idSinhVien = request.IdSinhVien > 0
@@ -563,11 +613,103 @@ namespace DATN_TMS.Services
             return new LuuDiemResult { Success = true, Message = "Đã điều chỉnh điểm thành công!" };
         }
 
+        public async Task<LuuDiemResult> ThuKyChinhSuaDiemThanhVien(ThuKyChinhSuaDiemThanhVienRequest request, int currentUserId)
+        {
+            var phien = await _context.PhienBaoVes
+                .Include(p => p.IdHdBaocaoNavigation)
+                    .ThenInclude(hd => hd != null ? hd.ThanhVienHdBaoCaos : null)
+                .Include(p => p.IdHdBaocaoNavigation)
+                    .ThenInclude(hd => hd != null ? hd.IdDotNavigation : null)
+                .Include(p => p.IdSinhVienDeTaiNavigation)
+                .FirstOrDefaultAsync(p => p.Id == request.PhienBaoVeId);
+
+            if (phien == null)
+                return new LuuDiemResult { Success = false, Message = "Không tìm thấy phiên bảo vệ." };
+
+            var hoiDong = phien.IdHdBaocaoNavigation;
+            var thanhVien = hoiDong?.ThanhVienHdBaoCaos?
+                .FirstOrDefault(tv => tv.IdGiangVien == currentUserId);
+
+            if (thanhVien?.VaiTro != "THU_KY")
+                return new LuuDiemResult { Success = false, Message = "Chỉ Thư ký mới có quyền chỉnh sửa điểm thành viên." };
+
+            // Kiểm tra giai đoạn báo cáo
+            var periodCheck = KiemTraGiaiDoanBaoCao(hoiDong);
+            if (!periodCheck.ConTrong)
+                return new LuuDiemResult { Success = false, Message = "Đã hết giai đoạn báo cáo. Không thể chỉnh sửa điểm." };
+
+            // Không cho sửa điểm GVHD (người chấm không phải thành viên hội đồng)
+            var nguoiChamLaThanhVien = hoiDong?.ThanhVienHdBaoCaos?.Any(tv => tv.IdGiangVien == request.IdNguoiCham) ?? false;
+            if (!nguoiChamLaThanhVien)
+                return new LuuDiemResult { Success = false, Message = "Không thể chỉnh sửa điểm của giảng viên hướng dẫn." };
+
+            // Lấy IdSinhVien
+            var idSinhVien = request.IdSinhVien > 0
+                ? request.IdSinhVien
+                : phien.IdSinhVienDeTaiNavigation?.IdSinhVien ?? 0;
+
+            // Cập nhật tất cả điểm chi tiết của người chấm cho sinh viên này → scale theo tỉ lệ
+            var diemChiTiets = await _context.DiemChiTiets
+                .Where(d => d.IdPhienBaoVe == request.PhienBaoVeId
+                         && d.IdNguoiCham == request.IdNguoiCham
+                         && d.IdSinhVien == idSinhVien)
+                .ToListAsync();
+
+            if (!diemChiTiets.Any())
+                return new LuuDiemResult { Success = false, Message = "Không tìm thấy điểm của thành viên này." };
+
+            var tongDiemCu = diemChiTiets.Sum(d => d.DiemSo ?? 0);
+            if (tongDiemCu > 0 && request.DiemMoi >= 0)
+            {
+                var tiLe = request.DiemMoi / tongDiemCu;
+                foreach (var dc in diemChiTiets)
+                {
+                    dc.DiemSo = Math.Round((dc.DiemSo ?? 0) * tiLe, 2);
+                }
+            }
+
+            // Ghi lịch sử
+            _context.LichSuCapNhatDiems.Add(new LichSuCapNhatDiem
+            {
+                IdPhienBaoVe = request.PhienBaoVeId,
+                IdSinhVien = idSinhVien,
+                IdNguoiCapNhat = currentUserId,
+                LoaiCapNhat = "THU_KY_CHINH_SUA_DIEM_THANH_VIEN",
+                DiemCu = request.DiemCu,
+                DiemMoi = request.DiemMoi,
+                LyDo = request.LyDo,
+                NgayCapNhat = DateTime.Now
+            });
+
+            // Reset trạng thái xác nhận nếu đã xác nhận
+            var idDeTai = phien.IdSinhVienDeTaiNavigation?.IdDeTai ?? 0;
+            var tatCaPhienCungDeTai = await _context.PhienBaoVes
+                .Where(p => p.IdHdBaocao == hoiDong!.Id &&
+                            p.IdSinhVienDeTaiNavigation != null &&
+                            p.IdSinhVienDeTaiNavigation.IdDeTai == idDeTai)
+                .ToListAsync();
+
+            foreach (var pb in tatCaPhienCungDeTai)
+            {
+                var xacNhan = await _context.XacNhanDiemChuTichs
+                    .FirstOrDefaultAsync(x => x.IdPhienBaoVe == pb.Id);
+                if (xacNhan != null && xacNhan.TrangThai == "DA_XAC_NHAN")
+                {
+                    xacNhan.TrangThai = "CHO_XAC_NHAN";
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return new LuuDiemResult { Success = true, Message = "Đã chỉnh sửa điểm thành viên hội đồng thành công! Chủ tịch cần xác nhận lại." };
+        }
+
         public async Task<LuuDiemResult> ChuTichXacNhan(XacNhanDiemRequest request, int currentUserId)
         {
             var phien = await _context.PhienBaoVes
                 .Include(p => p.IdHdBaocaoNavigation)
                     .ThenInclude(hd => hd != null ? hd.ThanhVienHdBaoCaos : null)
+                .Include(p => p.IdHdBaocaoNavigation)
+                    .ThenInclude(hd => hd != null ? hd.IdDotNavigation : null)
                 .Include(p => p.IdSinhVienDeTaiNavigation)
                     .ThenInclude(svdt => svdt != null ? svdt.IdDeTaiNavigation : null)
                 .FirstOrDefaultAsync(p => p.Id == request.PhienBaoVeId);
@@ -581,6 +723,11 @@ namespace DATN_TMS.Services
 
             if (thanhVien?.VaiTro != "CHU_TICH")
                 return new LuuDiemResult { Success = false, Message = "Chỉ Chủ tịch mới có quyền xác nhận điểm." };
+
+            // Kiểm tra giai đoạn báo cáo
+            var periodCheck = KiemTraGiaiDoanBaoCao(hoiDong);
+            if (!periodCheck.ConTrong)
+                return new LuuDiemResult { Success = false, Message = "Đã hết giai đoạn báo cáo. Không thể xác nhận điểm." };
 
             var tatCaDaCham = hoiDong?.ThanhVienHdBaoCaos?
                 .All(tv => tv.DaChamDiem == true) ?? false;
@@ -654,6 +801,8 @@ namespace DATN_TMS.Services
                     .ThenInclude(hd => hd != null ? hd.ThanhVienHdBaoCaos : null)
                         .ThenInclude(tv => tv != null ? tv.IdGiangVienNavigation : null)
                             .ThenInclude(gv => gv != null ? gv.IdNguoiDungNavigation : null)
+                .Include(p => p.IdHdBaocaoNavigation)
+                    .ThenInclude(hd => hd != null ? hd.IdDotNavigation : null)
                 .Include(p => p.IdSinhVienDeTaiNavigation)
                     .ThenInclude(svdt => svdt != null ? svdt.IdSinhVienNavigation : null)
                         .ThenInclude(sv => sv != null ? sv.IdNguoiDungNavigation : null)
@@ -715,6 +864,28 @@ namespace DATN_TMS.Services
             var thanhVienHienTai = hoiDong?.ThanhVienHdBaoCaos?.FirstOrDefault(tv => tv.IdGiangVien == currentUserId);
             var xacNhan = await _context.XacNhanDiemChuTichs.FirstOrDefaultAsync(x => x.IdPhienBaoVe == phienBaoVeId);
 
+            // Tính hết hạn hội đồng và giai đoạn báo cáo cuối kì
+            var todayBD = DateOnly.FromDateTime(DateTime.Today);
+            var ngayKetThucHD = hoiDong?.NgayKetThuc ?? hoiDong?.NgayBaoCao;
+            var daHetHanBaoCao = ngayKetThucHD.HasValue && todayBD > ngayKetThucHD.Value;
+
+            var dotDoAn = hoiDong?.IdDotNavigation;
+            bool conTrongGiaiDoanBaoCao;
+            if (laHoiDongGiuaKy)
+            {
+                conTrongGiaiDoanBaoCao = dotDoAn?.NgayBatDauBaoCaoGiuaKi != null &&
+                    dotDoAn?.NgayKetThucBaoCaoGiuaKi != null &&
+                    todayBD >= dotDoAn.NgayBatDauBaoCaoGiuaKi.Value &&
+                    todayBD <= dotDoAn.NgayKetThucBaoCaoGiuaKi.Value;
+            }
+            else
+            {
+                conTrongGiaiDoanBaoCao = dotDoAn?.NgayBatDauBaoCaoCuoiKi != null &&
+                    dotDoAn?.NgayKetThucBaoCaoCuoiKi != null &&
+                    todayBD >= dotDoAn.NgayBatDauBaoCaoCuoiKi.Value &&
+                    todayBD <= dotDoAn.NgayKetThucBaoCaoCuoiKi.Value;
+            }
+
             var lichSuCapNhat = await _context.LichSuCapNhatDiems
                 .Include(l => l.IdNguoiCapNhatNavigation)
                     .ThenInclude(gv => gv != null ? gv.IdNguoiDungNavigation : null)
@@ -739,8 +910,8 @@ namespace DATN_TMS.Services
                 var svNav = svInfo?.IdSinhVienNavigation;
                 var diemGVHDSV = svInfo?.DiemGvhd ?? 0;
 
-                // Tính điểm theo vai trò cho sinh viên này
-                var diemTheoVaiTro = new Dictionary<string, double?>();
+                // Tính điểm theo từng thành viên cho sinh viên này
+                var diemTheoThanhVien = new Dictionary<int, double?>();
                 var diemThanhVienSV = p.DiemChiTiets
                     .GroupBy(d => d.IdNguoiCham)
                     .Select(g => new { IdNguoiCham = g.Key, TongDiem = g.Sum(d => d.DiemSo ?? 0) })
@@ -748,12 +919,9 @@ namespace DATN_TMS.Services
 
                 foreach (var tv in hoiDong?.ThanhVienHdBaoCaos ?? Enumerable.Empty<ThanhVienHdBaoCao>())
                 {
-                    var vaiTro = tv.VaiTro ?? "";
+                    var idGV = tv.IdGiangVien ?? 0;
                     var diemTV = diemThanhVienSV.FirstOrDefault(d => d.IdNguoiCham == tv.IdGiangVien);
-                    if (!diemTheoVaiTro.ContainsKey(vaiTro))
-                        diemTheoVaiTro[vaiTro] = diemTV != null && (tv.DaChamDiem ?? false) ? diemTV.TongDiem : null;
-                    else if (diemTV != null && (tv.DaChamDiem ?? false))
-                        diemTheoVaiTro[vaiTro] = (diemTheoVaiTro[vaiTro] ?? 0) + diemTV.TongDiem;
+                    diemTheoThanhVien[idGV] = diemTV != null && (tv.DaChamDiem ?? false) ? diemTV.TongDiem : null;
                 }
 
                 var diemTBHD_SV = diemThanhVienSV.Any() ? diemThanhVienSV.Average(d => d.TongDiem) : 0;
@@ -768,7 +936,7 @@ namespace DATN_TMS.Services
                     TenSinhVien = svNav?.IdNguoiDungNavigation?.HoTen ?? "",
                     Mssv = svNav?.Mssv ?? "",
                     DiemGVHD = diemGVHDSV,
-                    DiemTheoVaiTro = diemTheoVaiTro,
+                    DiemTheoThanhVien = diemTheoThanhVien,
                     DiemTBHoiDong = diemTBHD_SV,
                     DiemTrungBinhCuoi = diemTBCuoi
                 });
@@ -805,8 +973,54 @@ namespace DATN_TMS.Services
                     NgayCapNhat = l.NgayCapNhat
                 }).ToList(),
                 LaThuKy = thanhVienHienTai?.VaiTro == "THU_KY",
-                LaChuTich = thanhVienHienTai?.VaiTro == "CHU_TICH"
+                LaChuTich = thanhVienHienTai?.VaiTro == "CHU_TICH",
+                DaHetHanBaoCao = daHetHanBaoCao,
+                ConTrongGiaiDoanBaoCao = conTrongGiaiDoanBaoCao
             };
+        }
+
+        /// <summary>
+        /// Kiểm tra hội đồng còn trong giai đoạn báo cáo (DotDoAn) hay không.
+        /// Dùng cho ràng buộc Thư ký / Chủ tịch.
+        /// </summary>
+        private static (bool ConTrong, string? Message) KiemTraGiaiDoanBaoCao(HoiDongBaoCao? hoiDong)
+        {
+            if (hoiDong == null)
+                return (false, "Không tìm thấy hội đồng.");
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var dotDoAn = hoiDong.IdDotNavigation;
+
+            // Ưu tiên dùng ngày của DotDoAn, fallback về ngày hội đồng
+            if (dotDoAn != null)
+            {
+                DateOnly? ngayBatDau, ngayKetThuc;
+                if (hoiDong.LoaiHoiDong == "GIUA_KY")
+                {
+                    ngayBatDau = dotDoAn.NgayBatDauBaoCaoGiuaKi;
+                    ngayKetThuc = dotDoAn.NgayKetThucBaoCaoGiuaKi;
+                }
+                else
+                {
+                    ngayBatDau = dotDoAn.NgayBatDauBaoCaoCuoiKi;
+                    ngayKetThuc = dotDoAn.NgayKetThucBaoCaoCuoiKi;
+                }
+
+                if (ngayBatDau.HasValue && ngayKetThuc.HasValue)
+                {
+                    if (today >= ngayBatDau.Value && today <= ngayKetThuc.Value)
+                        return (true, null);
+                    else
+                        return (false, $"Ngoài giai đoạn báo cáo ({ngayBatDau.Value:dd/MM/yyyy} - {ngayKetThuc.Value:dd/MM/yyyy}).");
+                }
+            }
+
+            // Fallback: dùng ngày hội đồng
+            var ngayKetThucHD = hoiDong.NgayKetThuc ?? hoiDong.NgayBaoCao;
+            if (ngayKetThucHD.HasValue && today <= ngayKetThucHD.Value)
+                return (true, null);
+
+            return (false, "Đã hết hạn báo cáo.");
         }
     }
 }

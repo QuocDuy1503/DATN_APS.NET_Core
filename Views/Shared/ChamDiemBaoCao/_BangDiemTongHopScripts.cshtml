@@ -5,7 +5,7 @@
         // Điều chỉnh điểm (Thư ký)
         $('#formDieuChinhDiem').on('submit', function(e) {
             e.preventDefault();
-            
+
             var data = {
                 PhienBaoVeId: @Model.PhienBaoVeId,
                 IdSinhVien: 0,
@@ -42,10 +42,11 @@
         $('#formXacNhanDiem').on('submit', function(e) {
             e.preventDefault();
 
-            if (!confirm('Bạn có chắc chắn xác nhận điểm? Sau khi xác nhận, có thể chuyển sang đề tài tiếp theo.')) {
+            var confirmMsg = @(Model.DaXacNhan ? Json.Serialize("Bạn có chắc chắn xác nhận lại điểm?") : Json.Serialize("Bạn có chắc chắn xác nhận điểm? Sau khi xác nhận, có thể chuyển sang đề tài tiếp theo."));
+            if (!confirm(confirmMsg)) {
                 return;
             }
-            
+
             var data = {
                 PhienBaoVeId: @Model.PhienBaoVeId,
                 IdSinhVien: 0,
@@ -65,7 +66,7 @@
                     if (response.success) {
                         toastr.success(response.message);
                         setTimeout(function() {
-                            window.location.href = '@Url.Action("Detail", new { id = Model.HoiDongId })';
+                            location.reload();
                         }, 1500);
                     } else {
                         toastr.error(response.message);
@@ -74,6 +75,79 @@
                 error: function() {
                     toastr.error('Có lỗi xảy ra.');
                 }
+            });
+        });
+
+        // Thư ký chỉnh sửa điểm thành viên (click vào ô điểm)
+        $(document).on('click', '.score-editable', function() {
+            var $span = $(this);
+            if ($span.find('input').length > 0) return; // Đang edit rồi
+
+            var diemCu = parseFloat($span.data('diemcu'));
+            var phienId = $span.data('phien');
+            var svId = $span.data('sv');
+            var nguoiChamId = $span.data('nguoicham');
+            var originalText = $span.text();
+
+            var $input = $('<input type="number" class="score-edit-input" min="0" max="10" step="0.1" />')
+                .val(diemCu);
+
+            $span.empty().append($input);
+            $input.focus().select();
+
+            function saveDiem() {
+                var diemMoi = parseFloat($input.val());
+                if (isNaN(diemMoi) || diemMoi < 0 || diemMoi > 10) {
+                    toastr.warning('Điểm phải từ 0 đến 10.');
+                    $span.text(originalText);
+                    return;
+                }
+                if (diemMoi === diemCu) {
+                    $span.text(originalText);
+                    return;
+                }
+
+                var lyDo = prompt('Lý do chỉnh sửa điểm:', 'Thống nhất hội đồng');
+                if (lyDo === null) {
+                    $span.text(originalText);
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("ThuKyChinhSuaDiemThanhVien")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        PhienBaoVeId: phienId,
+                        IdSinhVien: svId,
+                        IdNguoiCham: nguoiChamId,
+                        DiemCu: diemCu,
+                        DiemMoi: diemMoi,
+                        LyDo: lyDo || ''
+                    }),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            toastr.success(response.message);
+                            setTimeout(function() { location.reload(); }, 1200);
+                        } else {
+                            toastr.error(response.message);
+                            $span.text(originalText);
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra.');
+                        $span.text(originalText);
+                    }
+                });
+            }
+
+            $input.on('blur', saveDiem);
+            $input.on('keydown', function(ev) {
+                if (ev.key === 'Enter') { ev.preventDefault(); $input.blur(); }
+                if (ev.key === 'Escape') { $span.text(originalText); }
             });
         });
     });

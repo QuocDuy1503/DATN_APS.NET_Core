@@ -91,7 +91,7 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                 using var workbook = new XLWorkbook(stream);
                 var ws = workbook.Worksheets.First();
 
-                int tongSV = 0, tongMH = 0;
+                int tongSV = 0, tongMH = 0, tongCapNhat = 0;
                 var errors = new List<string>();
                 var warnings = new List<string>();
                 var studentsData = new List<(int IdSV, string Mssv, List<KetQuaHocTap> Grades)>();
@@ -131,9 +131,11 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
                     emptyCount = 0;
 
+                    // Dòng sinh viên: chỉ cột A có dữ liệu, các cột B-G đều trống
                     bool isSvRow = !string.IsNullOrEmpty(a)
                                  && string.IsNullOrEmpty(b) && string.IsNullOrEmpty(c)
-                                 && string.IsNullOrEmpty(d) && string.IsNullOrEmpty(e);
+                                 && string.IsNullOrEmpty(d) && string.IsNullOrEmpty(e)
+                                 && string.IsNullOrEmpty(f) && string.IsNullOrEmpty(g);
 
                     if (isSvRow)
                     {
@@ -158,8 +160,14 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
                             }
                         }
                     }
-                    else if (currentSvId > 0 && !string.IsNullOrEmpty(a) && !string.IsNullOrEmpty(b))
+                    else if (currentSvId > 0 && !string.IsNullOrEmpty(a))
                     {
+                        if (string.IsNullOrEmpty(b))
+                        {
+                            warnings.Add("SV " + currentMssv + " dòng " + row + ": Mã HP '" + a + "' thiếu tên học phần, đã bỏ qua");
+                            continue;
+                        }
+
                         stt++;
                         double.TryParse(c, System.Globalization.NumberStyles.Any,
                             System.Globalization.CultureInfo.InvariantCulture, out double soTc);
@@ -191,33 +199,54 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
 
                 FlushStudent(ref currentSvId, ref currentMssv, currentGrades, studentsData);
 
-                foreach (var (idSv, mssv, grades) in studentsData)
+                // Sử dụng transaction để đảm bảo tính toàn vẹn khi xóa cũ + thêm mới
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    var oldRecords = await _context.KetQuaHocTaps
-                        .Where(k => k.IdSinhVien == idSv).ToListAsync();
-                    _context.KetQuaHocTaps.RemoveRange(oldRecords);
+                    foreach (var (idSv, mssv, grades) in studentsData)
+                    {
+                        var oldRecords = await _context.KetQuaHocTaps
+                            .Where(k => k.IdSinhVien == idSv).ToListAsync();
 
-                    double totalCredits = grades
-                        .Where(x => x.KetQua == true)
-                        .Sum(x => x.SoTc ?? 0);
+                        if (oldRecords.Count > 0)
+                        {
+                            tongCapNhat++;
+                        }
 
-                    foreach (var gr in grades)
-                        gr.TongSoTinChi = totalCredits;
+                        _context.KetQuaHocTaps.RemoveRange(oldRecords);
 
-                    _context.KetQuaHocTaps.AddRange(grades);
+                        double totalCredits = grades
+                            .Where(x => x.KetQua == true)
+                            .Sum(x => x.SoTc ?? 0);
 
-                    var svEntity = await _context.SinhViens.FindAsync(idSv);
-                    if (svEntity != null)
-                        svEntity.TinChiTichLuy = totalCredits;
+                        foreach (var gr in grades)
+                            gr.TongSoTinChi = totalCredits;
 
-                    tongSV++;
-                    tongMH += grades.Count;
+                        _context.KetQuaHocTaps.AddRange(grades);
+
+                        var svEntity = await _context.SinhViens.FindAsync(idSv);
+                        if (svEntity != null)
+                            svEntity.TinChiTichLuy = totalCredits;
+
+                        tongSV++;
+                        tongMH += grades.Count;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
                 }
 
-                await _context.SaveChangesAsync();
-
                 if (tongSV > 0)
-                    TempData["SuccessMessage"] = "Import thành công! Đã xử lý " + tongSV + " sinh viên, " + tongMH + " môn học.";
+                {
+                    var msg = "Import thành công! " + tongSV + " sinh viên, ";
+                    
+                    TempData["SuccessMessage"] = msg;
+                }
                 else
                     TempData["ErrorMessage"] = "Không tìm thấy dữ liệu sinh viên hợp lệ trong file.";
 
@@ -246,8 +275,22 @@ namespace DATN_TMS.Areas.BCNKhoa.Controllers
         private static string ExtractMssv(string value)
         {
             if (string.IsNullOrWhiteSpace(value)) return "";
-            return value.Split(new[] { ' ', '-', '\t' }, StringSplitOptions.RemoveEmptyEntries)
-                        .FirstOrDefault()?.Trim() ?? "";
+
+            var parts = value.Split(new[] { ' ', '-', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // MSSV là chuỗi số nằm cuối dòng (VD: "Trương Quốc Duy  2174802010297")
+            // Duyệt từ cuối để tìm token có dạng số (MSSV)
+            for (int i = parts.Length - 1; i >= 0; i--)
+            {
+                var token = parts[i].Trim();
+                if (token.Length >= 5 && token.All(char.IsDigit))
+                {
+                    return token;
+                }
+            }
+
+            // Nếu không tìm thấy token số, trả về token cuối cùng (trường hợp MSSV không thuần số)
+            return parts.Last().Trim();
         }
 
         private static bool ParseKetQua(string value)

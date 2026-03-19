@@ -146,6 +146,25 @@ namespace DATN_TMS.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ThuKyChinhSuaDiemThanhVien([FromBody] ThuKyChinhSuaDiemThanhVienRequest request)
+        {
+            var currentUserId = await GetCurrentUserId();
+            if (currentUserId == 0)
+                return Json(new { success = false, message = "Không xác định được người dùng." });
+
+            try
+            {
+                var result = await _service.ThuKyChinhSuaDiemThanhVien(request, currentUserId);
+                return Json(new { success = result.Success, message = result.Message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Lỗi: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChuTichXacNhan([FromBody] XacNhanDiemRequest request)
         {
             var currentUserId = await GetCurrentUserId();
